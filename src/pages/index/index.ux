@@ -9,6 +9,27 @@
       <text class="aqi">AQI 29</text>
       <text class="aqi-desc">优</text>
     </div>
+    <!-- <text class="page-title">天气指数</text> -->
+    <div class="page-list" style="margin-top: 28px">
+      <div style="margin-top: -2px; flex-direction: column">
+        <div style="margin-top: 14px; flex-direction: column" for="{{ item in figure }}">
+          <text class="figure-desc">{{ item.value }}</text>
+          <text class="figure-title">{{ item.name }}</text>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-list" style="margin-top: 12px">
+      <div style="margin-top: -8px; flex-direction: column">
+        <div style="margin-top: 20px; flex-direction: column" for="{{ item in dayWeather }}">
+          <text class="day-weather-title">{{ item.name }}</text>
+          <div style="justify-content: space-between;">
+            <text class="day-weather-desc">{{ item.value }}</text>
+            <image class="small-weather-icon" src="/common/weather/weather_1.png" />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -18,7 +39,18 @@ import router from "@system.router"
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
   private: {
-    title: "示例页面"
+    title: "示例页面",
+    figure: [
+      {name: "紫外线指数", value: "4.0", uniqueId: 1},
+      {name: "相对湿度 （%）", value: "82", uniqueId: 2},
+      {name: "南风", value: "3", uniqueId: 3},
+      {name: "气压 （hPa）", value: "1005", uniqueId: 4}
+    ],
+    dayWeather: [
+      {name: "今天", value: "25°/34°", uniqueId: 1},
+      {name: "明天", value: "25°/33°", uniqueId: 2},
+      {name: "后天", value: "25°/32°", uniqueId: 3}
+    ]
   }
 }
 </script>
@@ -26,7 +58,7 @@ export default {
 <style>
 .page {
   flex-direction: column;
-  color: #000000;
+  color: #ffffff;
 }
 
 .page-title {
@@ -34,7 +66,6 @@ export default {
   text-align: center;
   margin-top: 32px;
   font-weight: bold;
-  color: #ffffff;
 }
 
 .page-subtitle {
@@ -55,10 +86,17 @@ export default {
   align-items: center;
 }
 
+.page-list {
+  flex-direction: column;
+  padding: 0 12px 12px 12px;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
 .temperature {
   font-size: 64px;
   font-weight: bold;
-  color: #ffffff;
   margin-top: 0px;
   padding-left: 10px;
 }
@@ -74,14 +112,39 @@ export default {
 .aqi {
   font-size: 28px;
   font-weight: bold;
-  color: #ffffff;
-  margin-top: 67px;
+  margin-top: 66px;
 }
 
 .aqi-desc {
   font-size: 28px;
   font-weight: bold;
-  color: #ffffff;
   margin-top: 2px;
+}
+
+.figure-title {
+  font-size: 24px;
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.figure-desc {
+  font-size: 39px;
+  font-weight: bold;
+  margin-left: -1px;
+}
+
+.day-weather-title {
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.day-weather-desc {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.small-weather-icon {
+  width: 48px;
+  height: 48px;
 }
 </style>
