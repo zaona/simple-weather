@@ -1,15 +1,16 @@
 <template>
-  <div class="page">
+  <div class="page" style="padding-bottom: 40px">
     <text class="page-title">江阴市</text>
     <text class="page-subtitle">5分钟前更新</text>
-    <div class="page-content">
+
+    <div class="hero-content">
       <image class="icon-weather" src="/common/weather/weather_1.png" />
       <text class="temperature">29°</text>
       <text class="tem-interval">26°/34°</text>
       <text class="aqi">AQI 29</text>
       <text class="aqi-desc">优</text>
     </div>
-    <!-- <text class="page-title">天气指数</text> -->
+
     <div class="page-list" style="margin-top: 28px">
       <div style="margin-top: -2px; flex-direction: column">
         <div style="margin-top: 14px; flex-direction: column" for="{{ item in figure }}">
@@ -23,7 +24,7 @@
       <div style="margin-top: -8px; flex-direction: column">
         <div style="margin-top: 20px; flex-direction: column" for="{{ item in dayWeather }}">
           <text class="day-weather-title">{{ item.name }}</text>
-          <div style="justify-content: space-between;">
+          <div style="justify-content: space-between">
             <text class="day-weather-desc">{{ item.value }}</text>
             <image class="small-weather-icon" src="/common/weather/weather_1.png" />
           </div>
@@ -34,7 +35,7 @@
 </template>
 
 <script>
-import router from "@system.router"
+// import router from "@system.router"
 
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
@@ -81,7 +82,7 @@ export default {
   margin-top: 41px;
 }
 
-.page-content {
+.hero-content {
   flex-direction: column;
   align-items: center;
 }
@@ -140,7 +141,6 @@ export default {
 
 .day-weather-desc {
   font-size: 32px;
-  font-weight: bold;
 }
 
 .small-weather-icon {
