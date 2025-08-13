@@ -1,0 +1,87 @@
+<template>
+  <div class="page">
+    <text class="page-title">江阴市</text>
+    <text class="page-subtitle">5分钟前更新</text>
+    <div class="page-content">
+      <image class="icon-weather" src="/common/weather/weather_1.png" />
+      <text class="temperature">29°</text>
+      <text class="tem-interval">26°/34°</text>
+      <text class="aqi">AQI 29</text>
+      <text class="aqi-desc">优</text>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+
+export default {
+  // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
+  private: {
+    title: "示例页面"
+  }
+}
+</script>
+
+<style>
+.page {
+  flex-direction: column;
+  color: #000000;
+}
+
+.page-title {
+  font-size: 24px;
+  text-align: center;
+  margin-top: 32px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.page-subtitle {
+  font-size: 24px;
+  text-align: center;
+  margin-top: 1px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.icon-weather {
+  width: 85px;
+  height: 85px;
+  margin-top: 41px;
+}
+
+.page-content {
+  flex-direction: column;
+  align-items: center;
+}
+
+.temperature {
+  font-size: 64px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-top: 0px;
+  padding-left: 10px;
+}
+
+.tem-interval {
+  font-size: 36px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: -9px;
+  padding-left: 6px;
+}
+
+.aqi {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-top: 67px;
+}
+
+.aqi-desc {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-top: 2px;
+}
+</style>
