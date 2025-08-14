@@ -46,7 +46,6 @@ import router from "@system.router"
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
   private: {
-    title: "示例页面",
     figure: [
       {name: "紫外线指数", value: "4.0", uniqueId: 1},
       {name: "相对湿度 （%）", value: "82", uniqueId: 2},
@@ -70,24 +69,7 @@ export default {
 </script>
 
 <style>
-.page {
-  flex-direction: column;
-  color: #ffffff;
-}
-
-.page-title {
-  font-size: 24px;
-  text-align: center;
-  margin-top: 32px;
-  font-weight: bold;
-}
-
-.page-subtitle {
-  font-size: 24px;
-  text-align: center;
-  margin-top: 1px;
-  color: rgba(255, 255, 255, 0.8);
-}
+@import "../../common/style.css";
 
 .icon-weather {
   width: 85px;

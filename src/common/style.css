@@ -1,0 +1,18 @@
+.page {
+    flex-direction: column;
+    color: #ffffff;
+}
+
+.page-title {
+    font-size: 24px;
+    text-align: center;
+    margin-top: 32px;
+    font-weight: bold;
+}
+
+.page-subtitle {
+    font-size: 24px;
+    text-align: center;
+    margin-top: 1px;
+    color: rgba(255, 255, 255, 0.8);
+}
