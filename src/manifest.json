@@ -1,6 +1,6 @@
 {
   "package": "com.application.zaona.weather",
-  "name": "simple-weather",
+  "name": "简明天气",
   "versionName": "1.0.0",
   "versionCode": 1,
   "minPlatformVersion": 1000,
