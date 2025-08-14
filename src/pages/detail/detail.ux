@@ -1,13 +1,23 @@
 <template>
-  <div class="demo-page">
+  <div class="demo-page" @swipe="toHomePage">
     <text class="title">{{ text }}</text>
   </div>
 </template>
 
 <script>
+import router from "@system.router"
+
 export default {
   private: {
     text: "欢迎打开详情页"
+  },
+  // 左滑返回index页面
+  toHomePage(eve) {
+    if (eve.direction === "right") {
+      router.push({
+        uri: "/pages/index"
+      })
+    }
   }
 }
 </script>

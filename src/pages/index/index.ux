@@ -1,5 +1,5 @@
 <template>
-  <div class="page" style="padding-bottom: 40px">
+  <div class="page" style="padding-bottom: 24px">
     <text class="page-title">江阴市</text>
     <text class="page-subtitle">5分钟前更新</text>
 
@@ -31,11 +31,17 @@
         </div>
       </div>
     </div>
+
+    <div class="hero-content" style="margin-top: 24px">
+      <div class="button" onclick="Detail()">
+        <text class="button-text">查看更多</text>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-// import router from "@system.router"
+import router from "@system.router"
 
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
@@ -52,6 +58,13 @@ export default {
       {name: "明天", value: "25°/33°", uniqueId: 2},
       {name: "后天", value: "25°/32°", uniqueId: 3}
     ]
+  },
+
+  Detail() {
+    // 跳转到应用内的某个页面，当前页面无法返回
+    router.replace({
+      uri: "/pages/detail"
+    })
   }
 }
 </script>
@@ -146,5 +159,17 @@ export default {
 .small-weather-icon {
   width: 48px;
   height: 48px;
+}
+
+.button {
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 18px 20px;
+  border-radius: 50%;
+}
+
+.button-text {
+  font-size: 29px;
 }
 </style>
