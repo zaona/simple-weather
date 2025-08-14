@@ -31,9 +31,7 @@ export default {
   // 左滑返回index页面
   toHomePage(eve) {
     if (eve.direction === "right") {
-      router.push({
-        uri: "/pages/index"
-      })
+      router.back();
     }
   }
 }
