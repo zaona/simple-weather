@@ -42,6 +42,10 @@
 
 <script>
 import router from "@system.router"
+import interconnect from "@system.interconnect"
+import {showToast} from "@system.prompt"
+
+const connect = interconnect.instance()
 
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
@@ -64,6 +68,42 @@ export default {
     router.push({
       uri: "/pages/detail"
     })
+  },
+
+  // onInit() {
+  //   brightness.setKeepScreenOn({
+  //     keepScreenOn: true
+  //   })
+  //   let conn = interconnect.instance()
+  //   conn.onmessage = async (data) => {
+  //     console.log("Received message:", data)
+  //     showToast({message: data, duration: 200})
+  //   }
+  // },
+
+  onShow() {
+    connect.onmessage = (data) => {
+      showToast({message: data.data, duration: 200})
+    }
+    connect.onerror = (error) => {
+      console.error("Connection error:", error)
+    }
+    connect.onclose = () => {
+      console.log("Connection closed")
+      // 尝试重新连接
+      setTimeout(() => {
+        connect.open()
+      }, 5000)
+    }
+    connect.open()
+  },
+
+  onHide() {
+    connect.close()
+  },
+
+  onDestroy() {
+    connect.close()
   }
 }
 </script>
