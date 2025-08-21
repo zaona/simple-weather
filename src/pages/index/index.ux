@@ -1,11 +1,11 @@
 <template>
   <div class="page" style="padding-bottom: 24px">
-    <text class="page-title">{{ cityName }}</text>
+    <!-- <text class="page-title">{{ cityName }}</text> -->
     <text class="page-subtitle">{{ updateTime }}</text>
 
     <div class="hero-content">
       <image class="icon-weather" src="/common/weather/weather_{{ iconCode }}.png" />
-      <text class="temperature">{{ temperature }}</text>
+      <!-- <text class="temperature">{{ temperature }}</text> -->
       <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
 
@@ -51,25 +51,23 @@ const connect = interconnect.instance()
 
 export default {
   private: {
-    cityName: "江阴市",
-    updateTime: "5分钟前",
-    iconCode: "0",
-    temperature: "29°",
-    tempMinMax: "26°/34°",
+    updateTime: "__",
+    iconCode: "__",
+    tempMinMax: "__°/__°",
     figure: [
-      {name: "紫外线指数", value: "4.0", uniqueId: 1},
-      {name: "相对湿度 （%）", value: "82", uniqueId: 2},
-      {name: "南风", value: "3", uniqueId: 3},
-      {name: "气压 （hPa）", value: "1005", uniqueId: 4}
+      {name: "紫外线指数", value: "__", uniqueId: 1},
+      {name: "相对湿度 （%）", value: "__", uniqueId: 2},
+      {name: "__", value: "__", uniqueId: 3},
+      {name: "气压 （hPa）", value: "__", uniqueId: 4}
     ],
     dayWeather: [
-      {name: "今天", tempMinMax: "25°/34°", iconCode: "0", uniqueId: 1},
-      {name: "明天", tempMinMax: "25°/33°", iconCode: "1", uniqueId: 2},
-      {name: "周六", tempMinMax: "25°/32°", iconCode: "2", uniqueId: 3},
-      {name: "周日", tempMinMax: "25°/33°", iconCode: "3", uniqueId: 4},
-      {name: "周一", tempMinMax: "25°/32°", iconCode: "4", uniqueId: 5},
-      {name: "周二", tempMinMax: "25°/32°", iconCode: "7", uniqueId: 6},
-      {name: "周三", tempMinMax: "25°/32°", iconCode: "12", uniqueId: 7}
+      {name: "今天", tempMinMax: "__", iconCode: "__", uniqueId: 1},
+      {name: "明天", tempMinMax: "__", iconCode: "__", uniqueId: 2},
+      {name: "后天", tempMinMax: "__", iconCode: "__", uniqueId: 3},
+      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 4},
+      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 5},
+      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 6},
+      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 7}
     ]
   },
 
@@ -95,15 +93,102 @@ export default {
     // 检查天气数据文件是否存在
     file.readText({
       uri: "internal://files/weather.txt",
-      success: function (data) {
-        // 文件存在，显示文件内容
-        showToast({message: data.text, duration: 200})
+      success: (data) => {
+        // 文件存在，解析JSON数据
+        try {
+          const weatherData = JSON.parse(data.text);
+
+          // 计算更新时间距离现在的时间差
+          const updateTime = new Date(weatherData.updateTime);
+          const now = new Date();
+          const diffMs = now - updateTime;
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMins / 60);
+          const diffDays = Math.floor(diffHours / 24);
+          
+          let timeAgo;
+          if (diffMins < 1) {
+            timeAgo = "刚刚";
+          } else if (diffMins < 60) {
+            timeAgo = diffMins + "分钟前";
+          } else if (diffHours < 24) {
+            timeAgo = diffHours + "小时前";
+          } else {
+            timeAgo = diffDays + "天前";
+          }
+
+          // 更新当前天气信息
+          // 查找当天的数据
+          const today = new Date();
+          const todayStr = today.toISOString().split('T')[0];
+          const todayData = weatherData.daily.find(day => day.fxDate === todayStr) || weatherData.daily[0];
+          
+          // 如果找不到当天数据，显示提示
+          if (!weatherData.daily.find(day => day.fxDate === todayStr)) {
+            showToast({message: "今日天气数据不存在", duration: 200});
+          }
+          
+          this.updateTime = timeAgo;
+          this.iconCode = todayData.iconDay;
+          this.tempMinMax = todayData.tempMin + "°/" + todayData.tempMax + "°";
+          
+          // 更新天气指标
+          this.figure = [
+            {name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1},
+            {name: "相对湿度 （%）", value: todayData.humidity, uniqueId: 2},
+            {name: todayData.windDirDay, value: todayData.windScaleDay, uniqueId: 3},
+            {name: "气压 （hPa）", value: todayData.pressure, uniqueId: 4}
+          ];
+          
+          // 更新未来几天天气
+          // 根据当天日期动态调整显示
+          const currentDate = new Date();
+          currentDate.setHours(0, 0, 0, 0); // 设置为当天凌晨
+          
+          this.dayWeather = weatherData.daily.map((day) => {
+            // 根据日期计算星期几
+            const date = new Date(day.fxDate);
+            date.setHours(0, 0, 0, 0); // 设置为当天凌晨
+            const dayOfWeek = date.getDay();
+            
+            // 计算与今天的日期差
+            const timeDiff = date.getTime() - currentDate.getTime();
+            const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            
+            // 星期几的中文表示
+            const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+            
+            // 生成显示名称
+            let displayName;
+            if (dayDiff === 0) {
+              displayName = "今天";
+            } else if (dayDiff === 1) {
+              displayName = "明天";
+            } else if (dayDiff === 2) {
+              displayName = "后天";
+            } else {
+              displayName = weekdays[dayOfWeek];
+            }
+            
+            return {
+              name: displayName,
+              tempMinMax: day.tempMin + "°/" + day.tempMax + "°",
+              iconCode: day.iconDay,
+              uniqueId: dayDiff + 1
+            };
+          });
+          
+          showToast({message: "天气数据已加载", duration: 200});
+        } catch (e) {
+          console.error("解析天气数据失败:", e);
+          showToast({message: "数据格式错误", duration: 200});
+        }
       },
-      fail: function (data, code) {
+      fail: (data, code) => {
         // 文件不存在，提示无天气数据
-        showToast({message: "本地无天气数据", duration: 200})
+        showToast({message: "本地无天气数据", duration: 200});
       }
-    })
+    });
   },
 
   onShow() {
@@ -197,7 +282,7 @@ export default {
   font-size: 36px;
   font-weight: bold;
   color: rgba(255, 255, 255, 0.8);
-  margin-top: -9px;
+  margin-top: 0px;
   padding-left: 6px;
   margin-bottom: 40px;
 }
