@@ -6,6 +6,7 @@
     <div class="hero-content">
       <image class="icon-weather" src="/common/weather/weather_{{ iconCode }}.png" />
       <!-- <text class="temperature">{{ temperature }}</text> -->
+      <text class="text-weather">{{ textDay }}</text>
       <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
 
@@ -53,6 +54,7 @@ export default {
   private: {
     updateTime: "__",
     iconCode: "__",
+    textDay: "__",
     tempMinMax: "__°/__°",
     figure: [
       {name: "紫外线指数", value: "__", uniqueId: 1},
@@ -96,99 +98,176 @@ export default {
       success: (data) => {
         // 文件存在，解析JSON数据
         try {
-          const weatherData = JSON.parse(data.text);
+          const weatherData = JSON.parse(data.text)
 
           // 计算更新时间距离现在的时间差
-          const updateTime = new Date(weatherData.updateTime);
-          const now = new Date();
-          const diffMs = now - updateTime;
-          const diffMins = Math.floor(diffMs / 60000);
-          const diffHours = Math.floor(diffMins / 60);
-          const diffDays = Math.floor(diffHours / 24);
-          
-          let timeAgo;
+          const updateTime = new Date(weatherData.updateTime)
+          const now = new Date()
+          const diffMs = now - updateTime
+          const diffMins = Math.floor(diffMs / 60000)
+          const diffHours = Math.floor(diffMins / 60)
+          const diffDays = Math.floor(diffHours / 24)
+
+          let timeAgo
           if (diffMins < 1) {
-            timeAgo = "刚刚";
+            timeAgo = "刚刚"
           } else if (diffMins < 60) {
-            timeAgo = diffMins + "分钟前";
+            timeAgo = diffMins + "分钟前"
           } else if (diffHours < 24) {
-            timeAgo = diffHours + "小时前";
+            timeAgo = diffHours + "小时前"
           } else {
-            timeAgo = diffDays + "天前";
+            timeAgo = diffDays + "天前"
+          }
+
+          // iconDay到iconCode的转换表
+          const iconMap = {
+            // 晴天
+            100: 0, // 晴
+            101: 1, // 多云
+            102: 1, // 少云
+            103: 1, // 晴间多云
+            104: 2, // 阴
+            150: 0, // 晴
+            151: 1, // 多云
+            152: 1, // 少云
+            153: 1, // 晴间多云
+
+            // 雨
+            300: 5, // 阵雨
+            301: 5, // 强阵雨
+            302: 5, // 雷阵雨
+            303: 5, // 强雷阵雨
+            304: 5, // 雷阵雨伴有冰雹
+            305: 4, // 小雨
+            306: 4, // 中雨
+            307: 4, // 大雨
+            308: 4, // 极端降雨
+            309: 4, // 毛毛雨/细雨
+            310: 4, // 暴雨
+            311: 4, // 大暴雨
+            312: 4, // 特大暴雨
+            313: 4, // 冻雨
+            314: 4, // 小到中雨
+            315: 4, // 中到大雨
+            316: 4, // 大到暴雨
+            317: 4, // 暴雨到大暴雨
+            318: 4, // 大暴雨到特大暴雨
+            350: 5, // 阵雨
+            351: 5, // 强阵雨
+            399: 4, // 雨
+
+            // 雪
+            400: 7, // 小雪
+            401: 7, // 中雪
+            402: 7, // 大雪
+            403: 7, // 暴雪
+            404: 6, // 雨夹雪
+            405: 6, // 雨雪天气
+            406: 6, // 阵雨夹雪
+            407: 7, // 阵雪
+            408: 7, // 小到中雪
+            409: 7, // 中到大雪
+            410: 7, // 大到暴雪
+            456: 6, // 阵雨夹雪
+            457: 7, // 阵雪
+            499: 7, // 雪
+
+            // 雾霾
+            500: 10, // 薄雾
+            501: 3, // 雾
+            502: 10, // 霾
+            503: 8, // 扬沙
+            504: 8, // 浮尘
+            507: 8, // 沙尘暴
+            508: 8, // 强沙尘暴
+            509: 3, // 浓雾
+            510: 3, // 强浓雾
+            511: 10, // 中度霾
+            512: 10, // 重度霾
+            513: 10, // 严重霾
+            514: 3, // 大雾
+            515: 3, // 特强浓雾
+
+            // 风
+            900: 99, // 热
+            901: 99, // 冷
+            999: 99 // 未知
           }
 
           // 更新当前天气信息
           // 查找当天的数据
-          const today = new Date();
-          const todayStr = today.toISOString().split('T')[0];
-          const todayData = weatherData.daily.find(day => day.fxDate === todayStr) || weatherData.daily[0];
-          
+          const today = new Date()
+          const todayStr = today.toISOString().split("T")[0]
+          const todayData =
+            weatherData.daily.find((day) => day.fxDate === todayStr) || weatherData.daily[0]
+
           // 如果找不到当天数据，显示提示
-          if (!weatherData.daily.find(day => day.fxDate === todayStr)) {
-            showToast({message: "今日天气数据不存在", duration: 200});
+          if (!weatherData.daily.find((day) => day.fxDate === todayStr)) {
+            showToast({message: "今日天气数据不存在", duration: 200})
           }
-          
-          this.updateTime = timeAgo;
-          this.iconCode = todayData.iconDay;
-          this.tempMinMax = todayData.tempMin + "°/" + todayData.tempMax + "°";
-          
+
+          this.updateTime = timeAgo
+          this.iconCode = iconMap[todayData.iconDay] || todayData.iconDay
+          this.textDay = todayData.textDay
+          this.tempMinMax = todayData.tempMin + "°/" + todayData.tempMax + "°"
+
           // 更新天气指标
           this.figure = [
             {name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1},
             {name: "相对湿度 （%）", value: todayData.humidity, uniqueId: 2},
             {name: todayData.windDirDay, value: todayData.windScaleDay, uniqueId: 3},
             {name: "气压 （hPa）", value: todayData.pressure, uniqueId: 4}
-          ];
-          
+          ]
+
           // 更新未来几天天气
           // 根据当天日期动态调整显示
-          const currentDate = new Date();
-          currentDate.setHours(0, 0, 0, 0); // 设置为当天凌晨
-          
+          const currentDate = new Date()
+          currentDate.setHours(0, 0, 0, 0) // 设置为当天凌晨
+
           this.dayWeather = weatherData.daily.map((day) => {
             // 根据日期计算星期几
-            const date = new Date(day.fxDate);
-            date.setHours(0, 0, 0, 0); // 设置为当天凌晨
-            const dayOfWeek = date.getDay();
-            
+            const date = new Date(day.fxDate)
+            date.setHours(0, 0, 0, 0) // 设置为当天凌晨
+            const dayOfWeek = date.getDay()
+
             // 计算与今天的日期差
-            const timeDiff = date.getTime() - currentDate.getTime();
-            const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-            
+            const timeDiff = date.getTime() - currentDate.getTime()
+            const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
+
             // 星期几的中文表示
-            const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
-            
+            const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+
             // 生成显示名称
-            let displayName;
+            let displayName
             if (dayDiff === 0) {
-              displayName = "今天";
+              displayName = "今天"
             } else if (dayDiff === 1) {
-              displayName = "明天";
+              displayName = "明天"
             } else if (dayDiff === 2) {
-              displayName = "后天";
+              displayName = "后天"
             } else {
-              displayName = weekdays[dayOfWeek];
+              displayName = weekdays[dayOfWeek]
             }
-            
+
             return {
               name: displayName,
               tempMinMax: day.tempMin + "°/" + day.tempMax + "°",
-              iconCode: day.iconDay,
+              iconCode: iconMap[day.iconDay] || day.iconDay,
               uniqueId: dayDiff + 1
-            };
-          });
-          
-          showToast({message: "天气数据已加载", duration: 200});
+            }
+          })
+
+          showToast({message: "天气数据已加载", duration: 200})
         } catch (e) {
-          console.error("解析天气数据失败:", e);
-          showToast({message: "数据格式错误", duration: 200});
+          console.error("解析天气数据失败:", e)
+          showToast({message: "数据格式错误", duration: 200})
         }
       },
       fail: (data, code) => {
         // 文件不存在，提示无天气数据
-        showToast({message: "本地无天气数据", duration: 200});
+        showToast({message: "本地无天气数据", duration: 200})
       }
-    });
+    })
   },
 
   onShow() {
@@ -278,11 +357,17 @@ export default {
   padding-left: 10px;
 }
 
+.text-weather {
+  font-size: 36px;
+  font-weight: bold;
+  margin-top: 0px;
+}
+
 .temp-min-max {
   font-size: 36px;
   font-weight: bold;
   color: rgba(255, 255, 255, 0.8);
-  margin-top: 0px;
+  margin-top: 8px;
   padding-left: 6px;
   margin-bottom: 40px;
 }
