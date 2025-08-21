@@ -91,25 +91,53 @@ export default {
   //   }
   // },
 
-  // onInit() {
-    
-  // },
-
+  onInit() {
+    // 检查天气数据文件是否存在
+    file.readText({
+      uri: "internal://files/weather.txt",
+      success: function (data) {
+        // 文件存在，显示文件内容
+        showToast({message: data.text, duration: 200})
+      },
+      fail: function (data, code) {
+        // 文件不存在，提示无天气数据
+        showToast({message: "本地无天气数据", duration: 200})
+      }
+    })
+  },
 
   onShow() {
     connect.onmessage = (data) => {
       showToast({message: data.data, duration: 200})
-      file.writeText({
-        uri: "internal://files/weather/weather.txt",
-        text: data.data,
+      // 检查文件是否存在，如果存在则删除
+      file.readText({
+        uri: "internal://files/weather.txt",
         success: function () {
-          showToast({message: "天气数据已保存", duration: 200})
-          console.log("handling success")
-          showToast({message: "天气数据已保存", duration: 200})
+          // 文件存在
+          // 写入空内容来覆盖文件
+          file.writeText({
+            uri: "internal://files/weather.txt",
+            text: data.data,
+            success: function () {
+              showToast({message: "天气数据已覆盖", duration: 200})
+            },
+            fail: function (data, code) {
+              showToast({message: `天气数据覆盖失败${code}`, duration: 200})
+            }
+          })
         },
-        fail: function (data, code) {
-          showToast({message: `天气数据保存失败${code}`, duration: 200})
-          console.log(`handling fail, code = ${code}`)
+        fail: function (code) {
+          // 文件不存在，直接写入
+          file.writeText({
+            uri: "internal://files/weather.txt",
+            text: data.data,
+            success: function () {
+              showToast({message: "天气数据已保存", duration: 200})
+            },
+            fail: function (data, code) {
+              showToast({message: `天气数据保存失败${code}`, duration: 200})
+            }
+          })
         }
       })
     }
