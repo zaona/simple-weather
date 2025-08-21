@@ -195,67 +195,81 @@ export default {
           }
 
           // 更新当前天气信息
-          // 查找当天的数据
-          const today = new Date()
-          const todayStr = today.toISOString().split("T")[0]
-          const todayData =
-            weatherData.daily.find((day) => day.fxDate === todayStr) || weatherData.daily[0]
-
-          // 如果找不到当天数据，显示提示
-          if (!weatherData.daily.find((day) => day.fxDate === todayStr)) {
-            showToast({message: "今日天气数据不存在", duration: 200})
+          // 获取当前日期并格式化为YYYY-MM-DD格式，用于匹配天气数据
+          const today = new Date();
+          // 使用本地时间而非UTC时间，避免时区问题
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          const todayStr = `${year}-${month}-${day}`;
+          
+          // 查找与当前日期匹配的天气数据
+          let todayData = weatherData.daily.find(day => day.fxDate === todayStr);
+          
+          // 如果没有找到匹配的日期数据，则使用第一条数据作为默认值
+          if (!todayData) {
+            todayData = weatherData.daily[0];
+            // 显示提示信息告知用户使用了默认数据
+            showToast({message: '未找到今日天气数据，使用默认数据', duration: 200});
           }
 
-          this.updateTime = timeAgo
-          this.iconCode = iconMap[todayData.iconDay] || todayData.iconDay
-          this.textDay = todayData.textDay
-          this.tempMinMax = todayData.tempMin + "°/" + todayData.tempMax + "°"
+          // 更新页面显示的当前天气信息
+          this.updateTime = timeAgo;
+          this.iconCode = iconMap[todayData.iconDay] || todayData.iconDay;
+          this.textDay = todayData.textDay;
+          this.tempMinMax = `${todayData.tempMin}°/${todayData.tempMax}°`;
 
-          // 更新天气指标
+          // 更新天气指标面板数据
           this.figure = [
-            {name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1},
-            {name: "相对湿度 （%）", value: todayData.humidity, uniqueId: 2},
+            {name: '紫外线指数', value: todayData.uvIndex, uniqueId: 1},
+            {name: '相对湿度 （%）', value: todayData.humidity, uniqueId: 2},
             {name: todayData.windDirDay, value: todayData.windScaleDay, uniqueId: 3},
-            {name: "气压 （hPa）", value: todayData.pressure, uniqueId: 4}
-          ]
+            {name: '气压 （hPa）', value: todayData.pressure, uniqueId: 4}
+          ];
 
-          // 更新未来几天天气
-          // 根据当天日期动态调整显示
-          const currentDate = new Date()
-          currentDate.setHours(0, 0, 0, 0) // 设置为当天凌晨
+          // 更新未来几天天气预报
+          // 根据天气数据中的日期动态计算显示名称（今天、明天、后天或星期几）
+          this.dayWeather = weatherData.daily.map((day, index) => {
+            // 解析天气数据中的日期字符串，创建Date对象
+            // 使用本地时间而非UTC时间，避免时区问题
+            const dateParts = day.fxDate.split('-');
+            const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            const dayOfWeek = date.getDay();
 
-          this.dayWeather = weatherData.daily.map((day) => {
-            // 根据日期计算星期几
-            const date = new Date(day.fxDate)
-            date.setHours(0, 0, 0, 0) // 设置为当天凌晨
-            const dayOfWeek = date.getDay()
+            // 计算该日期与当前日期的天数差
+            const timeDiff = date.getTime() - today.getTime();
+            const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-            // 计算与今天的日期差
-            const timeDiff = date.getTime() - currentDate.getTime()
-            const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
+            // 定义星期几的中文表示
+            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
-            // 星期几的中文表示
-            const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
-
-            // 生成显示名称
-            let displayName
+            // 根据天数差确定显示名称
+            let displayName;
             if (dayDiff === 0) {
-              displayName = "今天"
+              displayName = '今天';
+              // 确保今天的数据与当前天气信息完全一致
+              return {
+                name: displayName,
+                tempMinMax: `${todayData.tempMin}°/${todayData.tempMax}°`,
+                iconCode: iconMap[todayData.iconDay] || todayData.iconDay,
+                uniqueId: dayDiff + 1
+              };
             } else if (dayDiff === 1) {
-              displayName = "明天"
+              displayName = '明天';
             } else if (dayDiff === 2) {
-              displayName = "后天"
+              displayName = '后天';
             } else {
-              displayName = weekdays[dayOfWeek]
+              displayName = weekdays[dayOfWeek];
             }
 
+            // 返回格式化后的天气数据
             return {
               name: displayName,
-              tempMinMax: day.tempMin + "°/" + day.tempMax + "°",
+              tempMinMax: `${day.tempMin}°/${day.tempMax}°`,
               iconCode: iconMap[day.iconDay] || day.iconDay,
               uniqueId: dayDiff + 1
-            }
-          })
+            };
+          });
 
           showToast({message: "天气数据已加载", duration: 200})
         } catch (e) {
