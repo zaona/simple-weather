@@ -1,4 +1,8 @@
 # 简明天气
+参照 [该文档](https://iot.mi.com/vela/quickapp) 进行开发
+
+## 感谢
+- [倒数日](https://github.com/sf-yuzifu/daymatter) 项目
 
 ## 快速上手
 
@@ -36,7 +40,3 @@ windows
 ./husky.sh
 ```
 
-
-## 了解更多
-
-你可以通过我们的[官方文档](https://iot.mi.com/vela/quickapp)熟悉和了解快应用。

@@ -91,6 +91,165 @@ export default {
   //   }
   // },
 
+  // 获取天气图标映射表
+  getIconMap() {
+    return {
+      // 晴天
+      100: 11, // 晴
+      101: 1, // 多云
+      102: 1, // 少云
+      103: 1, // 晴间多云
+      104: 2, // 阴
+      150: 11, // 晴
+      151: 1, // 多云
+      152: 1, // 少云
+      153: 1, // 晴间多云
+
+      // 雨
+      300: 5, // 阵雨
+      301: 5, // 强阵雨
+      302: 5, // 雷阵雨
+      303: 5, // 强雷阵雨
+      304: 5, // 雷阵雨伴有冰雹
+      305: 4, // 小雨
+      306: 4, // 中雨
+      307: 4, // 大雨
+      308: 4, // 极端降雨
+      309: 4, // 毛毛雨/细雨
+      310: 4, // 暴雨
+      311: 4, // 大暴雨
+      312: 4, // 特大暴雨
+      313: 4, // 冻雨
+      314: 4, // 小到中雨
+      315: 4, // 中到大雨
+      316: 4, // 大到暴雨
+      317: 4, // 暴雨到大暴雨
+      318: 4, // 大暴雨到特大暴雨
+      350: 5, // 阵雨
+      351: 5, // 强阵雨
+      399: 4, // 雨
+
+      // 雪
+      400: 7, // 小雪
+      401: 7, // 中雪
+      402: 7, // 大雪
+      403: 7, // 暴雪
+      404: 6, // 雨夹雪
+      405: 6, // 雨雪天气
+      406: 6, // 阵雨夹雪
+      407: 7, // 阵雪
+      408: 7, // 小到中雪
+      409: 7, // 中到大雪
+      410: 7, // 大到暴雪
+      456: 6, // 阵雨夹雪
+      457: 7, // 阵雪
+      499: 7, // 雪
+
+      // 雾霾
+      500: 10, // 薄雾
+      501: 3, // 雾
+      502: 10, // 霾
+      503: 8, // 扬沙
+      504: 8, // 浮尘
+      507: 8, // 沙尘暴
+      508: 8, // 强沙尘暴
+      509: 3, // 浓雾
+      510: 3, // 强浓雾
+      511: 10, // 中度霾
+      512: 10, // 重度霾
+      513: 10, // 严重霾
+      514: 3, // 大雾
+      515: 3, // 特强浓雾
+
+      // 风
+      900: 99, // 热
+      901: 99, // 冷
+      999: 99 // 未知
+    }
+  },
+
+  // 格式化时间差显示
+  formatTimeAgo(updateTime) {
+    const now = new Date()
+    const diffMs = now - updateTime
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffMins < 1) {
+      return "刚刚"
+    } else if (diffMins < 60) {
+      return diffMins + "分钟前"
+    } else if (diffHours < 24) {
+      return diffHours + "小时前"
+    } else {
+      return diffDays + "天前"
+    }
+  },
+
+  // 获取今天的日期字符串 (YYYY-MM-DD)
+  getTodayString() {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, "0")
+    const day = String(today.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  },
+
+  // 更新当前天气信息
+  updateCurrentWeather(weatherData, todayData, timeAgo, iconMap) {
+    this.updateTime = timeAgo
+    this.iconCode = iconMap[todayData.iconDay] || todayData.iconDay
+    this.textDay = todayData.textDay
+    this.tempMinMax = `${todayData.tempMin}°/${todayData.tempMax}°`
+  },
+
+  // 更新天气指标面板数据
+  updateWeatherFigures(todayData) {
+    this.figure = [
+      {name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1},
+      {name: "相对湿度 （%）", value: todayData.humidity, uniqueId: 2},
+      {name: todayData.windDirDay, value: todayData.windScaleDay, uniqueId: 3},
+      {name: "气压 （hPa）", value: todayData.pressure, uniqueId: 4}
+    ]
+  },
+
+  // 更新未来几天天气预报
+  updateForecast(weatherData, today, todayData, iconMap) {
+    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+
+    this.dayWeather = weatherData.daily.map((day, index) => {
+      // 解析天气数据中的日期字符串，创建Date对象
+      const dateParts = day.fxDate.split("-")
+      const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
+      const dayOfWeek = date.getDay()
+
+      // 计算该日期与当前日期的天数差
+      const timeDiff = date.getTime() - today.getTime()
+      const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
+
+      // 根据天数差确定显示名称
+      let displayName
+      if (dayDiff === 0) {
+        displayName = "今天"
+      } else if (dayDiff === 1) {
+        displayName = "明天"
+      } else if (dayDiff === 2) {
+        displayName = "后天"
+      } else {
+        displayName = weekdays[dayOfWeek]
+      }
+
+      // 返回格式化后的天气数据
+      return {
+        name: displayName,
+        tempMinMax: `${day.tempMin}°/${day.tempMax}°`,
+        iconCode: iconMap[day.iconDay] || day.iconDay,
+        uniqueId: dayDiff + 1
+      }
+    })
+  },
+
   onInit() {
     // 检查天气数据文件是否存在
     file.readText({
@@ -102,176 +261,33 @@ export default {
 
           // 计算更新时间距离现在的时间差
           const updateTime = new Date(weatherData.updateTime)
-          const now = new Date()
-          const diffMs = now - updateTime
-          const diffMins = Math.floor(diffMs / 60000)
-          const diffHours = Math.floor(diffMins / 60)
-          const diffDays = Math.floor(diffHours / 24)
+          const timeAgo = this.formatTimeAgo(updateTime)
 
-          let timeAgo
-          if (diffMins < 1) {
-            timeAgo = "刚刚"
-          } else if (diffMins < 60) {
-            timeAgo = diffMins + "分钟前"
-          } else if (diffHours < 24) {
-            timeAgo = diffHours + "小时前"
-          } else {
-            timeAgo = diffDays + "天前"
-          }
+          // 获取天气图标映射表
+          const iconMap = this.getIconMap()
 
-          // iconDay到iconCode的转换表
-          const iconMap = {
-            // 晴天
-            100: 11, // 晴
-            101: 1, // 多云
-            102: 1, // 少云
-            103: 1, // 晴间多云
-            104: 2, // 阴
-            150: 11, // 晴
-            151: 1, // 多云
-            152: 1, // 少云
-            153: 1, // 晴间多云
+          // 获取今天的日期字符串
+          const todayStr = this.getTodayString()
+          const today = new Date()
 
-            // 雨
-            300: 5, // 阵雨
-            301: 5, // 强阵雨
-            302: 5, // 雷阵雨
-            303: 5, // 强雷阵雨
-            304: 5, // 雷阵雨伴有冰雹
-            305: 4, // 小雨
-            306: 4, // 中雨
-            307: 4, // 大雨
-            308: 4, // 极端降雨
-            309: 4, // 毛毛雨/细雨
-            310: 4, // 暴雨
-            311: 4, // 大暴雨
-            312: 4, // 特大暴雨
-            313: 4, // 冻雨
-            314: 4, // 小到中雨
-            315: 4, // 中到大雨
-            316: 4, // 大到暴雨
-            317: 4, // 暴雨到大暴雨
-            318: 4, // 大暴雨到特大暴雨
-            350: 5, // 阵雨
-            351: 5, // 强阵雨
-            399: 4, // 雨
-
-            // 雪
-            400: 7, // 小雪
-            401: 7, // 中雪
-            402: 7, // 大雪
-            403: 7, // 暴雪
-            404: 6, // 雨夹雪
-            405: 6, // 雨雪天气
-            406: 6, // 阵雨夹雪
-            407: 7, // 阵雪
-            408: 7, // 小到中雪
-            409: 7, // 中到大雪
-            410: 7, // 大到暴雪
-            456: 6, // 阵雨夹雪
-            457: 7, // 阵雪
-            499: 7, // 雪
-
-            // 雾霾
-            500: 10, // 薄雾
-            501: 3, // 雾
-            502: 10, // 霾
-            503: 8, // 扬沙
-            504: 8, // 浮尘
-            507: 8, // 沙尘暴
-            508: 8, // 强沙尘暴
-            509: 3, // 浓雾
-            510: 3, // 强浓雾
-            511: 10, // 中度霾
-            512: 10, // 重度霾
-            513: 10, // 严重霾
-            514: 3, // 大雾
-            515: 3, // 特强浓雾
-
-            // 风
-            900: 99, // 热
-            901: 99, // 冷
-            999: 99 // 未知
-          }
-
-          // 更新当前天气信息
-          // 获取当前日期并格式化为YYYY-MM-DD格式，用于匹配天气数据
-          const today = new Date();
-          // 使用本地时间而非UTC时间，避免时区问题
-          const year = today.getFullYear();
-          const month = String(today.getMonth() + 1).padStart(2, '0');
-          const day = String(today.getDate()).padStart(2, '0');
-          const todayStr = `${year}-${month}-${day}`;
-          
           // 查找与当前日期匹配的天气数据
-          let todayData = weatherData.daily.find(day => day.fxDate === todayStr);
-          
-          // 如果没有找到匹配的日期数据，则使用第一条数据作为默认值
-          if (!todayData) {
-            todayData = weatherData.daily[0];
-            // 显示提示信息告知用户使用了默认数据
-            showToast({message: '未找到今日天气数据，使用默认数据', duration: 200});
+          let todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
+
+          // 检查是否找到今日天气数据
+          if (todayData) {
+            // 更新页面显示的当前天气信息
+            this.updateCurrentWeather(weatherData, todayData, timeAgo, iconMap)
+
+            // 更新天气指标面板数据
+            this.updateWeatherFigures(todayData)
+
+            // 更新未来几天天气预报
+            this.updateForecast(weatherData, today, todayData, iconMap)
+
+            // showToast({message: "天气数据已加载", duration: 200})
+          } else {
+            showToast({message: "数据已过期", duration: 200})
           }
-
-          // 更新页面显示的当前天气信息
-          this.updateTime = timeAgo;
-          this.iconCode = iconMap[todayData.iconDay] || todayData.iconDay;
-          this.textDay = todayData.textDay;
-          this.tempMinMax = `${todayData.tempMin}°/${todayData.tempMax}°`;
-
-          // 更新天气指标面板数据
-          this.figure = [
-            {name: '紫外线指数', value: todayData.uvIndex, uniqueId: 1},
-            {name: '相对湿度 （%）', value: todayData.humidity, uniqueId: 2},
-            {name: todayData.windDirDay, value: todayData.windScaleDay, uniqueId: 3},
-            {name: '气压 （hPa）', value: todayData.pressure, uniqueId: 4}
-          ];
-
-          // 更新未来几天天气预报
-          // 根据天气数据中的日期动态计算显示名称（今天、明天、后天或星期几）
-          this.dayWeather = weatherData.daily.map((day, index) => {
-            // 解析天气数据中的日期字符串，创建Date对象
-            // 使用本地时间而非UTC时间，避免时区问题
-            const dateParts = day.fxDate.split('-');
-            const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-            const dayOfWeek = date.getDay();
-
-            // 计算该日期与当前日期的天数差
-            const timeDiff = date.getTime() - today.getTime();
-            const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-            // 定义星期几的中文表示
-            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-
-            // 根据天数差确定显示名称
-            let displayName;
-            if (dayDiff === 0) {
-              displayName = '今天';
-              // 确保今天的数据与当前天气信息完全一致
-              return {
-                name: displayName,
-                tempMinMax: `${todayData.tempMin}°/${todayData.tempMax}°`,
-                iconCode: iconMap[todayData.iconDay] || todayData.iconDay,
-                uniqueId: dayDiff + 1
-              };
-            } else if (dayDiff === 1) {
-              displayName = '明天';
-            } else if (dayDiff === 2) {
-              displayName = '后天';
-            } else {
-              displayName = weekdays[dayOfWeek];
-            }
-
-            // 返回格式化后的天气数据
-            return {
-              name: displayName,
-              tempMinMax: `${day.tempMin}°/${day.tempMax}°`,
-              iconCode: iconMap[day.iconDay] || day.iconDay,
-              uniqueId: dayDiff + 1
-            };
-          });
-
-          showToast({message: "天气数据已加载", duration: 200})
         } catch (e) {
           console.error("解析天气数据失败:", e)
           showToast({message: "数据格式错误", duration: 200})
@@ -279,41 +295,39 @@ export default {
       },
       fail: (data, code) => {
         // 文件不存在，提示无天气数据
-        showToast({message: "本地无天气数据", duration: 200})
+        showToast({message: "本地无数据", duration: 200})
       }
     })
   },
 
   onShow() {
     connect.onmessage = (data) => {
-      showToast({message: data.data, duration: 200})
-      // 检查文件是否存在，如果存在则删除
+      // showToast({message: data.data, duration: 200})
       file.readText({
         uri: "internal://files/weather.txt",
         success: function () {
           // 文件存在
-          // 写入空内容来覆盖文件
           file.writeText({
             uri: "internal://files/weather.txt",
             text: data.data,
             success: function () {
-              showToast({message: "天气数据已覆盖", duration: 200})
+              showToast({message: "数据更新，请重启应用", duration: 200})
             },
             fail: function (data, code) {
-              showToast({message: `天气数据覆盖失败${code}`, duration: 200})
+              showToast({message: `数据更新失败${code}`, duration: 200})
             }
           })
         },
         fail: function (code) {
-          // 文件不存在，直接写入
+          // 文件不存在
           file.writeText({
             uri: "internal://files/weather.txt",
             text: data.data,
             success: function () {
-              showToast({message: "天气数据已保存", duration: 200})
+              showToast({message: "数据保存，请重启应用", duration: 200})
             },
             fail: function (data, code) {
-              showToast({message: `天气数据保存失败${code}`, duration: 200})
+              showToast({message: `数据保存失败${code}`, duration: 200})
             }
           })
         }
