@@ -1,14 +1,12 @@
 <template>
   <div class="page" style="padding-bottom: 24px">
-    <text class="page-title">江阴市</text>
-    <text class="page-subtitle">5分钟前更新</text>
+    <text class="page-title">{{ cityName }}</text>
+    <text class="page-subtitle">{{ updateTime }}</text>
 
     <div class="hero-content">
-      <image class="icon-weather" src="/common/weather/weather_1.png" />
-      <text class="temperature">29°</text>
-      <text class="tem-interval">26°/34°</text>
-      <text class="aqi">AQI 29</text>
-      <text class="aqi-desc">优</text>
+      <image class="icon-weather" src="/common/weather/weather_{{ iconCode }}.png" />
+      <text class="temperature">{{ temperature }}</text>
+      <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
 
     <div class="page-list" style="margin-top: 28px">
@@ -25,31 +23,39 @@
         <div style="margin-top: 20px; flex-direction: column" for="{{ item in dayWeather }}">
           <text class="day-weather-title">{{ item.name }}</text>
           <div style="justify-content: space-between">
-            <text class="day-weather-desc">{{ item.value }}</text>
-            <image class="small-weather-icon" src="/common/weather/weather_1.png" />
+            <text class="day-weather-desc">{{ item.tempMinMax }}</text>
+            <image
+              class="small-weather-icon"
+              src="/common/weather/weather_{{ item.iconCode }}.png"
+            />
           </div>
         </div>
       </div>
     </div>
 
-    <div class="hero-content" style="margin-top: 24px">
+    <!-- <div class="hero-content" style="margin-top: 24px">
       <div class="button" onclick="Detail()">
         <text class="button-text">查看更多</text>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
-import router from "@system.router"
+// import router from "@system.router"
 import interconnect from "@system.interconnect"
+import file from "@system.file"
 import {showToast} from "@system.prompt"
 
 const connect = interconnect.instance()
 
 export default {
-  // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
   private: {
+    cityName: "江阴市",
+    updateTime: "5分钟前",
+    iconCode: "0",
+    temperature: "29°",
+    tempMinMax: "26°/34°",
     figure: [
       {name: "紫外线指数", value: "4.0", uniqueId: 1},
       {name: "相对湿度 （%）", value: "82", uniqueId: 2},
@@ -57,18 +63,22 @@ export default {
       {name: "气压 （hPa）", value: "1005", uniqueId: 4}
     ],
     dayWeather: [
-      {name: "今天", value: "25°/34°", uniqueId: 1},
-      {name: "明天", value: "25°/33°", uniqueId: 2},
-      {name: "后天", value: "25°/32°", uniqueId: 3}
+      {name: "今天", tempMinMax: "25°/34°", iconCode: "0", uniqueId: 1},
+      {name: "明天", tempMinMax: "25°/33°", iconCode: "1", uniqueId: 2},
+      {name: "周六", tempMinMax: "25°/32°", iconCode: "2", uniqueId: 3},
+      {name: "周日", tempMinMax: "25°/33°", iconCode: "3", uniqueId: 4},
+      {name: "周一", tempMinMax: "25°/32°", iconCode: "4", uniqueId: 5},
+      {name: "周二", tempMinMax: "25°/32°", iconCode: "7", uniqueId: 6},
+      {name: "周三", tempMinMax: "25°/32°", iconCode: "12", uniqueId: 7}
     ]
   },
 
-  Detail() {
-    // 跳转到应用内的某个页面，当前页面无法返回
-    router.push({
-      uri: "/pages/detail"
-    })
-  },
+  // Detail() {
+  //   // 跳转到应用内的某个页面，当前页面无法返回
+  //   router.push({
+  //     uri: "/pages/detail"
+  //   })
+  // },
 
   // onInit() {
   //   brightness.setKeepScreenOn({
@@ -81,9 +91,27 @@ export default {
   //   }
   // },
 
+  // onInit() {
+    
+  // },
+
+
   onShow() {
     connect.onmessage = (data) => {
       showToast({message: data.data, duration: 200})
+      file.writeText({
+        uri: "internal://files/weather/weather.txt",
+        text: data.data,
+        success: function () {
+          showToast({message: "天气数据已保存", duration: 200})
+          console.log("handling success")
+          showToast({message: "天气数据已保存", duration: 200})
+        },
+        fail: function (data, code) {
+          showToast({message: `天气数据保存失败${code}`, duration: 200})
+          console.log(`handling fail, code = ${code}`)
+        }
+      })
     }
     connect.onerror = (error) => {
       console.error("Connection error:", error)
@@ -114,7 +142,7 @@ export default {
 .icon-weather {
   width: 85px;
   height: 85px;
-  margin-top: 41px;
+  margin-top: 40px;
 }
 
 .hero-content {
@@ -137,12 +165,13 @@ export default {
   padding-left: 10px;
 }
 
-.tem-interval {
+.temp-min-max {
   font-size: 36px;
   font-weight: bold;
   color: rgba(255, 255, 255, 0.8);
   margin-top: -9px;
   padding-left: 6px;
+  margin-bottom: 40px;
 }
 
 .aqi {
