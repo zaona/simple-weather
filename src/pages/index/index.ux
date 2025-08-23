@@ -47,6 +47,7 @@
 import interconnect from "@system.interconnect"
 import file from "@system.file"
 import {showToast} from "@system.prompt"
+// import weather from "./weather.json"
 
 const connect = interconnect.instance()
 
@@ -251,6 +252,18 @@ export default {
   },
 
   onInit() {
+    // 模拟器中模拟数据
+    // file.writeText({
+    //   uri: "internal://files/weather.txt",
+    //   text: JSON.stringify(weather),
+    //   success: function () {
+    //     showToast({message: "模拟数据成功", duration: 200})
+    //   },
+    //   fail: function (data, code) {
+    //     showToast({message: `模拟数据失败${code}`, duration: 200})
+    //   }
+    // })
+
     // 检查天气数据文件是否存在
     file.readText({
       uri: "internal://files/weather.txt",
@@ -258,7 +271,6 @@ export default {
         // 文件存在，解析JSON数据
         try {
           const weatherData = JSON.parse(data.text)
-
           // 计算更新时间距离现在的时间差
           const updateTime = new Date(weatherData.updateTime)
           const timeAgo = this.formatTimeAgo(updateTime)
