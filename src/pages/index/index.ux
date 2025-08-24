@@ -219,40 +219,59 @@ export default {
   updateForecast(weatherData, today, todayData, iconMap) {
     const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
 
-    this.dayWeather = weatherData.daily.map((day, index) => {
-      // 解析天气数据中的日期字符串，创建Date对象
-      const dateParts = day.fxDate.split("-")
-      const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
-      const dayOfWeek = date.getDay()
+    this.dayWeather = weatherData.daily
+      .filter((day) => {
+        // 解析天气数据中的日期字符串，创建Date对象
+        const dateParts = day.fxDate.split("-")
+        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
 
-      // 计算该日期与当前日期的天数差
-      const timeDiff = date.getTime() - today.getTime()
-      const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
+        // 计算该日期与当前日期的天数差
+        const timeDiff = date.getTime() - today.getTime()
+        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
-      // 根据天数差确定显示名称
-      let displayName
-      if (dayDiff === 0) {
-        displayName = "今天"
-      } else if (dayDiff === 1) {
-        displayName = "明天"
-      } else if (dayDiff === 2) {
-        displayName = "后天"
-      } else {
-        displayName = weekdays[dayOfWeek]
-      }
+        // 只显示昨天及以后的日期
+        return dayDiff >= -1
+      })
+      .map((day, index) => {
+        // 解析天气数据中的日期字符串，创建Date对象
+        const dateParts = day.fxDate.split("-")
+        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
+        const dayOfWeek = date.getDay()
 
-      // 返回格式化后的天气数据
-      return {
-        name: displayName,
-        tempMinMax: `${day.tempMin}°/${day.tempMax}°`,
-        iconCode: iconMap[day.iconDay] || day.iconDay,
-        uniqueId: dayDiff + 1
-      }
-    })
+        // 计算该日期与当前日期的天数差
+        const timeDiff = date.getTime() - today.getTime()
+        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
+
+        // 根据天数差确定显示名称
+        let displayName
+        if (dayDiff === -1) {
+          displayName = "昨天"
+        } else if (dayDiff === 0) {
+          displayName = "今天"
+        } else if (dayDiff === 1) {
+          displayName = "明天"
+        } else if (dayDiff === 2) {
+          displayName = "后天"
+        } else if (dayDiff > 7) {
+          // 距离当前日期超过一周的，显示具体日期
+          displayName = `${dateParts[1]}/${dateParts[2]}`
+        } else {
+          displayName = weekdays[dayOfWeek]
+        }
+
+        // 返回格式化后的天气数据
+        return {
+          name: displayName,
+          tempMinMax: `${day.tempMin}°/${day.tempMax}°`,
+          iconCode: iconMap[day.iconDay] || day.iconDay,
+          uniqueId: dayDiff + 1
+        }
+      })
   },
 
   onInit() {
-    // 模拟器中模拟数据
+    // 模拟器中模拟数据，发版时记得注释掉
+
     // file.writeText({
     //   uri: "internal://files/weather.txt",
     //   text: JSON.stringify(weather),
