@@ -1,4 +1,5 @@
 # 简明天气
+![简明天气宣传图](https://cdn.jsdelivr.net/gh/zaona/simple-weather-astrobox-release@main/preview.png?raw=true)
 参照 [该文档](https://iot.mi.com/vela/quickapp) 进行开发
 
 ## 感谢
