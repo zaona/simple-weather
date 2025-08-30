@@ -43,15 +43,6 @@ windows
 
 ## 本地调试和发版注意事项
 - 在打包的时候需要把index目录的json移出src，AIOT默认打包src内容，即使没被引用，所以之前的包里面都包含了未使用的json文件。
-- 返回按钮也放到根目录了，测试的时候如果需要返回按钮需要重新移动回common文件夹，然后取消掉`detail.ux`里的代码注释。
-```html
-<!-- 添加返回按钮,用于模拟器调试，发版的时候注释掉并且删除common下的back.png -->
-    <!-- <img
-        class="btn-back"
-        src="/common/back.png"
-        @click="exit"
-      /> -->
-```
 - `index.ux`的本地测试数据的注释需要在本地调试的时候取消。
 ``` js
     // 模拟器中模拟数据，发版时记得注释掉
