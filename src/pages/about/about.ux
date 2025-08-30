@@ -12,7 +12,7 @@
 import router from "@system.router"
 
 export default {
-  // 左滑返回index页面
+  // 右滑返回index页面
   toHomePage(eve) {
     if (eve.direction === "right") {
       router.back()

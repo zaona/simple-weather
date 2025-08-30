@@ -31,6 +31,7 @@
 import router from "@system.router" // 页面路由
 import file from "@system.file" // 文件操作
 import {showToast} from "@system.prompt" // 提示信息
+import WeatherUtils from "../../common/weather-utils.js"
 
 export default {
   // 接收来自 index 页面的 selectedDate 参数
@@ -94,7 +95,7 @@ export default {
       }
     ],
 
-    // 左滑返回index页面
+    // 右滑返回index页面
     toHomePage(eve) {
       if (eve.direction === "right") {
         router.back()
@@ -102,122 +103,21 @@ export default {
     }
   },
 
-  // 获取天气图标映射表
+  // 获取天气图标映射表 - 使用通用工具类
   getIconMap() {
-    return {
-      // 晴天
-      100: 11, // 晴
-      101: 1, // 多云
-      102: 1, // 少云
-      103: 1, // 晴间多云
-      104: 2, // 阴
-      150: 11, // 晴
-      151: 1, // 多云
-      152: 1, // 少云
-      153: 1, // 晴间多云
-
-      // 雨
-      300: 5, // 阵雨
-      301: 5, // 强阵雨
-      302: 5, // 雷阵雨
-      303: 5, // 强雷阵雨
-      304: 5, // 雷阵雨伴有冰雹
-      305: 4, // 小雨
-      306: 4, // 中雨
-      307: 4, // 大雨
-      308: 4, // 极端降雨
-      309: 4, // 毛毛雨/细雨
-      310: 4, // 暴雨
-      311: 4, // 大暴雨
-      312: 4, // 特大暴雨
-      313: 4, // 冻雨
-      314: 4, // 小到中雨
-      315: 4, // 中到大雨
-      316: 4, // 大到暴雨
-      317: 4, // 暴雨到大暴雨
-      318: 4, // 大暴雨到特大暴雨
-      350: 5, // 阵雨
-      351: 5, // 强阵雨
-      399: 4, // 雨
-
-      // 雪
-      400: 7, // 小雪
-      401: 7, // 中雪
-      402: 7, // 大雪
-      403: 7, // 暴雪
-      404: 6, // 雨夹雪
-      405: 6, // 雨雪天气
-      406: 6, // 阵雨夹雪
-      407: 7, // 阵雪
-      408: 7, // 小到中雪
-      409: 7, // 中到大雪
-      410: 7, // 大到暴雪
-      456: 6, // 阵雨夹雪
-      457: 7, // 阵雪
-      499: 7, // 雪
-
-      // 雾霾
-      500: 10, // 薄雾
-      501: 3, // 雾
-      502: 10, // 霾
-      503: 8, // 扬沙
-      504: 8, // 浮尘
-      507: 8, // 沙尘暴
-      508: 8, // 强沙尘暴
-      509: 3, // 浓雾
-      510: 3, // 强浓雾
-      511: 10, // 中度霾
-      512: 10, // 重度霾
-      513: 10, // 严重霾
-      514: 3, // 大雾
-      515: 3, // 特强浓雾
-
-      // 风
-      900: 99, // 热
-      901: 99, // 冷
-      999: 99 // 未知
-    }
+    return WeatherUtils.WeatherIconMap
   },
 
-  // 根据传入的 selectedData 更新 weatherCategories 中的各项 value
+  // 根据传入的 selectedData 更新 weatherCategories 中的各项 value - 使用通用工具类
   updateWeatherFigures(selectedData) {
-    // 创建一个映射，将 uniqueId 映射到 selectedData 对象中对应的值
-    const valueMap = {
-      // 原有指标
-      1: selectedData.uvIndex || "__", // 紫外线指数
-      2: selectedData.humidity || "__", // 相对湿度
-      3: selectedData.windDirDay || "__", // 白天风向
-      4: selectedData.windScaleDay || "__", // 白天风力等级
-      5: selectedData.pressure || "__", // 大气压强
-      6: selectedData.precip || "__", // 总降水量
-      7: selectedData.vis || "__", // 能见度
-      8: selectedData.cloud || "__", // 云量
-      9: selectedData.sunrise || "__", // 日出时间
-      10: selectedData.sunset || "__", // 日落时间
-
-      // 新增指标
-      11: selectedData.tempMax || "__", // 最高温度
-      12: selectedData.tempMin || "__", // 最低温度
-      13: selectedData.textDay || "__", // 白天天气描述
-      14: selectedData.textNight || "__", // 夜间天气描述
-      15: selectedData.windDirNight || "__", // 夜间风向
-      16: selectedData.windScaleNight || "__", // 夜间风力等级
-      17: selectedData.windSpeedDay || "__", // 白天风速
-      18: selectedData.windSpeedNight || "__", // 夜间风速
-      19: selectedData.wind360Day || "__", // 白天风向角度
-      20: selectedData.wind360Night || "__", // 夜间风向角度
-      21: selectedData.moonrise || "__", // 月升时间
-      22: selectedData.moonset || "__", // 月落时间
-      23: selectedData.moonPhase || "__" // 月相名称
-    }
-
+    const valueMap = WeatherUtils.WeatherDataUtils.getDetailedWeatherFigures(selectedData)
+    
     // 遍历 this.weatherCategories 数组及其 items，根据 uniqueId 更新 value
     this.weatherCategories = this.weatherCategories.map((category) => {
       return {
         items: category.items.map((item) => {
           return {
-            ...item, // 保留 name 和 uniqueId
-            // 使用映射的值，如果没有则保留原值 "__"
+            ...item,
             value: valueMap[item.uniqueId] !== undefined ? valueMap[item.uniqueId] : item.value
           }
         })
@@ -225,13 +125,9 @@ export default {
     })
   },
 
-  // 根据传入的 selectedData 和 iconMap 更新页面顶部的天气概览信息
+  // 根据传入的 selectedData 和 iconMap 更新页面顶部的天气概览信息 - 使用通用工具类
   updateCurrentWeather(selectedData, iconMap) {
-    // Detail 页显示所选日期
-    this.updateTime = `${this.selectedDate} `
-    this.iconCode = iconMap[selectedData.iconDay] || selectedData.iconDay // 获取映射后的图标代码
-    this.textDay = selectedData.textDay // 白天天气描述
-    this.tempMinMax = `${selectedData.tempMin}°/${selectedData.tempMax}°` // 最高/最低温度
+    WeatherUtils.WeatherDataUtils.updateDetailCurrentWeather(this, selectedData)
   },
 
   // 页面初始化函数，处理从index页面传递的日期参数并加载对应天气数据

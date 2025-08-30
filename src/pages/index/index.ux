@@ -55,6 +55,7 @@ import router from "@system.router" // 页面路由
 import file from "@system.file" // 文件操作
 import {showToast} from "@system.prompt" // 提示信息
 import interconnect from "@system.interconnect" // 网络连接
+import WeatherUtils from "../../common/weather-utils.js"
 
 export default {
   // 页面私有数据
@@ -98,171 +99,34 @@ export default {
     })
   },
 
-  // 获取天气图标映射表
+  // 获取天气图标映射表 - 使用通用工具类
   getIconMap() {
-    return {
-      // 晴天
-      100: 11, // 晴
-      101: 1, // 多云
-      102: 1, // 少云
-      103: 1, // 晴间多云
-      104: 2, // 阴
-      150: 11, // 晴
-      151: 1, // 多云
-      152: 1, // 少云
-      153: 1, // 晴间多云
-
-      // 雨
-      300: 5, // 阵雨
-      301: 5, // 强阵雨
-      302: 5, // 雷阵雨
-      303: 5, // 强雷阵雨
-      304: 5, // 雷阵雨伴有冰雹
-      305: 4, // 小雨
-      306: 4, // 中雨
-      307: 4, // 大雨
-      308: 4, // 极端降雨
-      309: 4, // 毛毛雨/细雨
-      310: 4, // 暴雨
-      311: 4, // 大暴雨
-      312: 4, // 特大暴雨
-      313: 4, // 冻雨
-      314: 4, // 小到中雨
-      315: 4, // 中到大雨
-      316: 4, // 大到暴雨
-      317: 4, // 暴雨到大暴雨
-      318: 4, // 大暴雨到特大暴雨
-      350: 5, // 阵雨
-      351: 5, // 强阵雨
-      399: 4, // 雨
-
-      // 雪
-      400: 7, // 小雪
-      401: 7, // 中雪
-      402: 7, // 大雪
-      403: 7, // 暴雪
-      404: 6, // 雨夹雪
-      405: 6, // 雨雪天气
-      406: 6, // 阵雨夹雪
-      407: 7, // 阵雪
-      408: 7, // 小到中雪
-      409: 7, // 中到大雪
-      410: 7, // 大到暴雪
-      456: 6, // 阵雨夹雪
-      457: 7, // 阵雪
-      499: 7, // 雪
-
-      // 雾霾
-      500: 10, // 薄雾
-      501: 3, // 雾
-      502: 10, // 霾
-      503: 8, // 扬沙
-      504: 8, // 浮尘
-      507: 8, // 沙尘暴
-      508: 8, // 强沙尘暴
-      509: 3, // 浓雾
-      510: 3, // 强浓雾
-      511: 10, // 中度霾
-      512: 10, // 重度霾
-      513: 10, // 严重霾
-      514: 3, // 大雾
-      515: 3, // 特强浓雾
-
-      // 风
-      900: 99, // 热
-      901: 99, // 冷
-      999: 99 // 未知
-    }
+    return WeatherUtils.WeatherIconMap
   },
 
-  // 格式化更新时间
+  // 格式化更新时间 - 使用通用工具类
   formatTimeAgo(updateTime) {
-    const now = new Date()
-    const diffMs = now - updateTime
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMins / 60)
-    const diffDays = Math.floor(diffHours / 24)
-
-    if (diffMins < 1) {
-      return "刚刚"
-    } else if (diffMins < 60) {
-      return diffMins + "分钟前"
-    } else if (diffHours < 24) {
-      return diffHours + "小时前"
-    } else {
-      return diffDays + "天前"
-    }
+    return WeatherUtils.DateUtils.formatTimeAgo(updateTime)
   },
 
-  // 获取今天的日期字符串
+  // 获取今天的日期字符串 - 使用通用工具类
   getTodayString() {
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = String(today.getMonth() + 1).padStart(2, "0")
-    const day = String(today.getDate()).padStart(2, "0")
-    return `${year}-${month}-${day}`
+    return WeatherUtils.DateUtils.getTodayString()
   },
 
-  // 更新当前天气信息
+  // 更新当前天气信息 - 使用通用工具类
   updateCurrentWeather(weatherData, todayData, timeAgo, iconMap) {
-    this.updateTime = timeAgo
-    this.iconCode = iconMap[todayData.iconDay] || todayData.iconDay
-    this.textDay = todayData.textDay
-    this.tempMinMax = `${todayData.tempMin}°/${todayData.tempMax}°`
+    WeatherUtils.WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
   },
 
-  // 更新天气指标
+  // 更新天气指标 - 使用通用工具类
   updateWeatherFigures(todayData) {
-    this.figure = [
-      {name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1},
-      {name: "相对湿度 （%）", value: todayData.humidity, uniqueId: 2},
-      {name: todayData.windDirDay, value: todayData.windScaleDay, uniqueId: 3},
-      {name: "气压 （hPa）", value: todayData.pressure, uniqueId: 4}
-    ]
+    this.figure = WeatherUtils.WeatherDataUtils.getBasicWeatherFigures(todayData)
   },
 
-  // 更新天气预报
+  // 更新天气预报 - 使用通用工具类
   updateForecast(weatherData, today, todayData, iconMap) {
-    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
-
-    this.dayWeather = weatherData.daily
-      .filter((day) => {
-        const dateParts = day.fxDate.split("-")
-        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
-        const timeDiff = date.getTime() - today.getTime()
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
-        return dayDiff >= -1
-      })
-      .map((day) => {
-        const dateParts = day.fxDate.split("-")
-        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
-        const dayOfWeek = date.getDay()
-        const timeDiff = date.getTime() - today.getTime()
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
-
-        let displayName
-        if (dayDiff === -1) {
-          displayName = "昨天"
-        } else if (dayDiff === 0) {
-          displayName = "今天"
-        } else if (dayDiff === 1) {
-          displayName = "明天"
-        } else if (dayDiff === 2) {
-          displayName = "后天"
-        } else if (dayDiff > 7) {
-          displayName = `${dateParts[1]}/${dateParts[2]}`
-        } else {
-          displayName = weekdays[dayOfWeek]
-        }
-
-        return {
-          fxDate: day.fxDate,
-          name: displayName,
-          tempMinMax: `${day.tempMin}°/${day.tempMax}°`,
-          iconCode: iconMap[day.iconDay] || day.iconDay,
-          uniqueId: dayDiff + 1
-        }
-      })
+    this.dayWeather = WeatherUtils.WeatherDataUtils.processForecastData(weatherData)
   },
 
   // 页面初始化
