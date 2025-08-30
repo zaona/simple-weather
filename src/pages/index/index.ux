@@ -1,8 +1,9 @@
 <template>
   <div class="page" style="padding-bottom: 24px">
-    <!-- <text class="page-title">{{ cityName }}</text> -->
+    <div class="header">
+      <text class="location">{{ location }}</text> 
     <text class="page-subtitle">{{ updateTime }}</text>
-
+    </div>
     <div class="hero-content">
       <image class="icon-weather" src="/common/weather/weather_{{ iconCode }}.png" />
       <!-- <text class="temperature">{{ temperature }}</text> -->
@@ -21,7 +22,7 @@
 
     <div class="page-list" style="margin-top: 12px">
       <div style="margin-top: -8px; flex-direction: column">
-        <div style="margin-top: 20px; flex-direction: column" for="{{ item in dayWeather }}">
+        <div class="day-weather-item" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
           <text class="day-weather-title">{{ item.name }}</text>
           <div style="justify-content: space-between">
             <text class="day-weather-desc">{{ item.tempMinMax }}</text>
@@ -43,16 +44,15 @@
 </template>
 
 <script>
-// import router from "@system.router"
-import interconnect from "@system.interconnect"
+import router from "@system.router"
 import file from "@system.file"
 import {showToast} from "@system.prompt"
 // import weather from "./weather.json"
-
-const connect = interconnect.instance()
+import interconnect from "@system.interconnect" // 引入 interconnect
 
 export default {
   private: {
+    location: "__",
     updateTime: "__",
     iconCode: "__",
     textDay: "__",
@@ -74,23 +74,19 @@ export default {
     ]
   },
 
-  // Detail() {
-  //   // 跳转到应用内的某个页面，当前页面无法返回
-  //   router.push({
-  //     uri: "/pages/detail"
-  //   })
-  // },
-
-  // onInit() {
-  //   brightness.setKeepScreenOn({
-  //     keepScreenOn: true
-  //   })
-  //   let conn = interconnect.instance()
-  //   conn.onmessage = async (data) => {
-  //     console.log("Received message:", data)
-  //     showToast({message: data, duration: 200})
-  //   }
-  // },
+  DetailInfo(selectedItem) {
+    if (selectedItem && selectedItem.fxDate) {
+      router.push({
+        uri: "/pages/detail",
+        params: {
+          selectedDate: selectedItem.fxDate
+        }
+      });
+    } else {
+      console.warn('DetailInfo: selectedItem or fxDate is missing');
+      showToast({ message: "无法跳转到详情页", duration: 2000 });
+    }
+  },
 
   // 获取天气图标映射表
   getIconMap() {
@@ -169,7 +165,6 @@ export default {
     }
   },
 
-  // 格式化时间差显示
   formatTimeAgo(updateTime) {
     const now = new Date()
     const diffMs = now - updateTime
@@ -188,7 +183,6 @@ export default {
     }
   },
 
-  // 获取今天的日期字符串 (YYYY-MM-DD)
   getTodayString() {
     const today = new Date()
     const year = today.getFullYear()
@@ -197,7 +191,6 @@ export default {
     return `${year}-${month}-${day}`
   },
 
-  // 更新当前天气信息
   updateCurrentWeather(weatherData, todayData, timeAgo, iconMap) {
     this.updateTime = timeAgo
     this.iconCode = iconMap[todayData.iconDay] || todayData.iconDay
@@ -205,7 +198,6 @@ export default {
     this.tempMinMax = `${todayData.tempMin}°/${todayData.tempMax}°`
   },
 
-  // 更新天气指标面板数据
   updateWeatherFigures(todayData) {
     this.figure = [
       {name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1},
@@ -215,58 +207,47 @@ export default {
     ]
   },
 
-  // 更新未来几天天气预报
   updateForecast(weatherData, today, todayData, iconMap) {
-    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
     this.dayWeather = weatherData.daily
       .filter((day) => {
-        // 解析天气数据中的日期字符串，创建Date对象
-        const dateParts = day.fxDate.split("-")
-        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
-
-        // 计算该日期与当前日期的天数差
-        const timeDiff = date.getTime() - today.getTime()
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
-
-        // 只显示昨天及以后的日期
-        return dayDiff >= -1
+        const dateParts = day.fxDate.split("-");
+        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+        const timeDiff = date.getTime() - today.getTime();
+        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        return dayDiff >= -1;
       })
-      .map((day, index) => {
-        // 解析天气数据中的日期字符串，创建Date对象
-        const dateParts = day.fxDate.split("-")
-        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
-        const dayOfWeek = date.getDay()
+      .map((day) => {
+        const dateParts = day.fxDate.split("-");
+        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+        const dayOfWeek = date.getDay();
+        const timeDiff = date.getTime() - today.getTime();
+        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-        // 计算该日期与当前日期的天数差
-        const timeDiff = date.getTime() - today.getTime()
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
-
-        // 根据天数差确定显示名称
-        let displayName
+        let displayName;
         if (dayDiff === -1) {
-          displayName = "昨天"
+          displayName = "昨天";
         } else if (dayDiff === 0) {
-          displayName = "今天"
+          displayName = "今天";
         } else if (dayDiff === 1) {
-          displayName = "明天"
+          displayName = "明天";
         } else if (dayDiff === 2) {
-          displayName = "后天"
+          displayName = "后天";
         } else if (dayDiff > 7) {
-          // 距离当前日期超过一周的，显示具体日期
-          displayName = `${dateParts[1]}/${dateParts[2]}`
+          displayName = `${dateParts[1]}/${dateParts[2]}`;
         } else {
-          displayName = weekdays[dayOfWeek]
+          displayName = weekdays[dayOfWeek];
         }
 
-        // 返回格式化后的天气数据
         return {
+          fxDate: day.fxDate,
           name: displayName,
           tempMinMax: `${day.tempMin}°/${day.tempMax}°`,
           iconCode: iconMap[day.iconDay] || day.iconDay,
           uniqueId: dayDiff + 1
-        }
-      })
+        };
+      });
   },
 
   onInit() {
@@ -287,35 +268,20 @@ export default {
     file.readText({
       uri: "internal://files/weather.txt",
       success: (data) => {
-        // 文件存在，解析JSON数据
         try {
           const weatherData = JSON.parse(data.text)
-          // 计算更新时间距离现在的时间差
           const updateTime = new Date(weatherData.updateTime)
           const timeAgo = this.formatTimeAgo(updateTime)
-
-          // 获取天气图标映射表
           const iconMap = this.getIconMap()
-
-          // 获取今天的日期字符串
           const todayStr = this.getTodayString()
           const today = new Date()
-
-          // 查找与当前日期匹配的天气数据
           let todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
 
-          // 检查是否找到今日天气数据
           if (todayData) {
-            // 更新页面显示的当前天气信息
             this.updateCurrentWeather(weatherData, todayData, timeAgo, iconMap)
-
-            // 更新天气指标面板数据
+            this.location = weatherData.location || "未知地点";
             this.updateWeatherFigures(todayData)
-
-            // 更新未来几天天气预报
             this.updateForecast(weatherData, today, todayData, iconMap)
-
-            // showToast({message: "天气数据已加载", duration: 200})
           } else {
             showToast({message: "数据已过期", duration: 200})
           }
@@ -325,19 +291,19 @@ export default {
         }
       },
       fail: (data, code) => {
-        // 文件不存在，提示无天气数据
         showToast({message: "本地无数据", duration: 200})
       }
     })
   },
 
   onShow() {
+    // 创建本地 interconnect 实例
+    const connect = interconnect.instance()
+
     connect.onmessage = (data) => {
-      // showToast({message: data.data, duration: 200})
       file.readText({
         uri: "internal://files/weather.txt",
         success: function () {
-          // 文件存在
           file.writeText({
             uri: "internal://files/weather.txt",
             text: data.data,
@@ -350,7 +316,6 @@ export default {
           })
         },
         fail: function (code) {
-          // 文件不存在
           file.writeText({
             uri: "internal://files/weather.txt",
             text: data.data,
@@ -364,25 +329,34 @@ export default {
         }
       })
     }
+
     connect.onerror = (error) => {
       console.error("Connection error:", error)
     }
+
     connect.onclose = () => {
       console.log("Connection closed")
-      // 尝试重新连接
       setTimeout(() => {
         connect.open()
       }, 5000)
     }
+
     connect.open()
+    
+    // 存储 connect 实例，以便 onHide/onDestroy 调用 close()
+    this._connectInstance = connect
   },
 
   onHide() {
-    connect.close()
+    if (this._connectInstance && typeof this._connectInstance.close === "function") {
+      this._connectInstance.close()
+    }
   },
 
   onDestroy() {
-    connect.close()
+    if (this._connectInstance && typeof this._connectInstance.close === "function") {
+      this._connectInstance.close()
+    }
   }
 }
 </script>
@@ -454,7 +428,10 @@ export default {
   font-weight: bold;
   margin-left: -1px;
 }
-
+.day-weather-item {
+  margin-top: 16px;
+  flex-direction: column;
+}
 .day-weather-title {
   font-size: 28px;
   color: rgba(255, 255, 255, 0.8);

@@ -1,44 +1,285 @@
 <template>
-  <div class="page" style="padding-bottom: 24px" @swipe="toHomePage">
-    <text class="page-title">未来天气</text>
-    <!-- <text class="page-subtitle">5分钟前更新</text> -->
+  <div class="page" style="padding-bottom: 24px">
+    <!-- 添加返回按钮,用于模拟器调试，发版的时候注释掉并且删除common下的back.png -->
+    <!-- <img
+        class="btn-back"
+        src="/common/back.png"
+        @click="exit"
+      /> -->
+    <div class="header">
+      <text class="location">{{ location }}</text>
+      <!-- 显示选中的日期或加载状态 -->
+      <text class="page-subtitle">{{ updateTime }}</text>
+    </div>
+    <div class="hero-content">
+      <!-- 根据选中日期数据显示 -->
+      <image class="icon-weather" src="/common/weather/weather_{{ iconCode }}.png" />
+      <text class="text-weather">{{ textDay }}</text>
+      <text class="temp-min-max">{{ tempMinMax }}</text>
+    </div>
 
-    <div class="page-list" style="margin-top: 24px">
-      <div style="margin-top: -8px; flex-direction: column">
-        <div style="margin-top: 20px; flex-direction: column" for="{{ item in dayWeather }}">
-          <text class="day-weather-title">{{ item.name }}</text>
-          <div style="justify-content: space-between">
-            <text class="day-weather-desc">{{ item.value }}</text>
-            <image class="small-weather-icon" src="/common/weather/weather_1.png" />
-          </div>
+    <!-- 根据选中日期数据显示指标 -->
+    <!-- 保留并使用按类别组织的详细天气数据 -->
+    <div class="page-list" style="margin-top: 12px" for="{{ category in weatherCategories }}">
+      <div style="margin-top: -2px; flex-direction: column">
+        <div style="margin-top: 14px; flex-direction: column" for="{{ item in category.items }}">
+          <text class="figure-desc">{{ item.value }}</text>
+          <text class="figure-title">{{ item.name }}</text>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
-import router from "@system.router"
+// 导入所需模块
+import router from "@system.router"; // 引入 router 模块，用于页面跳转和返回
+import file from "@system.file";     // 引入 file 模块，用于读取本地文件
+import { showToast } from "@system.prompt"; // 引入 prompt 模块，用于显示 Toast 消息
 
 export default {
-  private: {
-    dayWeather: [
-      {name: "今天", value: "25°/34°", uniqueId: 1},
-      {name: "明天", value: "25°/33°", uniqueId: 2},
-      {name: "后天", value: "25°/32°", uniqueId: 3}
-    ]
+  // 接收来自 index 页面的 selectedDate 参数
+  protected: {
+    selectedDate: '' // 接收字符串格式的日期，例如 "2025-08-30"
   },
-  // 左滑返回index页面
-  toHomePage(eve) {
-    if (eve.direction === "right") {
-      router.back();
+  // --- ---
+  private: {
+    location: "__",
+    updateTime: "__", // 初始化提示信息，显示在页面顶部
+    iconCode: "__",             // 天气图标代码
+    textDay: "__",              // 白天天气描述
+    tempMinMax: "__°/__°",      // 最高/最低温度
+    // 按类别组织的天气指标数据，用于在页面上循环渲染
+    weatherCategories: [
+      {
+        // 基础气象指标
+        items: [
+          { name: "紫外线指数", value: "__", uniqueId: 1 },
+          { name: "相对湿度 (%)", value: "__", uniqueId: 2 },
+          { name: "大气压强 (hPa)", value: "__", uniqueId: 5 },
+          { name: "能见度 (km)", value: "__", uniqueId: 7 },
+          { name: "云量 (%)", value: "__", uniqueId: 8 }
+        ]
+      },
+      {
+        // 温度指标
+        items: [
+          { name: "最高温度 (°C)", value: "__", uniqueId: 11 },
+          { name: "最低温度 (°C)", value: "__", uniqueId: 12 }
+        ]
+      },
+      {
+        // 降水指标
+        items: [
+          { name: "总降水量 (mm)", value: "__", uniqueId: 6 }
+        ]
+      },
+      {
+        // 日间天气
+        items: [
+          { name: "白天天气描述", value: "__", uniqueId: 13 },
+          { name: "白天风向", value: "__", uniqueId: 3 },
+          { name: "白天风力等级", value: "__", uniqueId: 4 },
+          { name: "白天风速 (km/h)", value: "__", uniqueId: 17 },
+          { name: "白天风向角度", value: "__", uniqueId: 19 }
+        ]
+      },
+      {
+        // 夜间天气
+        items: [
+          { name: "夜间天气描述", value: "__", uniqueId: 14 },
+          { name: "夜间风向", value: "__", uniqueId: 15 },
+          { name: "夜间风力等级", value: "__", uniqueId: 16 },
+          { name: "夜间风速 (km/h)", value: "__", uniqueId: 18 },
+          { name: "夜间风向角度", value: "__", uniqueId: 20 }
+        ]
+      },
+      {
+        // 天文时间
+        items: [
+          { name: "日出时间", value: "__", uniqueId: 9 },
+          { name: "日落时间", value: "__", uniqueId: 10 },
+          { name: "月升时间", value: "__", uniqueId: 21 },
+          { name: "月落时间", value: "__", uniqueId: 22 },
+          { name: "月相名称", value: "__", uniqueId: 23 }
+        ]
+      }
+    ],
+    // ---
+    // --- 退出函数 ---
+    // 定义退出函数，用于返回上一页
+    exit() {
+      router.back(); // 使用 router.back() 返回上一页
     }
+    // ---
+  },
+
+  // --- 复用 index 页面的工具函数 ---
+  // 获取天气图标映射表，将和风天气的图标代码映射到本地资源
+  getIconMap() {
+    return {
+      // 晴天
+      100: 11, 101: 1, 102: 1, 103: 1, 104: 2, 150: 11, 151: 1, 152: 1, 153: 1,
+      // 雨
+      300: 5, 301: 5, 302: 5, 303: 5, 304: 5, 305: 4, 306: 4, 307: 4, 308: 4, 309: 4,
+      310: 4, 311: 4, 312: 4, 313: 4, 314: 4, 315: 4, 316: 4, 317: 4, 318: 4, 350: 5, 351: 5, 399: 4,
+      // 雪
+      400: 7, 401: 7, 402: 7, 403: 7, 404: 6, 405: 6, 406: 6, 407: 7, 408: 7, 409: 7,
+      410: 7, 456: 6, 457: 7, 499: 7,
+      // 雾霾
+      500: 10, 501: 3, 502: 10, 503: 8, 504: 8, 507: 8, 508: 8, 509: 3, 510: 3,
+      511: 10, 512: 10, 513: 10, 514: 3, 515: 3,
+      // 风
+      900: 99, 901: 99, 999: 99
+    };
+  },
+
+  // --- 修改 updateWeatherFigures 方法以填充更完整的数据 (使用 selectedData) ---
+  // 根据传入的 selectedData (某一天的天气数据) 更新 weatherCategories 中的各项 value
+  updateWeatherFigures(selectedData) {
+     // 创建一个映射，将 uniqueId 映射到 selectedData 对象中对应的值
+     const valueMap = {
+       // 原有指标
+       1: selectedData.uvIndex || "__",        // 紫外线指数
+       2: selectedData.humidity || "__",       // 相对湿度
+       3: selectedData.windDirDay || "__",     // 白天风向
+       4: selectedData.windScaleDay || "__",   // 白天风力等级
+       5: selectedData.pressure || "__",       // 大气压强
+       6: selectedData.precip || "__",         // 总降水量
+       7: selectedData.vis || "__",            // 能见度
+       8: selectedData.cloud || "__",          // 云量
+       9: selectedData.sunrise || "__",        // 日出时间
+       10: selectedData.sunset || "__",        // 日落时间
+
+       // 新增指标
+       11: selectedData.tempMax || "__",       // 最高温度
+       12: selectedData.tempMin || "__",       // 最低温度
+       13: selectedData.textDay || "__",       // 白天天气描述
+       14: selectedData.textNight || "__",     // 夜间天气描述
+       15: selectedData.windDirNight || "__",  // 夜间风向
+       16: selectedData.windScaleNight || "__",// 夜间风力等级
+       17: selectedData.windSpeedDay || "__",  // 白天风速
+       18: selectedData.windSpeedNight || "__",// 夜间风速
+       19: selectedData.wind360Day || "__",    // 白天风向角度
+       20: selectedData.wind360Night || "__",  // 夜间风向角度
+       21: selectedData.moonrise || "__",      // 月升时间
+       22: selectedData.moonset || "__",       // 月落时间
+       23: selectedData.moonPhase || "__"      // 月相名称
+     };
+
+     // 遍历 this.weatherCategories 数组及其 items，根据 uniqueId 更新 value
+     this.weatherCategories = this.weatherCategories.map(category => {
+       return {
+         items: category.items.map(item => {
+           return {
+             ...item, // 保留 name 和 uniqueId
+             // 使用映射的值，如果没有则保留原值 "__"
+             value: valueMap[item.uniqueId] !== undefined ? valueMap[item.uniqueId] : item.value
+           };
+         })
+       };
+     });
+  },
+  // ---
+
+  // 更新当前天气信息 (用于 detail 页，使用 selectedData)
+  // 根据传入的 selectedData 和 iconMap 更新页面顶部的天气概览信息
+  updateCurrentWeather(selectedData, iconMap) {
+    // Detail 页显示所选日期
+    this.updateTime = `${this.selectedDate} `;
+    this.iconCode = iconMap[selectedData.iconDay] || selectedData.iconDay; // 获取映射后的图标代码
+    this.textDay = selectedData.textDay;                                   // 白天天气描述
+    this.tempMinMax = `${selectedData.tempMin}°/${selectedData.tempMax}°`; // 最高/最低温度
+  },
+
+  // 页面初始化生命周期函数
+  onInit() {
+    // --- 关键逻辑：在页面初始化时处理接收到的参数 ---
+    console.log('Detail page onInit, received selectedDate:', this.selectedDate);
+
+    // 1. 检查是否接收到了日期参数
+    if (!this.selectedDate) {
+      console.warn('Detail page: No selectedDate parameter received.');
+      this.updateTime = "未指定日期"; // 更新提示信息
+      return; // 如果没有接收到日期，直接返回，不进行后续操作
+    }
+
+    // 2. 显示正在加载
+    // this.updateTime = `正在加载 ${this.selectedDate} 数据`;
+
+    // 3. 读取本地天气数据文件
+    file.readText({
+      uri: "internal://files/weather.txt", // 指定文件路径
+      // 文件读取成功的回调函数
+      success: (data) => {
+        try {
+          // 4. 解析 JSON 数据
+          const weatherData = JSON.parse(data.text);
+
+          // 5. 根据 selectedDate 查找对应的数据
+          // 注意：这里直接使用字符串比较，因为 selectedDate 是字符串，fxDate 也是字符串
+          let selectedData = weatherData.daily.find((day) => day.fxDate === this.selectedDate);
+
+          if (selectedData) {
+            console.log(`Detail page: Found data for ${this.selectedDate}`);
+            // 6. 如果找到了数据，更新页面显示
+            const iconMap = this.getIconMap(); // 获取图标映射表
+            // 更新页面显示的地点
+            this.location = weatherData.location || "未知地点";
+
+
+            // 更新顶部天气概览
+            this.updateCurrentWeather(selectedData, iconMap);
+
+            // 更新天气指标面板 (使用 selectedData)
+            this.updateWeatherFigures(selectedData);
+
+          } else {
+            // 7. 如果没有找到对应日期的数据
+            console.warn(`Detail page: Data for date ${this.selectedDate} not found in local file.`);
+            this.updateTime = `${this.selectedDate} 数据未找到`;
+            this.iconCode = "__";
+            this.textDay = "数据缺失";
+            this.tempMinMax = "__°/__°";
+            // 清空 weatherCategories 的值，显示 "__"
+            this.weatherCategories = this.weatherCategories.map(cat => ({
+              items: cat.items.map(item => ({ ...item, value: "__" }))
+            }));
+          }
+        } catch (e) {
+          // 8. JSON 解析失败
+          console.error("Detail page: Failed to parse weather data:", e);
+          this.updateTime = "数据解析错误";
+          showToast({ message: "数据格式错误", duration: 2000 }); // 显示错误提示
+        }
+      },
+      // 文件读取失败的回调函数
+      fail: (data, code) => {
+        // 9. 文件读取失败
+        console.error("Detail page: Failed to read local weather data file", code, data);
+        // this.updateTime = "数据加载失败";
+        showToast({ message: "无法读取天气数据", duration: 2000 }); // 显示错误提示
+      }
+    });
+    // --- ---
   }
-}
+};
 </script>
 
 <style>
 @import "../../common/style.css";
+
+.icon-weather {
+  width: 85px;
+  height: 85px;
+  margin-top: 40px;
+}
+
+.hero-content {
+  flex-direction: column;
+  align-items: center;
+}
 
 .page-list {
   flex-direction: column;
@@ -46,6 +287,57 @@ export default {
   color: #ffffff;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
+}
+
+.temperature {
+  font-size: 64px;
+  font-weight: bold;
+  margin-top: 0px;
+  padding-left: 10px;
+}
+
+.text-weather {
+  font-size: 36px;
+  font-weight: bold;
+  margin-top: 0px;
+}
+
+.temp-min-max {
+  font-size: 36px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 8px;
+  padding-left: 6px;
+  margin-bottom: 40px;
+}
+
+.aqi {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 66px;
+}
+
+.aqi-desc {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
+.figure-title {
+  font-size: 24px;
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.figure-desc {
+  font-size: 39px;
+  font-weight: bold;
+  margin-left: -1px;
+}
+
+.day-weather-item {
+  margin-top: 16px;
+  flex-direction: column;
 }
 
 .day-weather-title {
@@ -61,5 +353,4 @@ export default {
   width: 48px;
   height: 48px;
 }
-
 </style>
