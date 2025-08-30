@@ -1,12 +1,11 @@
 <template>
-  <div class="page" style="padding-bottom: 24px">
+  <div class="page">
     <div class="header">
-      <text class="location">{{ location }}</text> 
-    <text class="page-subtitle">{{ updateTime }}</text>
+      <text class="page-title">{{ location }}</text>
+      <text class="page-subtitle">{{ updateTime }}</text>
     </div>
     <div class="hero-content">
       <image class="icon-weather" src="/common/weather/weather_{{ iconCode }}.png" />
-      <!-- <text class="temperature">{{ temperature }}</text> -->
       <text class="text-weather">{{ textDay }}</text>
       <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
@@ -35,11 +34,11 @@
       </div>
     </div>
 
-    <!-- <div class="hero-content" style="margin-top: 24px">
-      <div class="button" onclick="Detail()">
-        <text class="button-text">查看更多</text>
+    <div class="hero-content" style="margin-top: 24px">
+      <div class="button" onclick="About()">
+        <text class="button-text">关于</text>
       </div>
-    </div> -->
+    </div>
   </div>
 </template>
 
@@ -64,9 +63,9 @@ export default {
       {name: "气压 （hPa）", value: "__", uniqueId: 4}
     ],
     dayWeather: [
-      {name: "今天", tempMinMax: "__", iconCode: "__", uniqueId: 1},
-      {name: "明天", tempMinMax: "__", iconCode: "__", uniqueId: 2},
-      {name: "后天", tempMinMax: "__", iconCode: "__", uniqueId: 3},
+      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1},
+      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 2},
+      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 3},
       {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 4},
       {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 5},
       {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 6},
@@ -81,11 +80,17 @@ export default {
         params: {
           selectedDate: selectedItem.fxDate
         }
-      });
+      })
     } else {
-      console.warn('DetailInfo: selectedItem or fxDate is missing');
-      showToast({ message: "无法跳转到详情页", duration: 2000 });
+      console.warn("DetailInfo: selectedItem or fxDate is missing")
+      showToast({message: "无法跳转到详情页", duration: 2000})
     }
+  },
+
+  About() {
+    router.push({
+      uri: "/pages/about"
+    })
   },
 
   // 获取天气图标映射表
@@ -208,36 +213,36 @@ export default {
   },
 
   updateForecast(weatherData, today, todayData, iconMap) {
-    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
 
     this.dayWeather = weatherData.daily
       .filter((day) => {
-        const dateParts = day.fxDate.split("-");
-        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-        const timeDiff = date.getTime() - today.getTime();
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        return dayDiff >= -1;
+        const dateParts = day.fxDate.split("-")
+        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
+        const timeDiff = date.getTime() - today.getTime()
+        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
+        return dayDiff >= -1
       })
       .map((day) => {
-        const dateParts = day.fxDate.split("-");
-        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-        const dayOfWeek = date.getDay();
-        const timeDiff = date.getTime() - today.getTime();
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        const dateParts = day.fxDate.split("-")
+        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
+        const dayOfWeek = date.getDay()
+        const timeDiff = date.getTime() - today.getTime()
+        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
-        let displayName;
+        let displayName
         if (dayDiff === -1) {
-          displayName = "昨天";
+          displayName = "昨天"
         } else if (dayDiff === 0) {
-          displayName = "今天";
+          displayName = "今天"
         } else if (dayDiff === 1) {
-          displayName = "明天";
+          displayName = "明天"
         } else if (dayDiff === 2) {
-          displayName = "后天";
+          displayName = "后天"
         } else if (dayDiff > 7) {
-          displayName = `${dateParts[1]}/${dateParts[2]}`;
+          displayName = `${dateParts[1]}/${dateParts[2]}`
         } else {
-          displayName = weekdays[dayOfWeek];
+          displayName = weekdays[dayOfWeek]
         }
 
         return {
@@ -246,8 +251,8 @@ export default {
           tempMinMax: `${day.tempMin}°/${day.tempMax}°`,
           iconCode: iconMap[day.iconDay] || day.iconDay,
           uniqueId: dayDiff + 1
-        };
-      });
+        }
+      })
   },
 
   onInit() {
@@ -279,7 +284,7 @@ export default {
 
           if (todayData) {
             this.updateCurrentWeather(weatherData, todayData, timeAgo, iconMap)
-            this.location = weatherData.location || "未知地点";
+            this.location = weatherData.location || "未知地点"
             this.updateWeatherFigures(todayData)
             this.updateForecast(weatherData, today, todayData, iconMap)
           } else {
@@ -342,7 +347,7 @@ export default {
     }
 
     connect.open()
-    
+
     // 存储 connect 实例，以便 onHide/onDestroy 调用 close()
     this._connectInstance = connect
   },
@@ -381,13 +386,6 @@ export default {
   color: #ffffff;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-}
-
-.temperature {
-  font-size: 64px;
-  font-weight: bold;
-  margin-top: 0px;
-  padding-left: 10px;
 }
 
 .text-weather {

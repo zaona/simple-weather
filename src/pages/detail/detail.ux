@@ -1,7 +1,7 @@
 <template>
-  <div class="page" style="padding-bottom: 24px" @swipe="toHomePage">
+  <div class="page" @swipe="toHomePage">
     <div class="header">
-      <text class="location">{{ location }}</text>
+      <text class="page-title">{{ location }}</text>
       <!-- 显示选中的日期或加载状态 -->
       <text class="page-subtitle">{{ updateTime }}</text>
     </div>
@@ -98,7 +98,6 @@ export default {
       }
     ],
     // ---
-    // --- 退出函数 ---
     // 左滑返回index页面
     toHomePage(eve) {
       if (eve.direction === "right") {

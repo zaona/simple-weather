@@ -2,25 +2,27 @@
     flex-direction: column;
     color: #ffffff;
     align-items: center;
+    padding-top: 24px;
+    padding-bottom: 24px;
 }
+
 .header {
     flex-direction: column;
     width: 100%;
-    text-align: center;
+    align-items: center;
 }
-.location{
+
+.page-title {
     font-size: 24px;
-    text-align: center;
-    margin-top: 32px;
     font-weight: bold;
 }
 
 .page-subtitle {
     font-size: 22px;
-    text-align: center;
     margin-top: 5px;
     color: rgba(255, 255, 255, 0.8);
 }
-.page-list{
+
+.page-list {
     width: 98%;
 }

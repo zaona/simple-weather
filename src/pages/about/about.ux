@@ -1,0 +1,26 @@
+<template>
+  <div class="page" @swipe="toHomePage">
+    <div class="header">
+      <text class="page-title">关于</text>
+      <text class="page-subtitle">简明天气</text>
+    </div>
+    <div class="hero-content"></div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+
+export default {
+  // 左滑返回index页面
+  toHomePage(eve) {
+    if (eve.direction === "right") {
+      router.back()
+    }
+  }
+}
+</script>
+
+<style>
+@import "../../common/style.css";
+</style>

@@ -37,6 +37,9 @@
       },
       "pages/detail": {
         "component": "detail"
+      },
+      "pages/about": {
+        "component": "about"
       }
     }
   }
