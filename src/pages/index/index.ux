@@ -5,8 +5,8 @@
       <text class="page-subtitle">{{ updateTime }}</text>
     </div>
     <div class="hero-content">
-      <image class="icon-weather" src="/common/weather/weather_{{ iconCode }}.png" />
-      <text class="text-weather">{{ textDay }}</text>
+      <image class="weather-icon" src="/common/weather/weather_{{ iconCode }}.png" />
+      <text class="weather-text">{{ textDay }}</text>
       <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
 
@@ -34,11 +34,11 @@
       </div>
     </div>
 
-    <div class="hero-content" style="margin-top: 24px">
+    <!-- <div class="hero-content" style="margin-top: 24px">
       <div class="button" onclick="About()">
         <text class="button-text">关于</text>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -64,12 +64,6 @@ export default {
     ],
     dayWeather: [
       {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1},
-      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 2},
-      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 3},
-      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 4},
-      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 5},
-      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 6},
-      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 7}
     ]
   },
 
@@ -369,67 +363,11 @@ export default {
 <style>
 @import "../../common/style.css";
 
-.icon-weather {
-  width: 85px;
-  height: 85px;
-  margin-top: 40px;
-}
-
-.hero-content {
-  flex-direction: column;
-  align-items: center;
-}
-
-.page-list {
-  flex-direction: column;
-  padding: 0 12px 12px 12px;
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-}
-
-.text-weather {
-  font-size: 36px;
-  font-weight: bold;
-  margin-top: 0px;
-}
-
-.temp-min-max {
-  font-size: 36px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 8px;
-  padding-left: 6px;
-  margin-bottom: 40px;
-}
-
-.aqi {
-  font-size: 28px;
-  font-weight: bold;
-  margin-top: 66px;
-}
-
-.aqi-desc {
-  font-size: 28px;
-  font-weight: bold;
-  margin-top: 2px;
-}
-
-.figure-title {
-  font-size: 24px;
-  margin-top: 2px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.figure-desc {
-  font-size: 39px;
-  font-weight: bold;
-  margin-left: -1px;
-}
 .day-weather-item {
   margin-top: 16px;
   flex-direction: column;
 }
+
 .day-weather-title {
   font-size: 28px;
   color: rgba(255, 255, 255, 0.8);

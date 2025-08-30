@@ -7,8 +7,8 @@
     </div>
     <div class="hero-content">
       <!-- 根据选中日期数据显示 -->
-      <image class="icon-weather" src="/common/weather/weather_{{ iconCode }}.png" />
-      <text class="text-weather">{{ textDay }}</text>
+      <image class="weather-icon" src="/common/weather/weather_{{ iconCode }}.png" />
+      <text class="weather-text">{{ textDay }}</text>
       <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
 
@@ -53,13 +53,6 @@ export default {
           {name: "大气压强 (hPa)", value: "__", uniqueId: 5},
           {name: "能见度 (km)", value: "__", uniqueId: 7},
           {name: "云量 (%)", value: "__", uniqueId: 8}
-        ]
-      },
-      {
-        // 温度指标
-        items: [
-          {name: "最高温度 (°C)", value: "__", uniqueId: 11},
-          {name: "最低温度 (°C)", value: "__", uniqueId: 12}
         ]
       },
       {
@@ -313,88 +306,4 @@ export default {
 
 <style>
 @import "../../common/style.css";
-
-.icon-weather {
-  width: 85px;
-  height: 85px;
-  margin-top: 40px;
-}
-
-.hero-content {
-  flex-direction: column;
-  align-items: center;
-}
-
-.page-list {
-  flex-direction: column;
-  padding: 0 12px 12px 12px;
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-}
-
-.temperature {
-  font-size: 64px;
-  font-weight: bold;
-  margin-top: 0px;
-  padding-left: 10px;
-}
-
-.text-weather {
-  font-size: 36px;
-  font-weight: bold;
-  margin-top: 0px;
-}
-
-.temp-min-max {
-  font-size: 36px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 8px;
-  padding-left: 6px;
-  margin-bottom: 40px;
-}
-
-.aqi {
-  font-size: 28px;
-  font-weight: bold;
-  margin-top: 66px;
-}
-
-.aqi-desc {
-  font-size: 28px;
-  font-weight: bold;
-  margin-top: 2px;
-}
-
-.figure-title {
-  font-size: 24px;
-  margin-top: 2px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.figure-desc {
-  font-size: 39px;
-  font-weight: bold;
-  margin-left: -1px;
-}
-
-.day-weather-item {
-  margin-top: 16px;
-  flex-direction: column;
-}
-
-.day-weather-title {
-  font-size: 28px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.day-weather-desc {
-  font-size: 32px;
-}
-
-.small-weather-icon {
-  width: 48px;
-  height: 48px;
-}
 </style>
