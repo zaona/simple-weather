@@ -1,19 +1,20 @@
 <template>
+  <!-- 页面容器，支持右滑返回 -->
   <div class="page" @swipe="toHomePage">
+    <!-- 头部信息：地点和选中日期 -->
     <div class="header">
-      <text class="page-title">{{ location }}</text>
-      <!-- 显示选中的日期或加载状态 -->
+      <text class="page-title">详情</text>
       <text class="page-subtitle">{{ updateTime }}</text>
     </div>
+
+    <!-- 当前天气概览 -->
     <div class="hero-content">
-      <!-- 根据选中日期数据显示 -->
       <image class="weather-icon" src="/common/weather/weather_{{ iconCode }}.png" />
       <text class="weather-text">{{ textDay }}</text>
       <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
 
-    <!-- 根据选中日期数据显示指标 -->
-    <!-- 保留并使用按类别组织的详细天气数据 -->
+    <!-- 按类别组织的详细天气数据 -->
     <div class="page-list" style="margin-top: 12px" for="{{ category in weatherCategories }}">
       <div style="margin-top: -2px; flex-direction: column">
         <div style="margin-top: 14px; flex-direction: column" for="{{ item in category.items }}">
@@ -27,23 +28,25 @@
 
 <script>
 // 导入所需模块
-import router from "@system.router" // 引入 router 模块，用于页面跳转和返回
-import file from "@system.file" // 引入 file 模块，用于读取本地文件
-import {showToast} from "@system.prompt" // 引入 prompt 模块，用于显示 Toast 消息
+import router from "@system.router" // 页面路由
+import file from "@system.file" // 文件操作
+import {showToast} from "@system.prompt" // 提示信息
 
 export default {
   // 接收来自 index 页面的 selectedDate 参数
   protected: {
     selectedDate: "" // 接收字符串格式的日期，例如 "2025-08-30"
   },
-  // --- ---
+
+  // 页面私有数据
   private: {
-    location: "__",
-    updateTime: "__", // 初始化提示信息，显示在页面顶部
+    location: "__", // 地点
+    updateTime: "__", // 选中的日期或加载状态
     iconCode: "__", // 天气图标代码
     textDay: "__", // 白天天气描述
     tempMinMax: "__°/__°", // 最高/最低温度
-    // 按类别组织的天气指标数据，用于在页面上循环渲染
+
+    // 按类别组织的天气指标数据
     weatherCategories: [
       {
         // 基础气象指标
@@ -90,92 +93,93 @@ export default {
         ]
       }
     ],
-    // ---
+
     // 左滑返回index页面
     toHomePage(eve) {
       if (eve.direction === "right") {
         router.back()
       }
     }
-    // ---
   },
 
-  // --- 复用 index 页面的工具函数 ---
-  // 获取天气图标映射表，将和风天气的图标代码映射到本地资源
+  // 获取天气图标映射表
   getIconMap() {
     return {
       // 晴天
-      100: 11,
-      101: 1,
-      102: 1,
-      103: 1,
-      104: 2,
-      150: 11,
-      151: 1,
-      152: 1,
-      153: 1,
+      100: 11, // 晴
+      101: 1, // 多云
+      102: 1, // 少云
+      103: 1, // 晴间多云
+      104: 2, // 阴
+      150: 11, // 晴
+      151: 1, // 多云
+      152: 1, // 少云
+      153: 1, // 晴间多云
+
       // 雨
-      300: 5,
-      301: 5,
-      302: 5,
-      303: 5,
-      304: 5,
-      305: 4,
-      306: 4,
-      307: 4,
-      308: 4,
-      309: 4,
-      310: 4,
-      311: 4,
-      312: 4,
-      313: 4,
-      314: 4,
-      315: 4,
-      316: 4,
-      317: 4,
-      318: 4,
-      350: 5,
-      351: 5,
-      399: 4,
+      300: 5, // 阵雨
+      301: 5, // 强阵雨
+      302: 5, // 雷阵雨
+      303: 5, // 强雷阵雨
+      304: 5, // 雷阵雨伴有冰雹
+      305: 4, // 小雨
+      306: 4, // 中雨
+      307: 4, // 大雨
+      308: 4, // 极端降雨
+      309: 4, // 毛毛雨/细雨
+      310: 4, // 暴雨
+      311: 4, // 大暴雨
+      312: 4, // 特大暴雨
+      313: 4, // 冻雨
+      314: 4, // 小到中雨
+      315: 4, // 中到大雨
+      316: 4, // 大到暴雨
+      317: 4, // 暴雨到大暴雨
+      318: 4, // 大暴雨到特大暴雨
+      350: 5, // 阵雨
+      351: 5, // 强阵雨
+      399: 4, // 雨
+
       // 雪
-      400: 7,
-      401: 7,
-      402: 7,
-      403: 7,
-      404: 6,
-      405: 6,
-      406: 6,
-      407: 7,
-      408: 7,
-      409: 7,
-      410: 7,
-      456: 6,
-      457: 7,
-      499: 7,
+      400: 7, // 小雪
+      401: 7, // 中雪
+      402: 7, // 大雪
+      403: 7, // 暴雪
+      404: 6, // 雨夹雪
+      405: 6, // 雨雪天气
+      406: 6, // 阵雨夹雪
+      407: 7, // 阵雪
+      408: 7, // 小到中雪
+      409: 7, // 中到大雪
+      410: 7, // 大到暴雪
+      456: 6, // 阵雨夹雪
+      457: 7, // 阵雪
+      499: 7, // 雪
+
       // 雾霾
-      500: 10,
-      501: 3,
-      502: 10,
-      503: 8,
-      504: 8,
-      507: 8,
-      508: 8,
-      509: 3,
-      510: 3,
-      511: 10,
-      512: 10,
-      513: 10,
-      514: 3,
-      515: 3,
+      500: 10, // 薄雾
+      501: 3, // 雾
+      502: 10, // 霾
+      503: 8, // 扬沙
+      504: 8, // 浮尘
+      507: 8, // 沙尘暴
+      508: 8, // 强沙尘暴
+      509: 3, // 浓雾
+      510: 3, // 强浓雾
+      511: 10, // 中度霾
+      512: 10, // 重度霾
+      513: 10, // 严重霾
+      514: 3, // 大雾
+      515: 3, // 特强浓雾
+
       // 风
-      900: 99,
-      901: 99,
-      999: 99
+      900: 99, // 热
+      901: 99, // 冷
+      999: 99 // 未知
     }
   },
 
-  // --- 修改 updateWeatherFigures 方法以填充更完整的数据 (使用 selectedData) ---
-  // 根据传入的 selectedData (某一天的天气数据) 更新 weatherCategories 中的各项 value
+  // 根据传入的 selectedData 更新 weatherCategories 中的各项 value
   updateWeatherFigures(selectedData) {
     // 创建一个映射，将 uniqueId 映射到 selectedData 对象中对应的值
     const valueMap = {
@@ -220,9 +224,7 @@ export default {
       }
     })
   },
-  // ---
 
-  // 更新当前天气信息 (用于 detail 页，使用 selectedData)
   // 根据传入的 selectedData 和 iconMap 更新页面顶部的天气概览信息
   updateCurrentWeather(selectedData, iconMap) {
     // Detail 页显示所选日期
@@ -232,37 +234,34 @@ export default {
     this.tempMinMax = `${selectedData.tempMin}°/${selectedData.tempMax}°` // 最高/最低温度
   },
 
-  // 页面初始化生命周期函数
+  // 页面初始化函数，处理从index页面传递的日期参数并加载对应天气数据
   onInit() {
-    // --- 关键逻辑：在页面初始化时处理接收到的参数 ---
+    // 记录接收到的日期参数
     console.log("Detail page onInit, received selectedDate:", this.selectedDate)
 
-    // 1. 检查是否接收到了日期参数
+    // 检查是否接收到日期参数
     if (!this.selectedDate) {
       console.warn("Detail page: No selectedDate parameter received.")
       this.updateTime = "未指定日期" // 更新提示信息
-      return // 如果没有接收到日期，直接返回，不进行后续操作
+      return // 无参数则直接返回
     }
 
-    // 2. 显示正在加载
-    // this.updateTime = `正在加载 ${this.selectedDate} 数据`;
-
-    // 3. 读取本地天气数据文件
+    // 读取本地天气数据文件
     file.readText({
       uri: "internal://files/weather.txt", // 指定文件路径
       // 文件读取成功的回调函数
       success: (data) => {
         try {
-          // 4. 解析 JSON 数据
+          // 解析 JSON 数据
           const weatherData = JSON.parse(data.text)
 
-          // 5. 根据 selectedDate 查找对应的数据
+          // 根据 selectedDate 查找对应的数据
           // 注意：这里直接使用字符串比较，因为 selectedDate 是字符串，fxDate 也是字符串
           let selectedData = weatherData.daily.find((day) => day.fxDate === this.selectedDate)
 
           if (selectedData) {
             console.log(`Detail page: Found data for ${this.selectedDate}`)
-            // 6. 如果找到了数据，更新页面显示
+            // 如果找到了数据，更新页面显示
             const iconMap = this.getIconMap() // 获取图标映射表
             // 更新页面显示的地点
             this.location = weatherData.location || "未知地点"
@@ -273,7 +272,7 @@ export default {
             // 更新天气指标面板 (使用 selectedData)
             this.updateWeatherFigures(selectedData)
           } else {
-            // 7. 如果没有找到对应日期的数据
+            // 如果没有找到对应日期的数据
             console.warn(`Detail page: Data for date ${this.selectedDate} not found in local file.`)
             this.updateTime = `${this.selectedDate} 数据未找到`
             this.iconCode = "__"
@@ -285,7 +284,7 @@ export default {
             }))
           }
         } catch (e) {
-          // 8. JSON 解析失败
+          // JSON 解析失败
           console.error("Detail page: Failed to parse weather data:", e)
           this.updateTime = "数据解析错误"
           showToast({message: "数据格式错误", duration: 2000}) // 显示错误提示
@@ -293,13 +292,11 @@ export default {
       },
       // 文件读取失败的回调函数
       fail: (data, code) => {
-        // 9. 文件读取失败
+        // 文件读取失败
         console.error("Detail page: Failed to read local weather data file", code, data)
-        // this.updateTime = "数据加载失败";
         showToast({message: "无法读取天气数据", duration: 2000}) // 显示错误提示
       }
     })
-    // --- ---
   }
 }
 </script>

@@ -1,15 +1,20 @@
 <template>
+  <!-- 页面容器 -->
   <div class="page">
+    <!-- 头部信息：地点和更新时间 -->
     <div class="header">
       <text class="page-title">{{ location }}</text>
       <text class="page-subtitle">{{ updateTime }}</text>
     </div>
+
+    <!-- 当前天气概览 -->
     <div class="hero-content">
       <image class="weather-icon" src="/common/weather/weather_{{ iconCode }}.png" />
       <text class="weather-text">{{ textDay }}</text>
       <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
 
+    <!-- 天气指标面板 -->
     <div class="page-list" style="margin-top: 28px">
       <div style="margin-top: -2px; flex-direction: column">
         <div style="margin-top: 14px; flex-direction: column" for="{{ item in figure }}">
@@ -19,6 +24,7 @@
       </div>
     </div>
 
+    <!-- 未来几天天气预报 -->
     <div class="page-list" style="margin-top: 12px">
       <div style="margin-top: -8px; flex-direction: column">
         <div class="day-weather-item" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
@@ -34,6 +40,7 @@
       </div>
     </div>
 
+    <!-- 关于按钮（已注释） -->
     <!-- <div class="hero-content" style="margin-top: 24px">
       <div class="button" onclick="About()">
         <text class="button-text">关于</text>
@@ -43,30 +50,34 @@
 </template>
 
 <script>
-import router from "@system.router"
-import file from "@system.file"
-import {showToast} from "@system.prompt"
-// import weather from "./weather.json"
-import interconnect from "@system.interconnect" // 引入 interconnect
+// 导入系统模块
+import router from "@system.router" // 页面路由
+import file from "@system.file" // 文件操作
+import {showToast} from "@system.prompt" // 提示信息
+import interconnect from "@system.interconnect" // 网络连接
 
 export default {
+  // 页面私有数据
   private: {
-    location: "__",
-    updateTime: "__",
-    iconCode: "__",
-    textDay: "__",
-    tempMinMax: "__°/__°",
+    location: "__", // 地点
+    updateTime: "__", // 更新时间
+    iconCode: "__", // 天气图标代码
+    textDay: "__", // 白天天气描述
+    tempMinMax: "__°/__°", // 最高/最低温度
+
+    // 天气指标数据
     figure: [
       {name: "紫外线指数", value: "__", uniqueId: 1},
       {name: "相对湿度 （%）", value: "__", uniqueId: 2},
       {name: "__", value: "__", uniqueId: 3},
       {name: "气压 （hPa）", value: "__", uniqueId: 4}
     ],
-    dayWeather: [
-      {name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1},
-    ]
+
+    // 未来几天天气预报数据
+    dayWeather: [{name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1}]
   },
 
+  // 跳转到详情页
   DetailInfo(selectedItem) {
     if (selectedItem && selectedItem.fxDate) {
       router.push({
@@ -81,6 +92,7 @@ export default {
     }
   },
 
+  // 跳转到关于页
   About() {
     router.push({
       uri: "/pages/about"
@@ -164,6 +176,7 @@ export default {
     }
   },
 
+  // 格式化更新时间
   formatTimeAgo(updateTime) {
     const now = new Date()
     const diffMs = now - updateTime
@@ -182,6 +195,7 @@ export default {
     }
   },
 
+  // 获取今天的日期字符串
   getTodayString() {
     const today = new Date()
     const year = today.getFullYear()
@@ -190,6 +204,7 @@ export default {
     return `${year}-${month}-${day}`
   },
 
+  // 更新当前天气信息
   updateCurrentWeather(weatherData, todayData, timeAgo, iconMap) {
     this.updateTime = timeAgo
     this.iconCode = iconMap[todayData.iconDay] || todayData.iconDay
@@ -197,6 +212,7 @@ export default {
     this.tempMinMax = `${todayData.tempMin}°/${todayData.tempMax}°`
   },
 
+  // 更新天气指标
   updateWeatherFigures(todayData) {
     this.figure = [
       {name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1},
@@ -206,6 +222,7 @@ export default {
     ]
   },
 
+  // 更新天气预报
   updateForecast(weatherData, today, todayData, iconMap) {
     const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
 
@@ -249,6 +266,7 @@ export default {
       })
   },
 
+  // 页面初始化
   onInit() {
     // 模拟器中模拟数据，发版时记得注释掉
 
@@ -295,6 +313,7 @@ export default {
     })
   },
 
+  // 页面显示时
   onShow() {
     // 创建本地 interconnect 实例
     const connect = interconnect.instance()
@@ -346,12 +365,14 @@ export default {
     this._connectInstance = connect
   },
 
+  // 页面隐藏时
   onHide() {
     if (this._connectInstance && typeof this._connectInstance.close === "function") {
       this._connectInstance.close()
     }
   },
 
+  // 页面销毁时
   onDestroy() {
     if (this._connectInstance && typeof this._connectInstance.close === "function") {
       this._connectInstance.close()
