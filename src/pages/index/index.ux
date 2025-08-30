@@ -87,8 +87,7 @@ export default {
         }
       })
     } else {
-      console.warn("DetailInfo: selectedItem or fxDate is missing")
-      showToast({message: "无法跳转到详情页", duration: 2000})
+      showToast({message: "跳转详情页失败", duration: 2000})
     }
   },
 
@@ -303,7 +302,6 @@ export default {
             showToast({message: "数据已过期", duration: 200})
           }
         } catch (e) {
-          console.error("解析天气数据失败:", e)
           showToast({message: "数据格式错误", duration: 200})
         }
       },

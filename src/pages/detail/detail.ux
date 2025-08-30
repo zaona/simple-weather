@@ -236,13 +236,9 @@ export default {
 
   // 页面初始化函数，处理从index页面传递的日期参数并加载对应天气数据
   onInit() {
-    // 记录接收到的日期参数
-    console.log("Detail page onInit, received selectedDate:", this.selectedDate)
-
     // 检查是否接收到日期参数
     if (!this.selectedDate) {
-      console.warn("Detail page: No selectedDate parameter received.")
-      this.updateTime = "未指定日期" // 更新提示信息
+      showToast({message: "未接收到日期", duration: 2000}) // 显示错误提示
       return // 无参数则直接返回
     }
 
@@ -260,11 +256,7 @@ export default {
           let selectedData = weatherData.daily.find((day) => day.fxDate === this.selectedDate)
 
           if (selectedData) {
-            console.log(`Detail page: Found data for ${this.selectedDate}`)
-            // 如果找到了数据，更新页面显示
             const iconMap = this.getIconMap() // 获取图标映射表
-            // 更新页面显示的地点
-            this.location = weatherData.location || "未知地点"
 
             // 更新顶部天气概览
             this.updateCurrentWeather(selectedData, iconMap)
@@ -273,27 +265,16 @@ export default {
             this.updateWeatherFigures(selectedData)
           } else {
             // 如果没有找到对应日期的数据
-            console.warn(`Detail page: Data for date ${this.selectedDate} not found in local file.`)
-            this.updateTime = `${this.selectedDate} 数据未找到`
-            this.iconCode = "__"
-            this.textDay = "数据缺失"
-            this.tempMinMax = "__°/__°"
-            // 清空 weatherCategories 的值，显示 "__"
-            this.weatherCategories = this.weatherCategories.map((cat) => ({
-              items: cat.items.map((item) => ({...item, value: "__"}))
-            }))
+            showToast({message: "数据缺失", duration: 2000}) // 显示错误提示
           }
         } catch (e) {
           // JSON 解析失败
-          console.error("Detail page: Failed to parse weather data:", e)
-          this.updateTime = "数据解析错误"
           showToast({message: "数据格式错误", duration: 2000}) // 显示错误提示
         }
       },
       // 文件读取失败的回调函数
       fail: (data, code) => {
         // 文件读取失败
-        console.error("Detail page: Failed to read local weather data file", code, data)
         showToast({message: "无法读取天气数据", duration: 2000}) // 显示错误提示
       }
     })
