@@ -1,9 +1,14 @@
 .page {
     flex-direction: column;
     color: #ffffff;
+    align-items: center;
 }
-
-.page-title {
+.header {
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+}
+.location{
     font-size: 24px;
     text-align: center;
     margin-top: 32px;
@@ -11,8 +16,11 @@
 }
 
 .page-subtitle {
-    font-size: 24px;
+    font-size: 22px;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 5px;
     color: rgba(255, 255, 255, 0.8);
+}
+.page-list{
+    width: 98%;
 }
