@@ -9,7 +9,7 @@
 
     <!-- 当前天气概览 -->
     <div class="hero-content">
-      <image class="weather-icon" src="/common/weather/weather_{{ iconCode }}.png" />
+      <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
       <text class="weather-text">{{ textDay }}</text>
       <text class="temp-min-max">{{ tempMinMax }}</text>
     </div>
@@ -33,7 +33,7 @@
             <text class="day-weather-desc">{{ item.tempMinMax }}</text>
             <image
               class="small-weather-icon"
-              src="/common/weather/weather_{{ item.iconCode }}.png"
+              src="/common/weather-icons/{{ item.iconCode }}.png"
             />
           </div>
         </div>

@@ -46,14 +46,14 @@
 .weather-text {
     font-size: 36px;
     font-weight: bold;
-    margin-top: 0px;
+    margin-top: 8px;
 }
 
 .temp-min-max {
     font-size: 36px;
     font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
-    margin-top: 8px;
+    margin-top: 0px;
     padding-left: 6px;
     margin-bottom: 40px;
 }
