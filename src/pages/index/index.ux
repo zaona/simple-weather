@@ -57,6 +57,10 @@ import {showToast} from "@system.prompt" // 提示信息
 import interconnect from "@system.interconnect" // 网络连接
 import WeatherUtils from "../../common/weather-utils.js"
 
+// 导入模拟数据，发版时记得注释掉
+
+// import weather from "./weather.json"
+
 export default {
   // 页面私有数据
   private: {
@@ -131,7 +135,7 @@ export default {
 
   // 页面初始化
   onInit() {
-    // 模拟器中模拟数据，发版时记得注释掉
+    // 写入模拟数据，发版时记得注释掉
 
     // file.writeText({
     //   uri: "internal://files/weather.txt",
@@ -175,6 +179,8 @@ export default {
     })
   },
 
+
+  // 数据传输部分，主要将天气数据保存到本地，无数据处理逻辑，非必要不进行修改
   // 页面显示时
   onShow() {
     // 创建本地 interconnect 实例
@@ -240,6 +246,7 @@ export default {
       this._connectInstance.close()
     }
   }
+  
 }
 </script>
 

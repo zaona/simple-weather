@@ -5,6 +5,24 @@
 ## 感谢
 - [倒数日](https://github.com/sf-yuzifu/daymatter) 项目
 
+## 本地调试和发版注意事项
+- 在打包的时候需要把`/src/pages/index`目录中的`weather.json`测试数据移动到项目根目录，AIOT默认打包`src`内容，即使没被引用。
+- `index.ux`的本地测试数据的注释需要在本地调试的时候取消。
+``` js
+    // 模拟器中模拟数据，发版时记得注释掉
+
+    // file.writeText({
+    //   uri: "internal://files/weather.txt",
+    //   text: JSON.stringify(weather),
+    //   success: function () {
+    //     showToast({message: "模拟数据成功", duration: 200})
+    //   },
+    //   fail: function (data, code) {
+    //     showToast({message: `模拟数据失败${code}`, duration: 200})
+    //   }
+    // })
+```
+
 ## 快速上手
 
 ### 1. 开发
@@ -39,22 +57,4 @@ sh husky.sh
 windows
 ```
 ./husky.sh
-```
-
-## 本地调试和发版注意事项
-- 在打包的时候需要把index目录的json移出src，AIOT默认打包src内容，即使没被引用，所以之前的包里面都包含了未使用的json文件。
-- `index.ux`的本地测试数据的注释需要在本地调试的时候取消。
-``` js
-    // 模拟器中模拟数据，发版时记得注释掉
-
-    // file.writeText({
-    //   uri: "internal://files/weather.txt",
-    //   text: JSON.stringify(weather),
-    //   success: function () {
-    //     showToast({message: "模拟数据成功", duration: 200})
-    //   },
-    //   fail: function (data, code) {
-    //     showToast({message: `模拟数据失败${code}`, duration: 200})
-    //   }
-    // })
 ```
