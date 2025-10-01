@@ -1,51 +1,55 @@
 <template>
   <!-- 页面容器 -->
   <div class="page">
-    <!-- 头部信息：地点和更新时间 -->
-    <div class="header">
-      <text class="page-title">{{ location }}</text>
-      <text class="page-subtitle">{{ updateTime }}</text>
-    </div>
-
-    <!-- 当前天气概览 -->
-    <div class="hero-content">
-      <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
-      <text class="weather-text">{{ textDay }}</text>
-      <text class="temp-min-max">{{ tempMinMax }}</text>
-    </div>
-
-    <!-- 天气指标面板 -->
-    <div class="page-list" style="margin-top: 28px">
-      <div style="margin-top: -2px; flex-direction: column">
-        <div style="margin-top: 14px; flex-direction: column" for="{{ item in figure }}">
-          <text class="figure-desc">{{ item.value }}</text>
-          <text class="figure-title">{{ item.name }}</text>
+    <div class="page-bg">
+      <div class="main">
+        <!-- 头部信息：地点和更新时间 -->
+        <div class="header">
+          <text class="page-title">{{ location }}</text>
+          <text class="page-subtitle">{{ updateTime }}</text>
         </div>
-      </div>
-    </div>
 
-    <!-- 未来几天天气预报 -->
-    <div class="page-list" style="margin-top: 12px">
-      <div style="margin-top: -8px; flex-direction: column">
-        <div class="day-weather-item" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
-          <text class="day-weather-title">{{ item.name }}</text>
-          <div style="justify-content: space-between">
-            <text class="day-weather-desc">{{ item.tempMinMax }}</text>
-            <image
-              class="small-weather-icon"
-              src="/common/weather-icons/{{ item.iconCode }}.png"
-            />
+        <!-- 当前天气概览 -->
+        <div class="hero-content">
+          <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
+          <text class="weather-text">{{ textDay }}</text>
+          <text class="temp-min-max">{{ tempMinMax }}</text>
+        </div>
+
+        <!-- 天气指标面板 -->
+        <div class="page-list" style="margin-top: 28px">
+          <div style="margin-top: -2px; flex-direction: column">
+            <div style="margin-top: 14px; flex-direction: column" for="{{ item in figure }}">
+              <text class="figure-desc">{{ item.value }}</text>
+              <text class="figure-title">{{ item.name }}</text>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- 关于按钮（已注释） -->
-    <!-- <div class="hero-content" style="margin-top: 24px">
+        <!-- 未来几天天气预报 -->
+        <div class="page-list" style="margin-top: 12px">
+          <div style="margin-top: -8px; flex-direction: column">
+            <div class="day-weather-item" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
+              <text class="day-weather-title">{{ item.name }}</text>
+              <div style="justify-content: space-between">
+                <text class="day-weather-desc">{{ item.tempMinMax }}</text>
+                <image
+                  class="small-weather-icon"
+                  src="/common/weather-icons/{{ item.iconCode }}.png"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 关于按钮（已注释） -->
+        <!-- <div class="hero-content" style="margin-top: 24px">
       <div class="button" onclick="About()">
         <text class="button-text">关于</text>
       </div>
     </div> -->
+      </div>
+    </div>
   </div>
 </template>
 
@@ -179,7 +183,6 @@ export default {
     })
   },
 
-
   // 数据传输部分，主要将天气数据保存到本地，无数据处理逻辑，非必要不进行修改
   // 页面显示时
   onShow() {
@@ -246,12 +249,19 @@ export default {
       this._connectInstance.close()
     }
   }
-  
 }
 </script>
 
 <style>
 @import "../../common/style.css";
+
+.page-bg {
+  flex-direction: column;
+  align-items: center;
+  /* background-color: #cdc4c4; */
+  /* background-image: url("../../common/logo.png"); */
+  background-size: cover;
+}
 
 .day-weather-item {
   margin-top: 16px;

@@ -1,25 +1,27 @@
 <template>
   <!-- 页面容器，支持右滑返回 -->
   <div class="page" @swipe="toHomePage">
-    <!-- 头部信息：地点和选中日期 -->
-    <div class="header">
-      <text class="page-title">详情</text>
-      <text class="page-subtitle">{{ updateTime }}</text>
-    </div>
+    <div class="main">
+      <!-- 头部信息：地点和选中日期 -->
+      <div class="header">
+        <text class="page-title">详情</text>
+        <text class="page-subtitle">{{ updateTime }}</text>
+      </div>
 
-    <!-- 当前天气概览 -->
-    <div class="hero-content">
-      <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
-      <text class="weather-text">{{ textDay }}</text>
-      <text class="temp-min-max">{{ tempMinMax }}</text>
-    </div>
+      <!-- 当前天气概览 -->
+      <div class="hero-content">
+        <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
+        <text class="weather-text">{{ textDay }}</text>
+        <text class="temp-min-max">{{ tempMinMax }}</text>
+      </div>
 
-    <!-- 按类别组织的详细天气数据 -->
-    <div class="page-list" style="margin-top: 12px" for="{{ category in weatherCategories }}">
-      <div style="margin-top: -2px; flex-direction: column">
-        <div style="margin-top: 14px; flex-direction: column" for="{{ item in category.items }}">
-          <text class="figure-desc">{{ item.value }}</text>
-          <text class="figure-title">{{ item.name }}</text>
+      <!-- 按类别组织的详细天气数据 -->
+      <div class="page-list" style="margin-top: 12px" for="{{ category in weatherCategories }}">
+        <div style="margin-top: -2px; flex-direction: column">
+          <div style="margin-top: 14px; flex-direction: column" for="{{ item in category.items }}">
+            <text class="figure-desc">{{ item.value }}</text>
+            <text class="figure-title">{{ item.name }}</text>
+          </div>
         </div>
       </div>
     </div>
@@ -111,7 +113,7 @@ export default {
   // 根据传入的 selectedData 更新 weatherCategories 中的各项 value - 使用通用工具类
   updateWeatherFigures(selectedData) {
     const valueMap = WeatherUtils.WeatherDataUtils.getDetailedWeatherFigures(selectedData)
-    
+
     // 遍历 this.weatherCategories 数组及其 items，根据 uniqueId 更新 value
     this.weatherCategories = this.weatherCategories.map((category) => {
       return {

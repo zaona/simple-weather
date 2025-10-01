@@ -1,6 +1,11 @@
 .page {
     flex-direction: column;
+    align-items: center;
+}
+
+.main {
     color: #ffffff;
+    flex-direction: column;
     align-items: center;
     padding-top: 24px;
     padding-bottom: 24px;
