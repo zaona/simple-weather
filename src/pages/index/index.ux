@@ -1,7 +1,7 @@
 <template>
   <!-- 页面容器 -->
   <div class="page">
-    <div class="page-bg">
+    <div class="page-bg" style="{{pageBgStyle}}">
       <div class="main">
         <!-- 头部信息：地点和更新时间 -->
         <div class="header">
@@ -73,6 +73,8 @@ export default {
     iconCode: "__", // 天气图标代码
     textDay: "__", // 白天天气描述
     tempMinMax: "__°/__°", // 最高/最低温度
+    backgroundColor: "", // 背景颜色
+    pageBgStyle: {}, // 页面背景样式对象
 
     // 天气指标数据
     figure: [
@@ -125,6 +127,21 @@ export default {
   // 更新当前天气信息 - 使用通用工具类
   updateCurrentWeather(weatherData, todayData, timeAgo, iconMap) {
     WeatherUtils.WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
+    // 动态设置背景颜色
+    this.updateBackgroundColor()
+  },
+
+  // 动态设置背景颜色
+  updateBackgroundColor() {
+    // 获取当前时间对应的亮度调整值
+    const brightnessAdjustment = WeatherUtils.ColorUtils.getBrightnessByTime();
+    // 调整背景颜色亮度
+    const adjustedColor = WeatherUtils.ColorUtils.adjustBrightness(this.backgroundColor, brightnessAdjustment);
+    
+    // 使用小米Vela推荐的方式设置动态背景颜色
+    this.pageBgStyle = {
+      backgroundColor: adjustedColor
+    }
   },
 
   // 更新天气指标 - 使用通用工具类
@@ -258,9 +275,9 @@ export default {
 .page-bg {
   flex-direction: column;
   align-items: center;
-  /* background-color: #cdc4c4; */
+  /* background-color: #82A4DD; */
   /* background-image: url("../../common/logo.png"); */
-  background-size: cover;
+  /* background-size: cover; */
 }
 
 .day-weather-item {
