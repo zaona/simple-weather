@@ -1,7 +1,7 @@
 <template>
   <!-- 页面容器 -->
-  <div class="page">
-    <div class="page-bg" style="{{pageBgStyle}}">
+  <div class="page" style="{{pageBgStyle}}">
+    <!-- <div class="page-bg"> -->
       <div class="main">
         <!-- 头部信息：地点和更新时间 -->
         <div class="header">
@@ -50,7 +50,7 @@
     </div> -->
       </div>
     </div>
-  </div>
+  <!-- </div> -->
 </template>
 
 <script>

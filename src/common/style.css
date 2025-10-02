@@ -7,7 +7,7 @@
     color: #ffffff;
     flex-direction: column;
     align-items: center;
-    padding: 24px 6px;
+    padding: 24px 0px;
 }
 
 .header {
@@ -28,7 +28,7 @@
 }
 
 .page-list {
-    width: 98%;
+    width: 95%;
     flex-direction: column;
     padding: 0 12px 12px 12px;
     color: #ffffff;
