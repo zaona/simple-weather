@@ -176,11 +176,11 @@ export const DateUtils = {
     if (diffMins < 1) {
       return "刚刚"
     } else if (diffMins < 60) {
-      return diffMins + "分钟前"
+      return diffMins + "分钟前更新"
     } else if (diffHours < 24) {
-      return diffHours + "小时前"
+      return diffHours + "小时前更新"
     } else {
-      return diffDays + "天前"
+      return diffDays + "天前更新"
     }
   },
 

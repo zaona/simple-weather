@@ -1,56 +1,53 @@
 <template>
   <!-- 页面容器 -->
-  <div class="page" style="{{pageBgStyle}}">
+  <div class="page" style="{{ pageBgStyle }}">
     <!-- <div class="page-bg"> -->
-      <div class="main">
-        <!-- 头部信息：地点和更新时间 -->
-        <div class="header">
-          <text class="page-title">{{ location }}</text>
-          <text class="page-subtitle">{{ updateTime }}</text>
-        </div>
+    <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0">
+      <!-- 头部信息：地点和更新时间 -->
+      <div class="header">
+        <text class="page-title">{{ location }}</text>
+        <text class="page-subtitle">{{ updateTime }}</text>
+      </div>
 
-        <!-- 当前天气概览 -->
-        <div class="hero-content">
-          <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
-          <text class="weather-text">{{ textDay }}</text>
-          <text class="temp-min-max">{{ tempMinMax }}</text>
-        </div>
+      <!-- 当前天气概览 -->
+      <div class="hero-content">
+        <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
+        <text class="weather-text">{{ textDay }}</text>
+        <text class="temp-min-max">{{ tempMinMax }}</text>
+      </div>
 
-        <!-- 天气指标面板 -->
-        <div class="page-list" style="margin-top: 28px">
-          <div style="margin-top: -2px; flex-direction: column">
-            <div style="margin-top: 14px; flex-direction: column" for="{{ item in figure }}">
-              <text class="figure-desc">{{ item.value }}</text>
-              <text class="figure-title">{{ item.name }}</text>
+      <!-- 天气指标面板 -->
+      <div class="page-list" style="margin-top: 28px">
+        <div style="margin-top: -2px; flex-direction: column">
+          <div style="margin-top: 14px; flex-direction: column" for="{{ item in figure }}">
+            <text class="figure-desc">{{ item.value }}</text>
+            <text class="figure-title">{{ item.name }}</text>
+          </div>
+        </div>
+      </div>
+
+      <!-- 未来几天天气预报 -->
+      <div class="page-list" style="margin-top: 12px">
+        <div style="margin-top: -8px; flex-direction: column">
+          <div class="day-weather-item" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
+            <text class="day-weather-title">{{ item.name }}</text>
+            <div style="justify-content: space-between">
+              <text class="day-weather-desc">{{ item.tempMinMax }}</text>
+              <image
+                class="small-weather-icon"
+                src="/common/weather-icons/{{ item.iconCode }}.png"
+              />
             </div>
           </div>
         </div>
-
-        <!-- 未来几天天气预报 -->
-        <div class="page-list" style="margin-top: 12px">
-          <div style="margin-top: -8px; flex-direction: column">
-            <div class="day-weather-item" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
-              <text class="day-weather-title">{{ item.name }}</text>
-              <div style="justify-content: space-between">
-                <text class="day-weather-desc">{{ item.tempMinMax }}</text>
-                <image
-                  class="small-weather-icon"
-                  src="/common/weather-icons/{{ item.iconCode }}.png"
-                />
-              </div>
-            </div>
-          </div>
+      </div>
+      <div class="hero-content" style="margin-top: 24px">
+        <div class="button" onclick="About()">
+          <text class="button-text">更多</text>
         </div>
-
-        <!-- 关于按钮（已注释） -->
-        <!-- <div class="hero-content" style="margin-top: 24px">
-      <div class="button" onclick="About()">
-        <text class="button-text">关于</text>
       </div>
-    </div> -->
-      </div>
-    </div>
-  <!-- </div> -->
+    </scroll>
+  </div>
 </template>
 
 <script>
@@ -63,7 +60,7 @@ import WeatherUtils from "../../common/weather-utils.js"
 
 // 导入模拟数据，发版时记得注释掉
 
-// import weather from "./weather.json"
+import weather from "./weather.json"
 
 export default {
   // 页面私有数据
@@ -134,10 +131,13 @@ export default {
   // 动态设置背景颜色
   updateBackgroundColor() {
     // 获取当前时间对应的亮度调整值
-    const brightnessAdjustment = WeatherUtils.ColorUtils.getBrightnessByTime();
+    const brightnessAdjustment = WeatherUtils.ColorUtils.getBrightnessByTime()
     // 调整背景颜色亮度
-    const adjustedColor = WeatherUtils.ColorUtils.adjustBrightness(this.backgroundColor, brightnessAdjustment);
-    
+    const adjustedColor = WeatherUtils.ColorUtils.adjustBrightness(
+      this.backgroundColor,
+      brightnessAdjustment
+    )
+
     // 使用小米Vela推荐的方式设置动态背景颜色
     this.pageBgStyle = {
       backgroundColor: adjustedColor
@@ -158,16 +158,16 @@ export default {
   onInit() {
     // 写入模拟数据，发版时记得注释掉
 
-    // file.writeText({
-    //   uri: "internal://files/weather.txt",
-    //   text: JSON.stringify(weather),
-    //   success: function () {
-    //     showToast({message: "模拟数据成功", duration: 200})
-    //   },
-    //   fail: function (data, code) {
-    //     showToast({message: `模拟数据失败${code}`, duration: 200})
-    //   }
-    // })
+    file.writeText({
+      uri: "internal://files/weather.txt",
+      text: JSON.stringify(weather),
+      success: function () {
+        showToast({message: "模拟数据成功", duration: 200})
+      },
+      fail: function (data, code) {
+        showToast({message: `模拟数据失败${code}`, duration: 200})
+      }
+    })
 
     // 检查天气数据文件是否存在
     file.readText({
@@ -297,17 +297,5 @@ export default {
 .small-weather-icon {
   width: 48px;
   height: 48px;
-}
-
-.button {
-  flex-direction: column;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 18px 20px;
-  border-radius: 50%;
-}
-
-.button-text {
-  font-size: 29px;
 }
 </style>

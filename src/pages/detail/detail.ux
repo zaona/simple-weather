@@ -1,7 +1,7 @@
 <template>
   <!-- 页面容器，支持右滑返回 -->
   <div class="page" @swipe="toHomePage">
-    <div class="main">
+    <scroll class="main" scroll-y="true" bounces="true">
       <!-- 头部信息：地点和选中日期 -->
       <div class="header">
         <text class="page-title">详情</text>
@@ -24,7 +24,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </scroll>
   </div>
 </template>
 

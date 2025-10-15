@@ -8,6 +8,7 @@
     flex-direction: column;
     align-items: center;
     padding: 24px 0px;
+    height: 100%;
 }
 
 .header {
@@ -72,4 +73,16 @@
   font-size: 38px;
   font-weight: bold;
   margin-left: -1px;
+}
+
+.button {
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 50%;
+}
+
+.button-text {
+  font-size: 29px;
 }
