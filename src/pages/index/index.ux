@@ -60,7 +60,7 @@ import WeatherUtils from "../../common/weather-utils.js"
 
 // 导入模拟数据，发版时记得注释掉
 
-import weather from "./weather.json"
+// import weather from "./weather.json"
 
 export default {
   // 页面私有数据
@@ -158,16 +158,16 @@ export default {
   onInit() {
     // 写入模拟数据，发版时记得注释掉
 
-    file.writeText({
-      uri: "internal://files/weather.txt",
-      text: JSON.stringify(weather),
-      success: function () {
-        showToast({message: "模拟数据成功", duration: 200})
-      },
-      fail: function (data, code) {
-        showToast({message: `模拟数据失败${code}`, duration: 200})
-      }
-    })
+    // file.writeText({
+    //   uri: "internal://files/weather.txt",
+    //   text: JSON.stringify(weather),
+    //   success: function () {
+    //     showToast({message: "模拟数据成功", duration: 200})
+    //   },
+    //   fail: function (data, code) {
+    //     showToast({message: `模拟数据失败${code}`, duration: 200})
+    //   }
+    // })
 
     // 检查天气数据文件是否存在
     file.readText({
