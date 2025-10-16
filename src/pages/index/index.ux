@@ -1,7 +1,6 @@
 <template>
   <!-- 页面容器 -->
   <div class="page" style="{{ pageBgStyle }}">
-    <!-- <div class="page-bg"> -->
     <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0">
       <!-- 头部信息：地点和更新时间 -->
       <div class="header">
@@ -56,7 +55,7 @@ import router from "@system.router" // 页面路由
 import file from "@system.file" // 文件操作
 import {showToast} from "@system.prompt" // 提示信息
 import interconnect from "@system.interconnect" // 网络连接
-import WeatherUtils from "../../common/weather-utils.js"
+import WeatherUtils from "../../common/weather-utils.js" // 天气工具类
 
 // 导入模拟数据，发版时记得注释掉
 
@@ -138,7 +137,7 @@ export default {
       brightnessAdjustment
     )
 
-    // 使用小米Vela推荐的方式设置动态背景颜色
+    // 设置动态背景颜色
     this.pageBgStyle = {
       backgroundColor: adjustedColor
     }
@@ -200,40 +199,72 @@ export default {
     })
   },
 
-  // 数据传输部分，主要将天气数据保存到本地，无数据处理逻辑，非必要不进行修改
+  // 数据传输部分，接收到数据后加载并保存
   // 页面显示时
   onShow() {
     // 创建本地 interconnect 实例
     const connect = interconnect.instance()
 
     connect.onmessage = (data) => {
-      file.readText({
-        uri: "internal://files/weather.txt",
-        success: function () {
-          file.writeText({
-            uri: "internal://files/weather.txt",
-            text: data.data,
-            success: function () {
-              showToast({message: "数据更新，请重启应用", duration: 200})
-            },
-            fail: function (data, code) {
-              showToast({message: `数据更新失败${code}`, duration: 200})
-            }
-          })
-        },
-        fail: function (code) {
-          file.writeText({
-            uri: "internal://files/weather.txt",
-            text: data.data,
-            success: function () {
-              showToast({message: "数据保存，请重启应用", duration: 200})
-            },
-            fail: function (data, code) {
-              showToast({message: `数据保存失败${code}`, duration: 200})
-            }
-          })
+      try {
+        // 尝试解析接收到的数据
+        const weatherData = JSON.parse(data.data)
+        
+        // 验证数据格式是否正确
+        if (!weatherData || !weatherData.daily || !Array.isArray(weatherData.daily)) {
+          showToast({message: "数据格式错误", duration: 2000})
+          return
         }
-      })
+        
+        // 数据格式正确，直接更新界面显示
+        const updateTime = new Date(weatherData.updateTime)
+        const timeAgo = this.formatTimeAgo(updateTime)
+        const iconMap = this.getIconMap()
+        const todayStr = this.getTodayString()
+        const today = new Date()
+        let todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
+
+        if (todayData) {
+          this.updateCurrentWeather(weatherData, todayData, timeAgo, iconMap)
+          this.location = weatherData.location || "未知地点"
+          this.updateWeatherFigures(todayData)
+          this.updateForecast(weatherData, today, todayData, iconMap)
+          
+          // 界面更新成功后，保存数据到本地
+          // 使用重试机制确保数据保存成功
+          const saveDataToLocal = (retryCount = 0) => {
+            file.writeText({
+              uri: "internal://files/weather.txt",
+              text: data.data,
+              success: () => {
+                console.log("数据已保存到本地")
+              },
+              fail: (data, code) => {
+                console.error(`数据保存失败: ${code}, 重试次数: ${retryCount}`)
+                if (retryCount < 2) {
+                  // 最多重试2次
+                  setTimeout(() => {
+                    saveDataToLocal(retryCount + 1)
+                  }, 500)
+                } else {
+                  showToast({message: "数据保存失败", duration: 2000})
+                }
+              }
+            })
+          }
+          
+          // 开始保存数据
+          saveDataToLocal()
+          
+          showToast({message: "数据已更新", duration: 1000})
+        } else {
+          showToast({message: "数据存在缺失", duration: 2000})
+        }
+      } catch (e) {
+        // 数据解析失败，不保存到本地
+        showToast({message: "数据解析失败", duration: 2000})
+        console.error("数据解析失败:", e)
+      }
     }
 
     connect.onerror = (error) => {
