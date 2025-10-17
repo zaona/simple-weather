@@ -206,16 +206,72 @@ export default {
     const connect = interconnect.instance()
 
     connect.onmessage = (data) => {
+      // 检查是否为预检消息
+      if (data.data === "start") {
+        // 收到预检消息，重复发送5次ready响应，每隔0.2秒
+        let count = 0
+        const sendReadyMessage = () => {
+          if (count >= 5) return
+
+          // 检查连接状态
+          connect.getReadyState({
+            success: (res) => {
+              if (res.status !== 1) {
+                // 连接未成功，尝试重新连接
+                connect.open()
+                // 等待连接建立后再发送消息
+                setTimeout(sendReadyMessage, 1000)
+                return
+              }
+
+              // 连接成功，发送消息
+              let messageData = {
+                action: "ready",
+                timestamp: Date.now(),
+                count: count + 1
+              }
+
+              connect.send({
+                data: messageData,
+                success: () => {
+                  count++
+                  if (count < 5) {
+                    setTimeout(sendReadyMessage, 200)
+                  }
+                },
+                fail: () => {
+                  count++
+                  if (count < 5) {
+                    setTimeout(sendReadyMessage, 200)
+                  }
+                }
+              })
+            },
+            fail: () => {
+              count++
+              if (count < 5) {
+                setTimeout(sendReadyMessage, 200)
+              }
+            }
+          })
+        }
+
+        // 开始发送第一次ready消息
+        sendReadyMessage()
+        return
+      }
+
+      // 处理天气数据
       try {
         // 尝试解析接收到的数据
         const weatherData = JSON.parse(data.data)
-        
+
         // 验证数据格式是否正确
         if (!weatherData || !weatherData.daily || !Array.isArray(weatherData.daily)) {
           showToast({message: "数据格式错误", duration: 2000})
           return
         }
-        
+
         // 数据格式正确，直接更新界面显示
         const updateTime = new Date(weatherData.updateTime)
         const timeAgo = this.formatTimeAgo(updateTime)
@@ -229,7 +285,7 @@ export default {
           this.location = weatherData.location || "未知地点"
           this.updateWeatherFigures(todayData)
           this.updateForecast(weatherData, today, todayData, iconMap)
-          
+
           // 界面更新成功后，保存数据到本地
           // 使用重试机制确保数据保存成功
           const saveDataToLocal = (retryCount = 0) => {
@@ -239,8 +295,7 @@ export default {
               success: () => {
                 console.log("数据已保存到本地")
               },
-              fail: (data, code) => {
-                console.error(`数据保存失败: ${code}, 重试次数: ${retryCount}`)
+              fail: () => {
                 if (retryCount < 2) {
                   // 最多重试2次
                   setTimeout(() => {
@@ -252,10 +307,10 @@ export default {
               }
             })
           }
-          
+
           // 开始保存数据
           saveDataToLocal()
-          
+
           showToast({message: "数据已更新", duration: 1000})
         } else {
           showToast({message: "数据存在缺失", duration: 2000})
