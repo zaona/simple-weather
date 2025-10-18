@@ -75,83 +75,80 @@ export const WeatherIconMap = {
   999: 99 // 未知
 }
 
-// 天气背景颜色映射表 - 根据天气类型设置不同的背景颜色
-export const WeatherBackgroundMap = {
-  // 晴天 - 蓝色天空
-  100: '#4682B4', // 钢蓝色
-  150: '#4682B4', // 钢蓝色
+// 天气背景图片映射表
+export const WeatherBackgroundImageMap = {
+  // 多云 - 白天11，夜晚12
+  100: '21', // 晴天使用21
+  101: '11', // 多云白天
+  102: '11', // 少云白天
+  103: '11', // 晴间多云白天
+  104: '31', // 阴天白天
+  150: '22', // 晴天夜晚使用22
+  151: '12', // 多云夜晚
+  152: '12', // 少云夜晚
+  153: '12', // 晴间多云夜晚
+  154: '12', // 阴天夜晚
 
-  // 多云/少云 - 轻云蓝色
-  101: '#708090', // 石板灰
-  102: '#708090', // 石板灰
-  103: '#708090', // 石板灰
-  151: '#708090', // 石板灰
-  152: '#708090', // 石板灰
-  153: '#708090', // 石板灰
+  // 雨天 - 白天51，夜晚52
+  300: '51', // 阵雨白天
+  301: '51', // 强阵雨白天
+  302: '51', // 雷阵雨白天
+  303: '51', // 强雷阵雨白天
+  304: '51', // 雷阵雨伴有冰雹白天
+  305: '51', // 小雨白天
+  306: '51', // 中雨白天
+  307: '51', // 大雨白天
+  308: '51', // 极端降雨白天
+  309: '51', // 毛毛雨/细雨白天
+  310: '51', // 暴雨白天
+  311: '51', // 大暴雨白天
+  312: '51', // 特大暴雨白天
+  313: '51', // 冻雨白天
+  314: '51', // 小到中雨白天
+  315: '51', // 中到大雨白天
+  316: '51', // 大到暴雨白天
+  317: '51', // 暴雨到大暴雨白天
+  318: '51', // 大暴雨到特大暴雨白天
+  350: '52', // 阵雨夜晚
+  351: '52', // 强阵雨夜晚
+  399: '51', // 雨白天
 
-  // 阴天 - 灰色
-  104: '#696969', // 暗灰色
+  // 雪天 - 白天61，夜晚62
+  400: '61', // 小雪白天
+  401: '61', // 中雪白天
+  402: '61', // 大雪白天
+  403: '61', // 暴雪白天
+  404: '61', // 雨夹雪白天
+  405: '61', // 雨雪天气白天
+  406: '61', // 阵雨夹雪白天
+  407: '61', // 阵雪白天
+  408: '61', // 小到中雪白天
+  409: '61', // 中到大雪白天
+  410: '61', // 大到暴雪白天
+  456: '62', // 阵雨夹雪夜晚
+  457: '62', // 阵雪夜晚
+  499: '61', // 雪白天
 
-  // 雨天 - 灰蓝色
-  300: '#696969', // 暗灰色
-  301: '#696969', // 暗灰色
-  302: '#696969', // 暗灰色
-  303: '#696969', // 暗灰色
-  304: '#696969', // 暗灰色
-  305: '#696969', // 暗灰色
-  306: '#696969', // 暗灰色
-  307: '#505050', // 更暗的灰色
-  308: '#505050', // 更暗的灰色
-  309: '#696969', // 暗灰色
-  310: '#505050', // 更暗的灰色
-  311: '#505050', // 更暗的灰色
-  312: '#505050', // 更暗的灰色
-  313: '#696969', // 暗灰色
-  314: '#696969', // 暗灰色
-  315: '#696969', // 暗灰色
-  316: '#696969', // 暗灰色
-  317: '#505050', // 更暗的灰色
-  318: '#505050', // 更暗的灰色
-  350: '#696969', // 暗灰色
-  351: '#696969', // 暗灰色
-  399: '#696969', // 暗灰色
-
-  // 雪天 - 白色/银色
-  400: '#B0C4DE', // 浅钢蓝色
-  401: '#B0C4DE', // 浅钢蓝色
-  402: '#778899', // 浅石板灰
-  403: '#778899', // 浅石板灰
-  404: '#A9A9A9', // 暗灰色
-  405: '#A9A9A9', // 暗灰色
-  406: '#A9A9A9', // 暗灰色
-  407: '#B0C4DE', // 浅钢蓝色
-  408: '#B0C4DE', // 浅钢蓝色
-  409: '#778899', // 浅石板灰
-  410: '#778899', // 浅石板灰
-  456: '#A9A9A9', // 暗灰色
-  457: '#B0C4DE', // 浅钢蓝色
-  499: '#B0C4DE', // 浅钢蓝色
-
-  // 雾霾 - 灰色/黄色
-  500: '#A9A9A9', // 暗灰色
-  501: '#A9A9A9', // 暗灰色
-  502: '#D2B48C', // 浅褐色
-  503: '#D2B48C', // 浅褐色
-  504: '#D2B48C', // 浅褐色
-  507: '#D2B48C', // 浅褐色
-  508: '#D2B48C', // 浅褐色
-  509: '#A9A9A9', // 暗灰色
-  510: '#A9A9A9', // 暗灰色
-  511: '#D2B48C', // 浅褐色
-  512: '#D2B48C', // 浅褐色
-  513: '#D2B48C', // 浅褐色
-  514: '#A9A9A9', // 暗灰色
-  515: '#A9A9A9', // 暗灰色
+  // 雾霾 - 沙尘白天41，夜晚42
+  500: '41', // 薄雾白天
+  501: '41', // 雾白天
+  502: '41', // 霾白天
+  503: '41', // 扬沙白天
+  504: '41', // 浮尘白天
+  507: '41', // 沙尘暴白天
+  508: '41', // 强沙尘暴白天
+  509: '42', // 浓雾夜晚
+  510: '42', // 强浓雾夜晚
+  511: '42', // 中度霾夜晚
+  512: '42', // 重度霾夜晚
+  513: '42', // 严重霾夜晚
+  514: '42', // 大雾夜晚
+  515: '42', // 特强浓雾夜晚
 
   // 特殊天气
-  900: '#FF6347', // 番茄红色（热）
-  901: '#4682B4', // 钢蓝色（冷）
-  999: '#000000'  // 默认黑色
+  900: '21', // 热白天
+  901: '22', // 冷夜晚
+  999: '11'  // 未知默认多云
 }
 
 // 日期工具类
@@ -227,9 +224,9 @@ export const WeatherDataUtils = {
     return WeatherIconMap[iconCode] || iconCode
   },
 
-  // 获取映射后的背景颜色
-  getMappedBackgroundColor(iconCode) {
-    return WeatherBackgroundMap[iconCode] || WeatherBackgroundMap[999] // 默认颜色
+  // 获取映射后的背景图片
+  getMappedBackgroundImage(iconCode) {
+    return WeatherBackgroundImageMap[iconCode] || WeatherBackgroundImageMap[999] // 默认背景图片
   },
 
   // 格式化温度范围
@@ -242,9 +239,9 @@ export const WeatherDataUtils = {
     pageData.updateTime = timeAgo
     pageData.iconCode = this.getMappedIconCode(todayData.iconDay)
     pageData.textDay = todayData.textDay
-    pageData.tempMinMax = this.formatTempRange(todayData.tempMin, todayData.tempMax)
-    // 设置背景颜色
-    pageData.backgroundColor = this.getMappedBackgroundColor(todayData.iconDay)
+    pageData.tempMinMax = this.formatTempRange(todayData.tempMin, todayData.tempMax) 
+    // 设置背景图片
+    pageData.backgroundImage = this.getMappedBackgroundImage(todayData.iconDay)
   },
 
   // 更新详情页当前天气信息
@@ -253,8 +250,6 @@ export const WeatherDataUtils = {
     pageData.iconCode = this.getMappedIconCode(selectedData.iconDay)
     pageData.textDay = selectedData.textDay
     pageData.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
-    // 设置背景颜色
-    pageData.backgroundColor = this.getMappedBackgroundColor(selectedData.iconDay)
   },
 
   // 获取基础天气指标
@@ -312,103 +307,16 @@ export const WeatherDataUtils = {
           name: displayName,
           tempMinMax: this.formatTempRange(day.tempMin, day.tempMax),
           iconCode: this.getMappedIconCode(day.iconDay),
-          backgroundColor: this.getMappedBackgroundColor(day.iconDay),
           uniqueId: dayDiff + 1
         }
       })
   }
 }
 
-// 颜色处理工具函数
-export const ColorUtils = {
-  // 调整颜色亮度的函数
-  // brightness 值范围：-1（全黑）到 1（全白），0 为原始颜色
-  adjustBrightness(hexColor, brightness) {
-    // 如果没有提供颜色，返回默认颜色
-    if (!hexColor) {
-      return '#000000';
-    }
-    
-    // 移除 # 符号（如果存在）
-    hexColor = hexColor.replace('#', '');
-    
-    // 确保颜色代码是有效的6位十六进制数
-    if (hexColor.length !== 6) {
-      return '#000000';
-    }
-    
-    // 将十六进制颜色转换为 RGB
-    let r = parseInt(hexColor.substring(0, 2), 16);
-    let g = parseInt(hexColor.substring(2, 4), 16);
-    let b = parseInt(hexColor.substring(4, 6), 16);
-    
-    // 检查是否为有效数字
-    if (isNaN(r) || isNaN(g) || isNaN(b)) {
-      return '#000000';
-    }
-    
-    // 应用亮度调整
-    if (brightness < 0) {
-      // 变暗
-      const factor = 1 + brightness;
-      r = Math.floor(r * factor);
-      g = Math.floor(g * factor);
-      b = Math.floor(b * factor);
-    } else if (brightness > 0) {
-      // 变亮
-      const factor = 1 - brightness;
-      r = Math.floor(r + (255 - r) * factor);
-      g = Math.floor(g + (255 - g) * factor);
-      b = Math.floor(b + (255 - b) * factor);
-    }
-    
-    // 确保值在 0-255 范围内
-    r = Math.max(0, Math.min(255, r));
-    g = Math.max(0, Math.min(255, g));
-    b = Math.max(0, Math.min(255, b));
-    
-    // 转换回十六进制并返回
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-  },
-  
-  // 根据时间计算亮度调整值
-  // 可选参数date用于测试或指定特定时间
-  getBrightnessByTime(date) {
-    const now = date || new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    
-    // 夜晚时间（20:00-6:00）逐渐变暗
-    if (hours >= 20 || hours < 6) {
-      // 计算夜晚进度（0-1）
-      let progress;
-      if (hours >= 20) {
-        // 18:00-24:00，从0到1
-        // 使用小时和分钟来计算更精确的进度
-        progress = ((hours - 18) * 60 + minutes) / (6 * 60);
-      } else {
-        // 0:00-6:00，从1到0
-        // 使用小时和分钟来计算更精确的进度
-        progress = 1 - ((hours * 60 + minutes) / (6 * 60));
-      }
-      // 确保进度值在0-1范围内
-      progress = Math.max(0, Math.min(1, progress));
-      
-      // 返回亮度调整值（-0.8 到 0）
-      const brightness = -0.8 * progress;
-      return brightness;
-    }
-    
-    // 白天时间（6:00-20:00）保持正常亮度
-    return 0;
-  }
-}
-
 // 导出所有工具类
 export default {
   WeatherIconMap,
-  WeatherBackgroundMap,
+  WeatherBackgroundImageMap,
   DateUtils,
-  WeatherDataUtils,
-  ColorUtils
+  WeatherDataUtils
 }
