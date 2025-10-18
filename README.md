@@ -10,6 +10,8 @@
 
 ## 感谢
 - [倒数日](https://github.com/sf-yuzifu/daymatter) 项目
+- [WaiJade](https://github.com/CheongSzesuen)
+- [xinghengCN](https://github.com/OnDriveLine)
 
 ## 快应用包名
 com.application.zaona.weather
