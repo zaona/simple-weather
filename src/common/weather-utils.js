@@ -75,7 +75,7 @@ export const WeatherIconMap = {
   999: 99 // 未知
 }
 
-// 天气背景图片映射表
+// 天气背景图片映射表 - 根据天气类型设置不同的背景图片
 export const WeatherBackgroundImageMap = {
   // 多云 - 白天11，夜晚12
   100: '21', // 晴天使用21
@@ -224,9 +224,42 @@ export const WeatherDataUtils = {
     return WeatherIconMap[iconCode] || iconCode
   },
 
+  // 判断当前时间是否为夜晚（晚6点到早6点）
+  isNightTime() {
+    const now = new Date()
+    const hour = now.getHours()
+    // 晚6点到早6点是夜晚时间
+    return hour >= 18 || hour < 6
+  },
+
   // 获取映射后的背景图片
-  getMappedBackgroundImage(iconCode) {
-    return WeatherBackgroundImageMap[iconCode] || WeatherBackgroundImageMap[999] // 默认背景图片
+  getMappedBackgroundImage(iconCode, isNight = false) {
+    // 获取基础背景图片
+    let backgroundImage = WeatherBackgroundImageMap[iconCode] || WeatherBackgroundImageMap[999]
+    
+    // 如果是夜晚，根据具体的天气类型转换背景图片
+    if (isNight) {
+      if (backgroundImage === '11') {
+        backgroundImage = '12'
+      } 
+      else if (backgroundImage === '21') {
+        backgroundImage = '22'
+      }
+      else if (backgroundImage === '31') {
+        backgroundImage = '12'
+      }
+      else if (backgroundImage === '41') {
+        backgroundImage = '42'
+      }
+      else if (backgroundImage === '51') {
+        backgroundImage = '52'
+      }
+      else if (backgroundImage === '61') {
+        backgroundImage = '62'
+      }
+    }
+    
+    return backgroundImage
   },
 
   // 格式化温度范围
@@ -239,9 +272,11 @@ export const WeatherDataUtils = {
     pageData.updateTime = timeAgo
     pageData.iconCode = this.getMappedIconCode(todayData.iconDay)
     pageData.textDay = todayData.textDay
-    pageData.tempMinMax = this.formatTempRange(todayData.tempMin, todayData.tempMax) 
-    // 设置背景图片
-    pageData.backgroundImage = this.getMappedBackgroundImage(todayData.iconDay)
+    pageData.tempMinMax = this.formatTempRange(todayData.tempMin, todayData.tempMax)
+    
+    // 设置背景图片 - 根据时间判断是白天还是夜晚
+    const isNight = this.isNightTime()
+    pageData.backgroundImage = this.getMappedBackgroundImage(todayData.iconDay, isNight)
   },
 
   // 更新详情页当前天气信息
