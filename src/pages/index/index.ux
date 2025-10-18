@@ -1,9 +1,9 @@
 <template>
   <!-- 页面容器 -->
-  <stack class="page">
+  <div class="page">
     <!-- 背景图片 -->
     <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
-    <scroll class="main" scroll-y="true" bounces="true">
+    <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0">
       <!-- 头部信息：地点和更新时间 -->
       <div class="header">
         <text class="page-title">{{ location }}</text>
@@ -48,7 +48,7 @@
         </div>
       </div>
     </scroll>
-  </stack>
+  </div>
 </template>
 
 <script>
@@ -341,10 +341,54 @@ export default {
 <style>
 @import "../../common/style.css";
 
+.page {
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
 .page-bg {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   object-fit: cover;
+}
+
+/* 针对小米手环9 (分辨率: 192*490, 水平dp值: 96) */
+@media (width: 96) {
+  .page-bg {
+    width: 192px;
+    height: 490px;
+  }
+}
+
+/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 160) {
+  .page-bg {
+    width: 336px;
+    height: 480px;
+  }
+}
+
+/* 针对REDMI Watch 5 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 216) {
+  .page-bg {
+    width: 432px;
+    height: 514px;
+  }
+}
+
+/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
+@media (width: 106) {
+  .page-bg {
+    width: 212px;
+    height: 520px;
+  }
+}
+
+.main {
+  position: relative;
+  z-index: 1;
 }
 
 .day-weather-item {
