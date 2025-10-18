@@ -1,9 +1,9 @@
 <template>
   <!-- 页面容器 -->
-  <div class="page">
+  <stack class="page">
     <!-- 背景图片 -->
     <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
-    <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0">
+    <scroll class="main" scroll-y="true" bounces="true">
       <!-- 头部信息：地点和更新时间 -->
       <div class="header">
         <text class="page-title">{{ location }}</text>
@@ -48,7 +48,7 @@
         </div>
       </div>
     </scroll>
-  </div>
+  </stack>
 </template>
 
 <script>
@@ -341,24 +341,10 @@ export default {
 <style>
 @import "../../common/style.css";
 
-.page {
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
 .page-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.main {
-  position: relative;
-  z-index: 1;
 }
 
 .day-weather-item {
