@@ -1,6 +1,13 @@
 <template>
   <!-- 页面容器，支持右滑返回 -->
   <div class="page" @swipe="toHomePage">
+    
+    <!-- 加载动画容器 -->
+    <div class="loading-container" if="{{ isLoading }}">
+      <div class="loading-bg"></div>
+      <image class="loading-icon" src="/common/loading.png" />
+    </div>
+    
     <scroll class="main" scroll-y="true" bounces="true">
       <!-- 头部信息：地点和选中日期 -->
       <div class="header">
@@ -43,6 +50,7 @@ export default {
 
   // 页面私有数据
   private: {
+    isLoading: true, // 加载状态
     location: "__", // 地点
     updateTime: "__", // 选中的日期或加载状态
     iconCode: "__", // 天气图标代码
@@ -136,6 +144,7 @@ export default {
   onInit() {
     // 检查是否接收到日期参数
     if (!this.selectedDate) {
+      this.isLoading = false // 隐藏加载动画
       showToast({message: "未接收到日期", duration: 2000}) // 显示错误提示
       return // 无参数则直接返回
     }
@@ -168,11 +177,15 @@ export default {
         } catch (e) {
           // JSON 解析失败
           showToast({message: "数据格式错误", duration: 2000}) // 显示错误提示
+        } finally {
+          // 数据加载完成，隐藏加载动画
+          this.isLoading = false
         }
       },
       // 文件读取失败的回调函数
       fail: (data, code) => {
         // 文件读取失败
+        this.isLoading = false // 隐藏加载动画
         showToast({message: "无法读取天气数据", duration: 2000}) // 显示错误提示
       }
     })
@@ -182,4 +195,46 @@ export default {
 
 <style>
 @import "../../common/style.css";
+
+/* 加载动画样式 */
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.loading-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+}
+
+.loading-icon {
+  width: 60px;
+  height: 60px;
+  z-index: 1000;
+  animation-name: rotate;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  transform-origin: 30px 30px;
+}
+
+/* 旋转动画 */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>

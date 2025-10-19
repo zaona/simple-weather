@@ -3,6 +3,13 @@
   <div class="page">
     <!-- 背景图片 -->
     <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
+
+    <!-- 加载动画容器 -->
+    <div class="loading-container" if="{{ isLoading }}">
+      <div class="loading-bg"></div>
+      <image class="loading-icon" src="/common/loading.png" />
+    </div>
+
     <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0">
       <!-- 头部信息：地点和更新时间 -->
       <div class="header">
@@ -66,6 +73,8 @@ import WeatherUtils from "../../common/weather-utils.js" // 天气工具类
 export default {
   // 页面私有数据
   private: {
+    isLoading: true, // 加载状态
+    isFirstLoad: true, // 是否是首次加载
     location: "__", // 地点
     updateTime: "__", // 更新时间
     iconCode: "__", // 天气图标代码
@@ -174,10 +183,21 @@ export default {
           }
         } catch (e) {
           showToast({message: "数据格式错误", duration: 200})
+        } finally {
+          // 数据加载完成，如果是首次加载则隐藏加载动画
+          if (this.isFirstLoad) {
+            this.isLoading = false
+            this.isFirstLoad = false
+          }
         }
       },
       fail: (data, code) => {
         showToast({message: "本地无数据", duration: 200})
+        // 数据加载完成，如果是首次加载则隐藏加载动画
+        if (this.isFirstLoad) {
+          this.isLoading = false
+          this.isFirstLoad = false
+        }
       }
     })
   },
@@ -191,6 +211,9 @@ export default {
     connect.onmessage = (data) => {
       // 检查是否为预检消息
       if (data.data === "start") {
+        // 收到预检消息时显示加载动画
+        this.isLoading = true
+
         // 收到预检消息，重复发送5次ready响应，每隔0.2秒
         let count = 0
         const sendReadyMessage = () => {
@@ -252,6 +275,7 @@ export default {
         // 验证数据格式是否正确
         if (!weatherData || !weatherData.daily || !Array.isArray(weatherData.daily)) {
           showToast({message: "数据格式错误", duration: 2000})
+          this.isLoading = false
           return
         }
 
@@ -302,11 +326,15 @@ export default {
         // 数据解析失败，不保存到本地
         showToast({message: "数据解析失败", duration: 2000})
         console.error("数据解析失败:", e)
+      } finally {
+        // 数据处理完成，隐藏加载动画
+        this.isLoading = false
       }
     }
 
     connect.onerror = (error) => {
       console.error("Connection error:", error)
+      this.isLoading = false
     }
 
     connect.onclose = () => {
@@ -408,5 +436,48 @@ export default {
 .small-weather-icon {
   width: 48px;
   height: 48px;
+}
+
+/* 加载动画样式 */
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.loading-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+}
+
+/* 加载动画图标 */
+.loading-icon {
+  width: 60px;
+  height: 60px;
+  z-index: 1000;
+  animation-name: rotate;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  transform-origin: 30px 30px;
+}
+
+/* 旋转动画关键帧 */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
