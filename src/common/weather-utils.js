@@ -285,6 +285,10 @@ export const WeatherDataUtils = {
     pageData.iconCode = this.getMappedIconCode(selectedData.iconDay)
     pageData.textDay = selectedData.textDay
     pageData.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
+    
+    // 设置背景图片 - 根据时间判断是白天还是夜晚
+    const isNight = this.isNightTime()
+    pageData.backgroundImage = this.getMappedBackgroundImage(selectedData.iconDay, isNight)
   },
 
   // 获取基础天气指标
