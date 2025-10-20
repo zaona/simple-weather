@@ -200,7 +200,7 @@ export const DateUtils = {
     const weekdays = this.getWeekdayNames()
     const dateParts = dateStr.split("-")
     const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
-    
+
     if (dayDiff === -1) {
       return "昨天"
     } else if (dayDiff === 0) {
@@ -219,9 +219,28 @@ export const DateUtils = {
 
 // 天气数据工具类
 export const WeatherDataUtils = {
-  // 获取映射后的图标代码
-  getMappedIconCode(iconCode) {
-    return WeatherIconMap[iconCode] || iconCode
+  // 获取映射后的图标代码（考虑白天/夜晚）
+  getMappedIconCode(iconCode, isNight = false) {
+    // 获取基础图标代码
+    let mappedIcon = WeatherIconMap[iconCode] || iconCode
+
+    // 如果是夜晚，根据具体的天气类型转换图标代码
+    if (isNight) {
+      // 晴天类：白天sunny，夜晚sunny-night
+      if (mappedIcon === 'sunny') {
+        mappedIcon = 'sunny-night'
+      }
+      // 多云类：白天cloudy，夜晚cloudy-night
+      else if (mappedIcon === 'cloudy') {
+        mappedIcon = 'cloudy-night'
+      }
+      // 阴天类：白天fog，夜晚fog-night
+      else if (mappedIcon === 'fog') {
+        mappedIcon = 'fog-night'
+      }
+    }
+
+    return mappedIcon
   },
 
   // 判断当前时间是否为夜晚（晚6点到早6点）
@@ -236,12 +255,12 @@ export const WeatherDataUtils = {
   getMappedBackgroundImage(iconCode, isNight = false) {
     // 获取基础背景图片
     let backgroundImage = WeatherBackgroundImageMap[iconCode] || WeatherBackgroundImageMap[999]
-    
+
     // 如果是夜晚，根据具体的天气类型转换背景图片
     if (isNight) {
       if (backgroundImage === '11') {
         backgroundImage = '12'
-      } 
+      }
       else if (backgroundImage === '21') {
         backgroundImage = '22'
       }
@@ -258,7 +277,7 @@ export const WeatherDataUtils = {
         backgroundImage = '62'
       }
     }
-    
+
     return backgroundImage
   },
 
@@ -270,34 +289,34 @@ export const WeatherDataUtils = {
   // 更新当前天气信息
   updateCurrentWeather(pageData, weatherData, todayData, timeAgo) {
     pageData.updateTime = timeAgo
-    pageData.iconCode = this.getMappedIconCode(todayData.iconDay)
+
+    // 设置背景图片和图标 - 根据时间判断是白天还是夜晚
+    const isNight = this.isNightTime()
+    pageData.iconCode = this.getMappedIconCode(todayData.iconDay, isNight)
     pageData.textDay = todayData.textDay
     pageData.tempMinMax = this.formatTempRange(todayData.tempMin, todayData.tempMax)
-    
-    // 设置背景图片 - 根据时间判断是白天还是夜晚
-    const isNight = this.isNightTime()
     pageData.backgroundImage = this.getMappedBackgroundImage(todayData.iconDay, isNight)
   },
 
   // 更新详情页当前天气信息
   updateDetailCurrentWeather(pageData, selectedData) {
     pageData.updateTime = pageData.selectedDate || ""
-    pageData.iconCode = this.getMappedIconCode(selectedData.iconDay)
+
+    // 设置背景图片和图标 - 根据时间判断是白天还是夜晚
+    const isNight = this.isNightTime()
+    pageData.iconCode = this.getMappedIconCode(selectedData.iconDay, isNight)
     pageData.textDay = selectedData.textDay
     pageData.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
-    
-    // 设置背景图片 - 根据时间判断是白天还是夜晚
-    const isNight = this.isNightTime()
     pageData.backgroundImage = this.getMappedBackgroundImage(selectedData.iconDay, isNight)
   },
 
   // 获取基础天气指标
   getBasicWeatherFigures(todayData) {
     return [
-      {name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1},
-      {name: "相对湿度 (%)", value: todayData.humidity, uniqueId: 2},
-      {name: todayData.windDirDay || "风向", value: todayData.windScaleDay, uniqueId: 3},
-      {name: "气压 (hPa)", value: todayData.pressure, uniqueId: 4}
+      { name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1 },
+      { name: "相对湿度 (%)", value: todayData.humidity, uniqueId: 2 },
+      { name: todayData.windDirDay || "风向", value: todayData.windScaleDay, uniqueId: 3 },
+      { name: "气压 (hPa)", value: todayData.pressure, uniqueId: 4 }
     ]
   },
 
@@ -341,11 +360,14 @@ export const WeatherDataUtils = {
         const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
         const displayName = DateUtils.getDisplayName(day.fxDate, dayDiff)
         
+        // 判断是白天还是夜晚
+        const isNight = this.isNightTime()
+
         return {
           fxDate: day.fxDate,
           name: displayName,
           tempMinMax: this.formatTempRange(day.tempMin, day.tempMax),
-          iconCode: this.getMappedIconCode(day.iconDay),
+          iconCode: this.getMappedIconCode(day.iconDay, isNight),
           uniqueId: dayDiff + 1
         }
       })
