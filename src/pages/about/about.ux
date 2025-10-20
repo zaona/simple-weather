@@ -2,14 +2,14 @@
   <div class="page" @swipe="toHomePage">
     <scroll class="main" scroll-y="true" bounces="true">
       <div class="header">
-        <text class="page-title">更多</text>
+        <text class="page-title">关于</text>
         <!-- <text class="page-subtitle">简明天气</text> -->
       </div>
 
        <div class="hero-content">
         <image class="weather-icon" src="/common/logo.png" />
         <text class="app-text">简明天气</text>
-        <text class="app-version">v1.6.0.7</text>
+        <text class="app-version">v1.6.0.12</text>
       </div>
       <!-- <div class="hero-content" style="margin-top: 24px">
         <div class="button" @click="handleDebug">

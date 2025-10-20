@@ -51,7 +51,7 @@
       </div>
       <div class="hero-content" style="margin-top: 24px">
         <div class="button" onclick="About()">
-          <text class="button-text">更多</text>
+          <text class="button-text">关于</text>
         </div>
       </div>
     </scroll>
