@@ -10,7 +10,7 @@
       <image class="loading-icon" src="/common/loading.png" />
     </div>
 
-    <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0">
+    <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0" if="{{ !isLoading }}">
       <!-- 头部信息：地点和更新时间 -->
       <div class="header">
         <text class="page-title">{{ location }}</text>

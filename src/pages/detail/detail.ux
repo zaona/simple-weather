@@ -10,7 +10,7 @@
       <image class="loading-icon" src="/common/loading.png" />
     </div>
     
-    <scroll class="main" scroll-y="true" bounces="true">
+    <scroll class="main" scroll-y="true" bounces="true" if="{{ !isLoading }}">
       <!-- 头部信息：地点和选中日期 -->
       <div class="header">
         <text class="page-title">详情</text>
