@@ -75,6 +75,7 @@ export default {
   private: {
     isLoading: true, // 加载状态
     isFirstLoad: true, // 是否是首次加载
+    isConnecting: false, // 连接状态
     location: "__", // 地点
     updateTime: "__", // 更新时间
     iconCode: "__", // 天气图标代码
@@ -211,59 +212,50 @@ export default {
     connect.onmessage = (data) => {
       // 检查是否为预检消息
       if (data.data === "start") {
-        // 收到预检消息时显示加载动画
-        this.isLoading = true
+        // 如果已经在连接中，忽略新的连接请求
+        if (this.isConnecting) {
+          return // 直接忽略，不显示任何提示
+        }
 
-        // 收到预检消息，重复发送5次ready响应，每隔0.2秒
-        let count = 0
-        const sendReadyMessage = () => {
-          if (count >= 5) return
+        // 设置连接状态为正在连接
+        this.isConnecting = true
 
-          // 检查连接状态
-          connect.getReadyState({
-            success: (res) => {
-              if (res.status !== 1) {
-                // 连接未成功，尝试重新连接
-                connect.open()
-                // 等待连接建立后再发送消息
-                setTimeout(sendReadyMessage, 1000)
-                return
-              }
+        // 根据App端的握手模式，我们需要立即响应ready消息
+        // App端会以600ms间隔发送start消息，并在50ms内检查ready响应
+        let retryCount = 0
+        const maxRetries = 5 // 最多重试5次
+        
+        const sendReadyResponse = () => {
+          // 检查是否已超过最大重试次数
+          if (retryCount >= maxRetries) {
+            console.log("已达到最大重试次数，停止发送ready响应")
+            this.isConnecting = false
+            return
+          }
+          
+          retryCount++
+          
+          // 立即发送ready响应
+          let messageData = {
+            action: "ready",
+            timestamp: Date.now()
+          }
 
-              // 连接成功，发送消息
-              let messageData = {
-                action: "ready",
-                timestamp: Date.now(),
-                count: count + 1
-              }
-
-              connect.send({
-                data: messageData,
-                success: () => {
-                  count++
-                  if (count < 5) {
-                    setTimeout(sendReadyMessage, 200)
-                  }
-                },
-                fail: () => {
-                  count++
-                  if (count < 5) {
-                    setTimeout(sendReadyMessage, 200)
-                  }
-                }
-              })
+          connect.send({
+            data: messageData,
+            success: () => {
+              // 短暂延迟后重试
+              setTimeout(sendReadyResponse, 200)
             },
             fail: () => {
-              count++
-              if (count < 5) {
-                setTimeout(sendReadyMessage, 200)
-              }
+              // 发送失败，短暂延迟后重试
+              setTimeout(sendReadyResponse, 200)
             }
           })
         }
 
-        // 开始发送第一次ready消息
-        sendReadyMessage()
+        // 立即发送ready响应
+        sendReadyResponse()
         return
       }
 
@@ -329,12 +321,16 @@ export default {
       } finally {
         // 数据处理完成，隐藏加载动画
         this.isLoading = false
+        // 重置连接状态，允许下次连接
+        this.isConnecting = false
       }
     }
 
     connect.onerror = (error) => {
       console.error("Connection error:", error)
       this.isLoading = false
+      // 重置连接状态，允许重新连接
+      this.isConnecting = false
     }
 
     connect.onclose = () => {
@@ -352,6 +348,9 @@ export default {
 
   // 页面隐藏时
   onHide() {
+    // 重置连接状态
+    this.isConnecting = false
+    
     if (this._connectInstance && typeof this._connectInstance.close === "function") {
       this._connectInstance.close()
     }
@@ -359,6 +358,9 @@ export default {
 
   // 页面销毁时
   onDestroy() {
+    // 重置连接状态
+    this.isConnecting = false
+    
     if (this._connectInstance && typeof this._connectInstance.close === "function") {
       this._connectInstance.close()
     }
