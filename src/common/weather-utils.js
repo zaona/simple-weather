@@ -289,14 +289,43 @@ export const WeatherDataUtils = {
 
   /**
    * 判断当前时间是否为夜晚
-   * 夜晚定义为晚6点到早6点
+   * 如果提供了日出日落时间，则根据实际时间判断；否则使用默认时间（18:00-6:00）
+   * @param {string} sunrise - 日出时间，格式：HH:MM（如 "06:30"）
+   * @param {string} sunset - 日落时间，格式：HH:MM（如 "18:45"）
    * @returns {boolean} 是否为夜晚
    */
-  isNightTime() {
+  isNightTime(sunrise = null, sunset = null) {
     const now = new Date()
     const hour = now.getHours()
-    // 晚6点到早6点是夜晚时间
+    const minute = now.getMinutes()
+    const currentMinutes = hour * 60 + minute
+    
+    // 如果提供了日出日落时间，使用实际时间判断
+    if (sunrise && sunset) {
+      try {
+        const sunriseMinutes = this.parseTimeToMinutes(sunrise)
+        const sunsetMinutes = this.parseTimeToMinutes(sunset)
+        
+        // 在日落之后或日出之前是夜晚
+        return currentMinutes < sunriseMinutes || currentMinutes >= sunsetMinutes
+      } catch (e) {
+        console.error('解析日出日落时间失败:', e)
+        // 解析失败，使用默认判断
+      }
+    }
+    
+    // 默认：晚6点到早6点是夜晚时间
     return hour >= 18 || hour < 6
+  },
+
+  /**
+   * 解析时间字符串为分钟数
+   * @param {string} timeStr - 时间字符串，格式：HH:MM
+   * @returns {number} 从0点开始的分钟数
+   */
+  parseTimeToMinutes(timeStr) {
+    const [hour, minute] = timeStr.split(':').map(Number)
+    return hour * 60 + minute
   },
 
   /**
@@ -355,8 +384,8 @@ export const WeatherDataUtils = {
   updateCurrentWeather(pageData, weatherData, todayData, timeAgo) {
     pageData.updateTime = timeAgo
 
-    // 设置背景图片和图标 - 根据时间判断是白天还是夜晚
-    const isNight = this.isNightTime()
+    // 设置背景图片和图标 - 根据实际日出日落时间判断是白天还是夜晚
+    const isNight = this.isNightTime(todayData.sunrise, todayData.sunset)
     pageData.iconCode = this.getMappedIconCode(todayData.iconDay, isNight)
     pageData.textDay = todayData.textDay
     pageData.tempMinMax = this.formatTempRange(todayData.tempMin, todayData.tempMax)
@@ -371,8 +400,8 @@ export const WeatherDataUtils = {
   updateDetailCurrentWeather(pageData, selectedData) {
     pageData.updateTime = pageData.selectedDate || ""
 
-    // 设置背景图片和图标 - 根据时间判断是白天还是夜晚
-    const isNight = this.isNightTime()
+    // 设置背景图片和图标 - 根据实际日出日落时间判断是白天还是夜晚
+    const isNight = this.isNightTime(selectedData.sunrise, selectedData.sunset)
     pageData.iconCode = this.getMappedIconCode(selectedData.iconDay, isNight)
     pageData.textDay = selectedData.textDay
     pageData.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
@@ -435,6 +464,12 @@ export const WeatherDataUtils = {
    * @returns {Array<Object>} 格式化后的天气预报数组
    */
   processForecastData(weatherData) {
+    // 获取今天的日出日落时间，用于判断当前是白天还是夜晚
+    const todayStr = DateUtils.getTodayString()
+    const todayData = weatherData.daily.find(day => day.fxDate === todayStr)
+    const todaySunrise = todayData ? todayData.sunrise : null
+    const todaySunset = todayData ? todayData.sunset : null
+    
     return weatherData.daily
       .filter(day => {
         const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
@@ -444,8 +479,8 @@ export const WeatherDataUtils = {
         const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
         const displayName = DateUtils.getDisplayName(day.fxDate, dayDiff)
         
-        // 判断是白天还是夜晚
-        const isNight = this.isNightTime()
+        // 使用今天的日出日落时间判断当前是白天还是夜晚
+        const isNight = this.isNightTime(todaySunrise, todaySunset)
 
         return {
           fxDate: day.fxDate,

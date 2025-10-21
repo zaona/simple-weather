@@ -8,7 +8,7 @@
       <div class="hero-content">
         <image class="weather-icon" src="/common/logo.png" />
         <text class="app-text">简明天气</text>
-        <text class="app-version">v1.6.0.12</text>
+        <text class="app-version">v1.6.0.14</text>
       </div>
 
       <!-- 调试面板（仅在调试模式下显示） -->
