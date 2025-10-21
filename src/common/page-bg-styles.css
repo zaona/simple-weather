@@ -1,0 +1,45 @@
+/**
+ * 页面背景公共样式
+ * 用于 index 和 detail 页面的背景图片显示和适配
+ */
+
+/* 页面背景图片基础样式 */
+.page-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+}
+
+/* 针对小米手环9 (分辨率: 192*490, 水平dp值: 96) */
+@media (width: 96) {
+  .page-bg {
+    width: 192px;
+    height: 490px;
+  }
+}
+
+/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 160) {
+  .page-bg {
+    width: 336px;
+    height: 480px;
+  }
+}
+
+/* 针对REDMI Watch 5 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 216) {
+  .page-bg {
+    width: 432px;
+    height: 514px;
+  }
+}
+
+/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
+@media (width: 106) {
+  .page-bg {
+    width: 212px;
+    height: 520px;
+  }
+}
+

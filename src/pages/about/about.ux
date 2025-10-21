@@ -3,124 +3,66 @@
     <scroll class="main" scroll-y="true" bounces="true">
       <div class="header">
         <text class="page-title">关于</text>
-        <!-- <text class="page-subtitle">简明天气</text> -->
       </div>
 
-       <div class="hero-content">
+      <div class="hero-content">
         <image class="weather-icon" src="/common/logo.png" />
         <text class="app-text">简明天气</text>
         <text class="app-version">v1.6.0.12</text>
       </div>
-      <!-- <div class="hero-content" style="margin-top: 24px">
-        <div class="button" @click="handleDebug">
-          <text class="button-text">调试</text>
+
+      <!-- 调试面板（仅在调试模式下显示） -->
+      <div class="hero-content" style="margin-top: 24px" if="{{ showDebugPanel }}">
+        <div class="button" @click="handleInjectMockData">
+          <text class="button-text">模拟数据</text>
         </div>
-      </div> -->
+        <div class="button" @click="handleClearData" style="margin-top: 12px">
+          <text class="button-text">清除数据</text>
+        </div>
+      </div>
     </scroll>
   </div>
 </template>
 
 <script>
 import router from "@system.router"
-import {showToast} from "@system.prompt"
-import interconnect from "@system.interconnect"
-
-let conn = null
+import DebugService from "../../services/debug-service.js"
 
 export default {
-  // 右滑返回index页面
+  // 页面私有数据
+  private: {
+    showDebugPanel: false  // 是否显示调试面板
+  },
+
+  /**
+   * 页面初始化
+   */
+  onInit() {
+    // 根据调试模式决定是否显示调试面板
+    this.showDebugPanel = DebugService.isDebugMode()
+  },
+
+  /**
+   * 右滑返回index页面
+   */
   toHomePage(eve) {
     if (eve.direction === "right") {
       router.back()
     }
   },
-  
-  // 调试按钮点击事件
-  handleDebug() {
-    // 如果连接不存在，创建连接
-    if (!conn) {
-      this.createConnection()
-    }
-    
-    // 发送测试消息
-    this.sendMessage()
+
+  /**
+   * 注入模拟数据
+   */
+  async handleInjectMockData() {
+    await DebugService.injectMockData()
   },
-  
-  // 创建连接
-  createConnection() {
-    console.log('-------------创建连接----------------')
-    conn = interconnect.instance()
-    
-    conn.getReadyState({
-      success: data => {
-        if (data.status === 1) {
-          console.log('-----------------连接成功-----------------')
-          showToast({message: "连接成功", duration: 1000})
-        } else if (data.status === 2) {
-          console.log('-----------------连接失败-----------------')
-          showToast({message: "连接失败", duration: 2000})
-        }
-      },
-      fail: (data, code) => {
-        console.log(`-----------------getReadyState handling fail, code = ${code}-----------------`)
-        showToast({message: `连接失败: ${code}`, duration: 2000})
-      }
-    })
-    
-    conn.onmessage = (data) => {
-      console.log(`-----------------onmessage received message-------------------: ${data.data}`)
-      showToast({message: `收到消息: ${data.data}`, duration: 2000})
-    }
-    
-    conn.onopen = () => {
-      console.log(`-----------------connection opened-----------------`)
-      showToast({message: "连接已打开", duration: 1000})
-    }
-    
-    conn.onclose = (data) => {
-      console.log(`-----------------connection closed, reason = ${data.data}, code = ${data.code}-----------------`)
-      conn = null
-      showToast({message: "连接已关闭", duration: 1000})
-    }
-    
-    conn.onerror = (data) => {
-      console.log(`-----------------connection error, errMsg = ${data.data}, errCode = ${data.code}--------------`)
-      showToast({message: `连接错误: ${data.data}`, duration: 2000})
-    }
-    
-    // 打开连接
-    conn.open()
-  },
-  
-  // 发送消息
-  sendMessage() {
-    let data = {
-      name: 'WeatherApp',
-      action: 'debug',
-      timestamp: Date.now()
-    }
-    
-    console.log('---------------发送消息---------------', data)
-    
-    conn.send({
-      data: data,
-      success: () => {
-        console.log(`----------------send handling success------------`)
-        showToast({message: "消息发送成功", duration: 1000})
-      },
-      fail: (data) => {
-        console.log(`--------------send handling fail, errMsg = ${data.data}, errCode = ${data.code}-------------`)
-        showToast({message: `发送失败: ${data.data}`, duration: 2000})
-      },
-    })
-  },
-  
-  // 页面销毁时关闭连接
-  onDestroy() {
-    if (conn && typeof conn.close === "function") {
-      conn.close()
-      conn = null
-    }
+
+  /**
+   * 清除本地数据
+   */
+  async handleClearData() {
+    await DebugService.clearLocalData()
   }
 }
 </script>

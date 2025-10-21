@@ -1,6 +1,13 @@
-// 天气工具类 - 通用天气相关功能
+/**
+ * 天气工具类
+ * 提供天气图标映射、背景图片映射、日期处理和天气数据处理等通用功能
+ */
 
-// 天气图标映射表 - 统一的图标映射
+/**
+ * 天气图标映射表
+ * 将天气代码映射到对应的图标文件名
+ * @type {Object.<number, string>}
+ */
 export const WeatherIconMap = {
   // 晴天
   100: 'sunny', // 晴
@@ -75,7 +82,11 @@ export const WeatherIconMap = {
   999: 99 // 未知
 }
 
-// 天气背景图片映射表 - 根据天气类型设置不同的背景图片
+/**
+ * 天气背景图片映射表
+ * 根据天气类型和时间（白天/夜晚）设置不同的背景图片
+ * @type {Object.<number, string>}
+ */
 export const WeatherBackgroundImageMap = {
   // 多云 - 白天11，夜晚12
   100: '21', // 晴天使用21
@@ -151,9 +162,15 @@ export const WeatherBackgroundImageMap = {
   999: '11'  // 未知默认多云
 }
 
-// 日期工具类
+/**
+ * 日期工具类
+ * 提供日期格式化、相对时间计算等功能
+ */
 export const DateUtils = {
-  // 获取今天的日期字符串
+  /**
+   * 获取今天的日期字符串
+   * @returns {string} 格式为 YYYY-MM-DD 的日期字符串
+   */
   getTodayString() {
     const today = new Date()
     const year = today.getFullYear()
@@ -162,7 +179,12 @@ export const DateUtils = {
     return `${year}-${month}-${day}`
   },
 
-  // 格式化相对时间
+  /**
+   * 格式化相对时间
+   * 将时间戳转换为相对时间描述（如"5分钟前更新"）
+   * @param {Date|number} updateTime - 更新时间
+   * @returns {string} 相对时间描述
+   */
   formatTimeAgo(updateTime) {
     const now = new Date()
     const diffMs = now - updateTime
@@ -181,12 +203,19 @@ export const DateUtils = {
     }
   },
 
-  // 获取星期几名称
+  /**
+   * 获取星期几名称数组
+   * @returns {string[]} 星期名称数组
+   */
   getWeekdayNames() {
     return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
   },
 
-  // 计算日期差异
+  /**
+   * 计算日期差异
+   * @param {string} dateStr - 日期字符串，格式为 YYYY-MM-DD
+   * @returns {number} 与今天的天数差（负数表示过去，正数表示未来）
+   */
   calculateDateDiff(dateStr) {
     const dateParts = dateStr.split("-")
     const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
@@ -195,7 +224,13 @@ export const DateUtils = {
     return Math.ceil(timeDiff / (1000 * 3600 * 24))
   },
 
-  // 获取日期显示名称
+  /**
+   * 获取日期的显示名称
+   * 根据日期差异返回友好的显示名称（如"今天"、"明天"、"周一"等）
+   * @param {string} dateStr - 日期字符串，格式为 YYYY-MM-DD
+   * @param {number} dayDiff - 与今天的天数差
+   * @returns {string} 日期显示名称
+   */
   getDisplayName(dateStr, dayDiff) {
     const weekdays = this.getWeekdayNames()
     const dateParts = dateStr.split("-")
@@ -217,9 +252,18 @@ export const DateUtils = {
   }
 }
 
-// 天气数据工具类
+/**
+ * 天气数据工具类
+ * 提供天气数据处理、图标映射、背景图片选择等功能
+ */
 export const WeatherDataUtils = {
-  // 获取映射后的图标代码（考虑白天/夜晚）
+  /**
+   * 获取映射后的图标代码
+   * 根据天气代码和时间（白天/夜晚）返回对应的图标文件名
+   * @param {number} iconCode - 天气图标代码
+   * @param {boolean} isNight - 是否为夜晚
+   * @returns {string} 图标文件名
+   */
   getMappedIconCode(iconCode, isNight = false) {
     // 获取基础图标代码
     let mappedIcon = WeatherIconMap[iconCode] || iconCode
@@ -243,7 +287,11 @@ export const WeatherDataUtils = {
     return mappedIcon
   },
 
-  // 判断当前时间是否为夜晚（晚6点到早6点）
+  /**
+   * 判断当前时间是否为夜晚
+   * 夜晚定义为晚6点到早6点
+   * @returns {boolean} 是否为夜晚
+   */
   isNightTime() {
     const now = new Date()
     const hour = now.getHours()
@@ -251,7 +299,13 @@ export const WeatherDataUtils = {
     return hour >= 18 || hour < 6
   },
 
-  // 获取映射后的背景图片
+  /**
+   * 获取映射后的背景图片
+   * 根据天气代码和时间选择合适的背景图片
+   * @param {number} iconCode - 天气图标代码
+   * @param {boolean} isNight - 是否为夜晚
+   * @returns {string} 背景图片文件名
+   */
   getMappedBackgroundImage(iconCode, isNight = false) {
     // 获取基础背景图片
     let backgroundImage = WeatherBackgroundImageMap[iconCode] || WeatherBackgroundImageMap[999]
@@ -281,12 +335,23 @@ export const WeatherDataUtils = {
     return backgroundImage
   },
 
-  // 格式化温度范围
+  /**
+   * 格式化温度范围
+   * @param {number} tempMin - 最低温度
+   * @param {number} tempMax - 最高温度
+   * @returns {string} 格式化的温度范围字符串
+   */
   formatTempRange(tempMin, tempMax) {
     return `${tempMin}°/${tempMax}°`
   },
 
-  // 更新当前天气信息
+  /**
+   * 更新首页当前天气信息
+   * @param {Object} pageData - 页面数据对象（this）
+   * @param {Object} weatherData - 完整的天气数据
+   * @param {Object} todayData - 今天的天气数据
+   * @param {string} timeAgo - 相对更新时间
+   */
   updateCurrentWeather(pageData, weatherData, todayData, timeAgo) {
     pageData.updateTime = timeAgo
 
@@ -298,7 +363,11 @@ export const WeatherDataUtils = {
     pageData.backgroundImage = this.getMappedBackgroundImage(todayData.iconDay, isNight)
   },
 
-  // 更新详情页当前天气信息
+  /**
+   * 更新详情页当前天气信息
+   * @param {Object} pageData - 页面数据对象（this）
+   * @param {Object} selectedData - 选中日期的天气数据
+   */
   updateDetailCurrentWeather(pageData, selectedData) {
     pageData.updateTime = pageData.selectedDate || ""
 
@@ -310,7 +379,12 @@ export const WeatherDataUtils = {
     pageData.backgroundImage = this.getMappedBackgroundImage(selectedData.iconDay, isNight)
   },
 
-  // 获取基础天气指标
+  /**
+   * 获取基础天气指标数据
+   * 用于首页显示
+   * @param {Object} todayData - 今天的天气数据
+   * @returns {Array<Object>} 天气指标数组
+   */
   getBasicWeatherFigures(todayData) {
     return [
       { name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1 },
@@ -320,7 +394,12 @@ export const WeatherDataUtils = {
     ]
   },
 
-  // 获取详细天气指标映射
+  /**
+   * 获取详细天气指标数据映射
+   * 用于详情页显示
+   * @param {Object} selectedData - 选中日期的天气数据
+   * @returns {Object} 天气指标映射对象，key为uniqueId，value为对应的数据值
+   */
   getDetailedWeatherFigures(selectedData) {
     return {
       1: selectedData.uvIndex || "__",
@@ -349,7 +428,12 @@ export const WeatherDataUtils = {
     }
   },
 
-  // 处理天气预报数据
+  /**
+   * 处理天气预报数据
+   * 过滤并格式化未来几天的天气数据
+   * @param {Object} weatherData - 完整的天气数据对象
+   * @returns {Array<Object>} 格式化后的天气预报数组
+   */
   processForecastData(weatherData) {
     return weatherData.daily
       .filter(day => {
@@ -372,12 +456,4 @@ export const WeatherDataUtils = {
         }
       })
   }
-}
-
-// 导出所有工具类
-export default {
-  WeatherIconMap,
-  WeatherBackgroundImageMap,
-  DateUtils,
-  WeatherDataUtils
 }

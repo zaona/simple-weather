@@ -1,0 +1,49 @@
+/**
+ * 加载动画公共样式
+ * 用于 index 和 detail 页面的加载状态显示
+ */
+
+/* 加载动画容器 */
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* 加载动画背景遮罩 */
+.loading-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+}
+
+/* 加载动画图标 */
+.loading-icon {
+  width: 60px;
+  height: 60px;
+  z-index: 1000;
+  animation-name: rotate;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  transform-origin: 30px 30px;
+}
+
+/* 旋转动画关键帧 */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+

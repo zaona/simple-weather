@@ -38,11 +38,16 @@
 </template>
 
 <script>
-// 导入所需模块
-import router from "@system.router" // 页面路由
-import file from "@system.file" // 文件操作
-import {showToast} from "@system.prompt" // 提示信息
-import WeatherUtils from "../../common/weather-utils.js"
+// 导入系统模块
+import router from "@system.router"
+import { showToast } from "@system.prompt"
+
+// 导入服务层
+import DataService from "../../services/data-service.js"
+import { MESSAGES, TOAST_DURATION } from "../../services/config.js"
+
+// 导入工具类
+import { WeatherDataUtils } from "../../common/weather-utils.js"
 
 export default {
   // 接收来自 index 页面的 selectedDate 参数
@@ -65,50 +70,52 @@ export default {
       {
         // 基础气象指标
         items: [
-          {name: "紫外线指数", value: "__", uniqueId: 1},
-          {name: "相对湿度 (%)", value: "__", uniqueId: 2},
-          {name: "大气压强 (hPa)", value: "__", uniqueId: 5},
-          {name: "能见度 (km)", value: "__", uniqueId: 7},
-          {name: "云量 (%)", value: "__", uniqueId: 8}
+          { name: "紫外线指数", value: "__", uniqueId: 1 },
+          { name: "相对湿度 (%)", value: "__", uniqueId: 2 },
+          { name: "大气压强 (hPa)", value: "__", uniqueId: 5 },
+          { name: "能见度 (km)", value: "__", uniqueId: 7 },
+          { name: "云量 (%)", value: "__", uniqueId: 8 }
         ]
       },
       {
         // 降水指标
-        items: [{name: "总降水量 (mm)", value: "__", uniqueId: 6}]
+        items: [{ name: "总降水量 (mm)", value: "__", uniqueId: 6 }]
       },
       {
         // 日间天气
         items: [
-          {name: "白天天气描述", value: "__", uniqueId: 13},
-          {name: "白天风向", value: "__", uniqueId: 3},
-          {name: "白天风力等级", value: "__", uniqueId: 4},
-          {name: "白天风速 (km/h)", value: "__", uniqueId: 17},
-          {name: "白天风向角度", value: "__", uniqueId: 19}
+          { name: "白天天气描述", value: "__", uniqueId: 13 },
+          { name: "白天风向", value: "__", uniqueId: 3 },
+          { name: "白天风力等级", value: "__", uniqueId: 4 },
+          { name: "白天风速 (km/h)", value: "__", uniqueId: 17 },
+          { name: "白天风向角度", value: "__", uniqueId: 19 }
         ]
       },
       {
         // 夜间天气
         items: [
-          {name: "夜间天气描述", value: "__", uniqueId: 14},
-          {name: "夜间风向", value: "__", uniqueId: 15},
-          {name: "夜间风力等级", value: "__", uniqueId: 16},
-          {name: "夜间风速 (km/h)", value: "__", uniqueId: 18},
-          {name: "夜间风向角度", value: "__", uniqueId: 20}
+          { name: "夜间天气描述", value: "__", uniqueId: 14 },
+          { name: "夜间风向", value: "__", uniqueId: 15 },
+          { name: "夜间风力等级", value: "__", uniqueId: 16 },
+          { name: "夜间风速 (km/h)", value: "__", uniqueId: 18 },
+          { name: "夜间风向角度", value: "__", uniqueId: 20 }
         ]
       },
       {
         // 天文时间
         items: [
-          {name: "日出时间", value: "__", uniqueId: 9},
-          {name: "日落时间", value: "__", uniqueId: 10},
-          {name: "月升时间", value: "__", uniqueId: 21},
-          {name: "月落时间", value: "__", uniqueId: 22},
-          {name: "月相名称", value: "__", uniqueId: 23}
+          { name: "日出时间", value: "__", uniqueId: 9 },
+          { name: "日落时间", value: "__", uniqueId: 10 },
+          { name: "月升时间", value: "__", uniqueId: 21 },
+          { name: "月落时间", value: "__", uniqueId: 22 },
+          { name: "月相名称", value: "__", uniqueId: 23 }
         ]
       }
     ],
 
-    // 右滑返回index页面
+    /**
+     * 右滑返回index页面
+     */
     toHomePage(eve) {
       if (eve.direction === "right") {
         router.back()
@@ -116,178 +123,75 @@ export default {
     }
   },
 
-  // 获取天气图标映射表 - 使用通用工具类
-  getIconMap() {
-    return WeatherUtils.WeatherIconMap
-  },
-
-  // 根据传入的 selectedData 更新 weatherCategories 中的各项 value - 使用通用工具类
+  /**
+   * 更新天气指标数据
+   * @param {Object} selectedData - 选中日期的天气数据
+   */
   updateWeatherFigures(selectedData) {
-    const valueMap = WeatherUtils.WeatherDataUtils.getDetailedWeatherFigures(selectedData)
+    const valueMap = WeatherDataUtils.getDetailedWeatherFigures(selectedData)
 
-    // 遍历 this.weatherCategories 数组及其 items，根据 uniqueId 更新 value
-    this.weatherCategories = this.weatherCategories.map((category) => {
-      return {
-        items: category.items.map((item) => {
-          return {
-            ...item,
-            value: valueMap[item.uniqueId] !== undefined ? valueMap[item.uniqueId] : item.value
-          }
-        })
-      }
-    })
+    // 遍历并更新各项数值
+    this.weatherCategories = this.weatherCategories.map(category => ({
+      items: category.items.map(item => ({
+        ...item,
+        value: valueMap[item.uniqueId] !== undefined ? valueMap[item.uniqueId] : item.value
+      }))
+    }))
   },
 
-  // 根据传入的 selectedData 和 iconMap 更新页面顶部的天气概览信息 - 使用通用工具类
-  updateCurrentWeather(selectedData, iconMap) {
-    WeatherUtils.WeatherDataUtils.updateDetailCurrentWeather(this, selectedData)
-  },
-
-  // 页面初始化函数，处理从index页面传递的日期参数并加载对应天气数据
-  onInit() {
+  /**
+   * 页面初始化
+   */
+  async onInit() {
     // 检查是否接收到日期参数
     if (!this.selectedDate) {
-      this.isLoading = false // 隐藏加载动画
-      showToast({message: "未接收到日期", duration: 2000}) // 显示错误提示
-      return // 无参数则直接返回
+      this.isLoading = false
+      showToast({ 
+        message: MESSAGES.NO_DATE_RECEIVED, 
+        duration: TOAST_DURATION.NORMAL 
+      })
+      return
     }
 
-    // 读取本地天气数据文件
-    file.readText({
-      uri: "internal://files/weather.txt", // 指定文件路径
-      // 文件读取成功的回调函数
-      success: (data) => {
-        try {
-          // 解析 JSON 数据
-          const weatherData = JSON.parse(data.text)
+    // 从服务层读取指定日期的数据
+    const selectedData = await DataService.getDataByDate(this.selectedDate)
 
-          // 根据 selectedDate 查找对应的数据
-          // 注意：这里直接使用字符串比较，因为 selectedDate 是字符串，fxDate 也是字符串
-          let selectedData = weatherData.daily.find((day) => day.fxDate === this.selectedDate)
+    if (!selectedData) {
+      this.isLoading = false
+      showToast({ 
+        message: MESSAGES.NO_DATA_FOR_DATE, 
+        duration: TOAST_DURATION.NORMAL 
+      })
+      return
+    }
 
-          if (selectedData) {
-            const iconMap = this.getIconMap() // 获取图标映射表
+    // 更新顶部天气概览
+    WeatherDataUtils.updateDetailCurrentWeather(this, selectedData)
 
-            // 更新顶部天气概览
-            this.updateCurrentWeather(selectedData, iconMap)
+    // 更新天气指标面板
+    this.updateWeatherFigures(selectedData)
 
-            // 更新天气指标面板 (使用 selectedData)
-            this.updateWeatherFigures(selectedData)
-          } else {
-            // 如果没有找到对应日期的数据
-            showToast({message: "数据缺失", duration: 2000}) // 显示错误提示
-          }
-        } catch (e) {
-          // JSON 解析失败
-          showToast({message: "数据格式错误", duration: 2000}) // 显示错误提示
-        } finally {
-          // 数据加载完成，隐藏加载动画
-          this.isLoading = false
-        }
-      },
-      // 文件读取失败的回调函数
-      fail: (data, code) => {
-        // 文件读取失败
-        this.isLoading = false // 隐藏加载动画
-        showToast({message: "无法读取天气数据", duration: 2000}) // 显示错误提示
-      }
-    })
+    // 数据加载完成
+    this.isLoading = false
   }
 }
 </script>
 
 <style>
+/* 引入公共样式 */
 @import "../../common/style.css";
+@import "../../common/loading-styles.css";
+@import "../../common/page-bg-styles.css";
 
+/* 页面特定样式 */
 .page {
   flex-direction: column;
   align-items: center;
   position: relative;
 }
 
-.page-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  object-fit: cover;
-}
-
-/* 针对小米手环9 (分辨率: 192*490, 水平dp值: 96) */
-@media (width: 96) {
-  .page-bg {
-    width: 192px;
-    height: 490px;
-  }
-}
-
-/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
-@media (width: 160) {
-  .page-bg {
-    width: 336px;
-    height: 480px;
-  }
-}
-
-/* 针对REDMI Watch 5 (分辨率: 432*514, 水平dp值: 216) */
-@media (width: 216) {
-  .page-bg {
-    width: 432px;
-    height: 514px;
-  }
-}
-
-/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
-@media (width: 106) {
-  .page-bg {
-    width: 212px;
-    height: 520px;
-  }
-}
-
 .main {
   position: relative;
   z-index: 1;
-}
-
-/* 加载动画样式 */
-.loading-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.loading-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #000000;
-}
-
-.loading-icon {
-  width: 60px;
-  height: 60px;
-  z-index: 1000;
-  animation-name: rotate;
-  animation-duration: 1.5s;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-  transform-origin: 30px 30px;
-}
-
-/* 旋转动画 */
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>

@@ -16,23 +16,8 @@
 ## 快应用包名
 com.application.zaona.weather
 
-## 注意事项
-- 在发版时候需要把 `/src/pages/index` 目录中的 `weather.json` 测试数据移动到项目根目录，否则会被打包，增加包大小
-- 在发版时候需要把 `index.ux` 中的本地测试代码注释
-``` js
-    // import weather from "./weather.json"
-
-    // file.writeText({
-    //   uri: "internal://files/weather.txt",
-    //   text: JSON.stringify(weather),
-    //   success: function () {
-    //     showToast({message: "模拟数据成功", duration: 200})
-    //   },
-    //   fail: function (data, code) {
-    //     showToast({message: `模拟数据失败${code}`, duration: 200})
-    //   }
-    // })
-```
+## 调试功能指南
+见项目根目录 DEBUG_GUIDE.md
 
 ## 快速开始
 

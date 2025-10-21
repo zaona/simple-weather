@@ -60,22 +60,23 @@
 
 <script>
 // 导入系统模块
-import router from "@system.router" // 页面路由
-import file from "@system.file" // 文件操作
-import {showToast} from "@system.prompt" // 提示信息
-import interconnect from "@system.interconnect" // 网络连接
-import WeatherUtils from "../../common/weather-utils.js" // 天气工具类
+import router from "@system.router"
+import { showToast } from "@system.prompt"
 
-// 导入模拟数据，发版时记得注释掉
+// 导入服务层
+import DataService from "../../services/data-service.js"
+import ConnectionService from "../../services/connection-service.js"
+import DebugService from "../../services/debug-service.js"
+import { MESSAGES, TOAST_DURATION } from "../../services/config.js"
 
-// import weather from "./weather.json"
+// 导入工具类
+import { DateUtils, WeatherDataUtils } from "../../common/weather-utils.js"
 
 export default {
   // 页面私有数据
   private: {
     isLoading: true, // 加载状态
     isFirstLoad: true, // 是否是首次加载
-    isConnecting: false, // 连接状态
     location: "__", // 地点
     updateTime: "__", // 更新时间
     iconCode: "__", // 天气图标代码
@@ -85,17 +86,20 @@ export default {
 
     // 天气指标数据
     figure: [
-      {name: "紫外线指数", value: "__", uniqueId: 1},
-      {name: "相对湿度 （%）", value: "__", uniqueId: 2},
-      {name: "__", value: "__", uniqueId: 3},
-      {name: "气压 （hPa）", value: "__", uniqueId: 4}
+      { name: "紫外线指数", value: "__", uniqueId: 1 },
+      { name: "相对湿度 （%）", value: "__", uniqueId: 2 },
+      { name: "__", value: "__", uniqueId: 3 },
+      { name: "气压 （hPa）", value: "__", uniqueId: 4 }
     ],
 
     // 未来几天天气预报数据
-    dayWeather: [{name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1}]
+    dayWeather: [{ name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1 }]
   },
 
-  // 跳转到详情页
+  /**
+   * 跳转到详情页
+   * @param {Object} selectedItem - 选中的天气项
+   */
   DetailInfo(selectedItem) {
     if (selectedItem && selectedItem.fxDate) {
       router.push({
@@ -105,315 +109,162 @@ export default {
         }
       })
     } else {
-      showToast({message: "跳转详情页失败", duration: 2000})
+      showToast({ 
+        message: MESSAGES.NAVIGATION_ERROR, 
+        duration: TOAST_DURATION.NORMAL 
+      })
     }
   },
 
-  // 跳转到关于页
+  /**
+   * 跳转到关于页
+   */
   About() {
     router.push({
       uri: "/pages/about"
     })
   },
 
-  // 获取天气图标映射表 - 使用通用工具类
-  getIconMap() {
-    return WeatherUtils.WeatherIconMap
+  /**
+   * 加载并显示天气数据
+   */
+  async loadWeatherData() {
+    const result = await DataService.getTodayData()
+
+    if (!result) {
+      // getTodayData 内部已经处理了错误提示
+      return
+    }
+
+    const { weatherData, todayData } = result
+
+    // 计算更新时间
+    const updateTime = new Date(weatherData.updateTime)
+    const timeAgo = DateUtils.formatTimeAgo(updateTime)
+
+    // 更新界面数据
+    WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
+    this.location = weatherData.location || "未知地点"
+    this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
+    this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
   },
 
-  // 格式化更新时间 - 使用通用工具类
-  formatTimeAgo(updateTime) {
-    return WeatherUtils.DateUtils.formatTimeAgo(updateTime)
+  /**
+   * 页面初始化
+   */
+  async onInit() {
+    // 🔧 调试模式：注入模拟数据（可选）
+    // 取消下面的注释可启用模拟数据注入
+    // await DebugService.injectMockData()
+
+    // 加载本地数据
+    await this.loadWeatherData()
+
+    // 首次加载完成，隐藏加载动画
+    if (this.isFirstLoad) {
+      this.isLoading = false
+      this.isFirstLoad = false
+    }
   },
 
-  // 获取今天的日期字符串 - 使用通用工具类
-  getTodayString() {
-    return WeatherUtils.DateUtils.getTodayString()
-  },
-
-  // 更新当前天气信息 - 使用通用工具类
-  updateCurrentWeather(weatherData, todayData, timeAgo, iconMap) {
-    WeatherUtils.WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
-  },
-
-  // 更新天气指标 - 使用通用工具类
-  updateWeatherFigures(todayData) {
-    this.figure = WeatherUtils.WeatherDataUtils.getBasicWeatherFigures(todayData)
-  },
-
-  // 更新天气预报 - 使用通用工具类
-  updateForecast(weatherData, today, todayData, iconMap) {
-    this.dayWeather = WeatherUtils.WeatherDataUtils.processForecastData(weatherData)
-  },
-
-  // 页面初始化
-  onInit() {
-    // 写入模拟数据，发版时记得注释掉
-
-    // file.writeText({
-    //   uri: "internal://files/weather.txt",
-    //   text: JSON.stringify(weather),
-    //   success: function () {
-    //     showToast({message: "模拟数据成功", duration: 200})
-    //   },
-    //   fail: function (data, code) {
-    //     showToast({message: `模拟数据失败${code}`, duration: 200})
-    //   }
-    // })
-
-    // 检查天气数据文件是否存在
-    file.readText({
-      uri: "internal://files/weather.txt",
-      success: (data) => {
-        try {
-          const weatherData = JSON.parse(data.text)
-          const updateTime = new Date(weatherData.updateTime)
-          const timeAgo = this.formatTimeAgo(updateTime)
-          const iconMap = this.getIconMap()
-          const todayStr = this.getTodayString()
-          const today = new Date()
-          let todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
-
-          if (todayData) {
-            this.updateCurrentWeather(weatherData, todayData, timeAgo, iconMap)
-            this.location = weatherData.location || "未知地点"
-            this.updateWeatherFigures(todayData)
-            this.updateForecast(weatherData, today, todayData, iconMap)
-          } else {
-            showToast({message: "数据已过期", duration: 200})
-          }
-        } catch (e) {
-          showToast({message: "数据格式错误", duration: 200})
-        } finally {
-          // 数据加载完成，如果是首次加载则隐藏加载动画
-          if (this.isFirstLoad) {
-            this.isLoading = false
-            this.isFirstLoad = false
-          }
-        }
-      },
-      fail: (data, code) => {
-        showToast({message: "本地无数据", duration: 200})
-        // 数据加载完成，如果是首次加载则隐藏加载动画
-        if (this.isFirstLoad) {
-          this.isLoading = false
-          this.isFirstLoad = false
-        }
-      }
+  /**
+   * 页面显示时初始化连接
+   */
+  onShow() {
+    // 初始化连接并注册消息处理
+    ConnectionService.init((data) => {
+      this.handleWeatherData(data)
     })
   },
 
-  // 数据传输部分，接收到数据后加载并保存
-  // 页面显示时
-  onShow() {
-    // 创建本地 interconnect 实例
-    const connect = interconnect.instance()
+  /**
+   * 处理接收到的天气数据
+   * @param {Object} data - 接收到的数据
+   */
+  async handleWeatherData(data) {
+    try {
+      // 解析数据
+      const weatherData = JSON.parse(data.data)
 
-    connect.onmessage = (data) => {
-      // 检查是否为预检消息
-      if (data.data === "start") {
-        // 如果已经在连接中，忽略新的连接请求
-        if (this.isConnecting) {
-          return // 直接忽略，不显示任何提示
-        }
-
-        // 设置连接状态为正在连接
-        this.isConnecting = true
-
-        // 根据App端的握手模式，我们需要立即响应ready消息
-        // App端会以600ms间隔发送start消息，并在50ms内检查ready响应
-        let retryCount = 0
-        const maxRetries = 5 // 最多重试5次
-        
-        const sendReadyResponse = () => {
-          // 检查是否已超过最大重试次数
-          if (retryCount >= maxRetries) {
-            console.log("已达到最大重试次数，停止发送ready响应")
-            this.isConnecting = false
-            return
-          }
-          
-          retryCount++
-          
-          // 立即发送ready响应
-          let messageData = {
-            action: "ready",
-            timestamp: Date.now()
-          }
-
-          connect.send({
-            data: messageData,
-            success: () => {
-              // 短暂延迟后重试
-              setTimeout(sendReadyResponse, 200)
-            },
-            fail: () => {
-              // 发送失败，短暂延迟后重试
-              setTimeout(sendReadyResponse, 200)
-            }
-          })
-        }
-
-        // 立即发送ready响应
-        sendReadyResponse()
+      // 验证数据格式
+      if (!DataService.validateWeatherData(weatherData)) {
+        showToast({ 
+          message: MESSAGES.DATA_FORMAT_ERROR, 
+          duration: TOAST_DURATION.NORMAL 
+        })
+        this.isLoading = false
         return
       }
 
-      // 处理天气数据
-      try {
-        // 尝试解析接收到的数据
-        const weatherData = JSON.parse(data.data)
+      // 计算更新时间
+      const updateTime = new Date(weatherData.updateTime)
+      const timeAgo = DateUtils.formatTimeAgo(updateTime)
+      const todayStr = DateUtils.getTodayString()
 
-        // 验证数据格式是否正确
-        if (!weatherData || !weatherData.daily || !Array.isArray(weatherData.daily)) {
-          showToast({message: "数据格式错误", duration: 2000})
-          this.isLoading = false
-          return
-        }
+      // 查找今天的数据
+      const todayData = weatherData.daily.find(day => day.fxDate === todayStr)
 
-        // 数据格式正确，直接更新界面显示
-        const updateTime = new Date(weatherData.updateTime)
-        const timeAgo = this.formatTimeAgo(updateTime)
-        const iconMap = this.getIconMap()
-        const todayStr = this.getTodayString()
-        const today = new Date()
-        let todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
-
-        if (todayData) {
-          this.updateCurrentWeather(weatherData, todayData, timeAgo, iconMap)
-          this.location = weatherData.location || "未知地点"
-          this.updateWeatherFigures(todayData)
-          this.updateForecast(weatherData, today, todayData, iconMap)
-
-          // 界面更新成功后，保存数据到本地
-          // 使用重试机制确保数据保存成功
-          const saveDataToLocal = (retryCount = 0) => {
-            file.writeText({
-              uri: "internal://files/weather.txt",
-              text: data.data,
-              success: () => {
-                console.log("数据已保存到本地")
-              },
-              fail: () => {
-                if (retryCount < 2) {
-                  // 最多重试2次
-                  setTimeout(() => {
-                    saveDataToLocal(retryCount + 1)
-                  }, 500)
-                } else {
-                  showToast({message: "数据保存失败", duration: 2000})
-                }
-              }
-            })
-          }
-
-          // 开始保存数据
-          saveDataToLocal()
-
-          showToast({message: "数据已更新", duration: 1000})
-        } else {
-          showToast({message: "数据存在缺失", duration: 2000})
-        }
-      } catch (e) {
-        // 数据解析失败，不保存到本地
-        showToast({message: "数据解析失败", duration: 2000})
-        console.error("数据解析失败:", e)
-      } finally {
-        // 数据处理完成，隐藏加载动画
-        this.isLoading = false
-        // 重置连接状态，允许下次连接
-        this.isConnecting = false
+      if (!todayData) {
+        showToast({ 
+          message: MESSAGES.DATA_MISSING, 
+          duration: TOAST_DURATION.NORMAL 
+        })
+        return
       }
-    }
 
-    connect.onerror = (error) => {
-      console.error("Connection error:", error)
+      // 更新界面
+      WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
+      this.location = weatherData.location || "未知地点"
+      this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
+      this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
+
+      // 保存数据到本地
+      await DataService.saveWeatherData(data.data)
+
+      showToast({ 
+        message: MESSAGES.DATA_UPDATED, 
+        duration: TOAST_DURATION.SHORT 
+      })
+
+    } catch (e) {
+      showToast({ 
+        message: MESSAGES.DATA_PARSE_ERROR, 
+        duration: TOAST_DURATION.NORMAL 
+      })
+      console.error("数据解析失败:", e)
+    } finally {
       this.isLoading = false
-      // 重置连接状态，允许重新连接
-      this.isConnecting = false
+      ConnectionService.resetConnectionState()
     }
-
-    connect.onclose = () => {
-      console.log("Connection closed")
-      setTimeout(() => {
-        connect.open()
-      }, 5000)
-    }
-
-    connect.open()
-
-    // 存储 connect 实例，以便 onHide/onDestroy 调用 close()
-    this._connectInstance = connect
   },
 
-  // 页面隐藏时
+  /**
+   * 页面隐藏时关闭连接
+   */
   onHide() {
-    // 重置连接状态
-    this.isConnecting = false
-    
-    if (this._connectInstance && typeof this._connectInstance.close === "function") {
-      this._connectInstance.close()
-    }
+    ConnectionService.close()
   },
 
-  // 页面销毁时
+  /**
+   * 页面销毁时关闭连接
+   */
   onDestroy() {
-    // 重置连接状态
-    this.isConnecting = false
-    
-    if (this._connectInstance && typeof this._connectInstance.close === "function") {
-      this._connectInstance.close()
-    }
+    ConnectionService.close()
   }
 }
 </script>
 
 <style>
+/* 引入公共样式 */
 @import "../../common/style.css";
+@import "../../common/loading-styles.css";
+@import "../../common/page-bg-styles.css";
 
+/* 页面特定样式 */
 .page {
   flex-direction: column;
   align-items: center;
   position: relative;
-}
-
-.page-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  object-fit: cover;
-}
-
-/* 针对小米手环9 (分辨率: 192*490, 水平dp值: 96) */
-@media (width: 96) {
-  .page-bg {
-    width: 192px;
-    height: 490px;
-  }
-}
-
-/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
-@media (width: 160) {
-  .page-bg {
-    width: 336px;
-    height: 480px;
-  }
-}
-
-/* 针对REDMI Watch 5 (分辨率: 432*514, 水平dp值: 216) */
-@media (width: 216) {
-  .page-bg {
-    width: 432px;
-    height: 514px;
-  }
-}
-
-/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
-@media (width: 106) {
-  .page-bg {
-    width: 212px;
-    height: 520px;
-  }
 }
 
 .main {
@@ -438,48 +289,5 @@ export default {
 .small-weather-icon {
   width: 48px;
   height: 48px;
-}
-
-/* 加载动画样式 */
-.loading-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.loading-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #000000;
-}
-
-/* 加载动画图标 */
-.loading-icon {
-  width: 60px;
-  height: 60px;
-  z-index: 1000;
-  animation-name: rotate;
-  animation-duration: 1.5s;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-  transform-origin: 30px 30px;
-}
-
-/* 旋转动画关键帧 */
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>
