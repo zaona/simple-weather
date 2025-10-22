@@ -127,13 +127,18 @@ export default {
 
   /**
    * 加载并显示天气数据
+   * @param {boolean} silent - 静默模式，不显示错误Toast
+   * @returns {Object} 返回 { success: boolean, status: string }
    */
-  async loadWeatherData() {
-    const result = await DataService.getTodayData()
+  async loadWeatherData(silent = false) {
+    const result = await DataService.getTodayData(silent)
 
-    if (!result) {
-      // getTodayData 内部已经处理了错误提示
-      return
+    // 检查加载状态
+    if (!result || result.status !== 'success') {
+      return { 
+        success: false, 
+        status: result?.status || 'unknown' 
+      }
     }
 
     const { weatherData, todayData } = result
@@ -147,6 +152,8 @@ export default {
     this.location = weatherData.location || "未知地点"
     this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
     this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
+    
+    return { success: true, status: 'success' }
   },
 
   /**
@@ -157,12 +164,30 @@ export default {
     // 取消下面的注释可启用模拟数据注入
     // await DebugService.injectMockData()
 
-    // 加载本地数据
-    await this.loadWeatherData()
+    // 加载本地数据（静默模式）
+    const result = await this.loadWeatherData(true)
 
-    // 首次加载完成，隐藏加载动画
+    // 首次加载完成
     if (this.isFirstLoad) {
-      this.isLoading = false
+      if (result.success) {
+        // 有数据，关闭加载动画
+        this.isLoading = false
+      } else {
+        // 无数据或数据过期，保持加载动画，根据状态显示不同提示
+        let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+        
+        if (result.status === 'expired') {
+          toastMessage = MESSAGES.WAITING_FOR_UPDATE
+        } else if (result.status === 'no_data') {
+          toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+        }
+        
+        showToast({ 
+          message: toastMessage, 
+          duration: TOAST_DURATION.LONG 
+        })
+        // 不关闭 isLoading，等待 handleWeatherData 接收数据后关闭
+      }
       this.isFirstLoad = false
     }
   },

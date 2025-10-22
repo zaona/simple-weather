@@ -36,6 +36,10 @@ export const MESSAGES = {
   DATA_SAVED: '数据已保存',
   CONNECTION_SUCCESS: '连接成功',
   
+  // 等待消息
+  WAITING_FOR_FIRST_DATA: '本地无数据',
+  WAITING_FOR_UPDATE: '数据已过期',
+  
   // 错误消息
   DATA_EXPIRED: '数据已过期',
   DATA_MISSING: '数据存在缺失',
