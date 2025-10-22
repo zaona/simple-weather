@@ -52,7 +52,12 @@ export const MESSAGES = {
   CONNECTION_ERROR: '连接错误',
   CONNECTION_CLOSED: '连接已关闭',
   SEND_SUCCESS: '消息发送成功',
-  SEND_ERROR: '发送失败'
+  SEND_ERROR: '发送失败',
+  
+  // 调试消息
+  DEBUG_MOCK_DATA_LOADED: '模拟数据加载',
+  DEBUG_MOCK_DATA_FAILED: '模拟数据失败',
+  DEBUG_DATA_CLEARED: '数据已清除'
 }
 
 // 提示持续时间（毫秒）

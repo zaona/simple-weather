@@ -6,7 +6,7 @@
 
 import file from '@system.file'
 import { showToast } from '@system.prompt'
-import { STORAGE, TOAST_DURATION } from './config.js'
+import { STORAGE, TOAST_DURATION, MESSAGES } from './config.js'
 
 /**
  * 调试模式开关
@@ -254,7 +254,7 @@ class DebugService {
         success: () => {
           console.log('模拟数据注入成功')
           showToast({
-            message: '模拟数据已加载',
+            message: MESSAGES.DEBUG_MOCK_DATA_LOADED,
             duration: TOAST_DURATION.SHORT
           })
           resolve(true)
@@ -262,7 +262,7 @@ class DebugService {
         fail: (data, code) => {
           console.error('模拟数据注入失败:', code)
           showToast({
-            message: `模拟数据注入失败: ${code}`,
+            message: `${MESSAGES.DEBUG_MOCK_DATA_FAILED}: ${code}`,
             duration: TOAST_DURATION.NORMAL
           })
           resolve(false)
@@ -288,7 +288,7 @@ class DebugService {
         success: () => {
           console.log('本地数据已清除')
           showToast({
-            message: '数据已清除',
+            message: MESSAGES.DEBUG_DATA_CLEARED,
             duration: TOAST_DURATION.SHORT
           })
           resolve(true)
