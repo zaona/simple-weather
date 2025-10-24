@@ -4,11 +4,14 @@
       <div class="header">
         <text class="page-title">关于</text>
       </div>
-
-      <div class="hero-content">
-        <image class="weather-icon" src="/common/logo.png" />
-        <text class="app-text">简明天气</text>
-        <text class="app-version">v1.6.0.16</text>
+      <div class="page-list" style="margin-top: 20px">
+        <div class="app-info-container">
+          <image class="app-icon" src="/common/logo.png" />
+          <div class="app-text-container">
+            <text class="app-text">简明天气</text>
+            <text class="app-version">v1.6.0</text>
+          </div>
+        </div>
       </div>
 
       <!-- 调试面板（仅在调试模式下显示） -->
@@ -31,7 +34,7 @@ import DebugService from "../../services/debug-service.js"
 export default {
   // 页面私有数据
   private: {
-    showDebugPanel: false  // 是否显示调试面板
+    showDebugPanel: false // 是否显示调试面板
   },
 
   /**
@@ -70,17 +73,68 @@ export default {
 <style>
 @import "../../common/style.css";
 
+.page-list {
+  align-items: center;
+}
+
+/* 应用信息容器 - 默认竖排布局（窄屏） */
+.app-info-container {
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 24px 0 12px 0;
+}
+
+/* 文本容器 */
+.app-text-container {
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-icon {
+  width: 85px;
+  height: 85px;
+  margin-bottom: 16px;
+}
+
 .app-text {
-    font-size: 30px;
-    font-weight: bold;
-    margin-top: 20px;
+  font-size: 30px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 4px;
 }
 
 .app-version {
-    font-size: 24px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 4px;
-    margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+/* 媒体查询 - 宽屏幕上横排布局 */
+@media (min-width: 150) {
+  .app-info-container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 36px 0 24px 0;
+  }
+
+  .app-icon {
+    margin-bottom: 0;
+    margin-right: 24px;
+  }
+
+  .app-text-container {
+    align-items: flex-start;
+  }
+
+  .app-text {
+    text-align: left;
+  }
+
+  .app-version {
+    text-align: left;
+  }
 }
 </style>
