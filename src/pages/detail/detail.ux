@@ -25,10 +25,10 @@
       </div>
 
       <!-- 按类别组织的详细天气数据 -->
-      <div class="page-list" style="margin-top: 12px" for="{{ category in weatherCategories }}">
-        <div style="margin-top: -2px; flex-direction: column">
-          <div style="margin-top: 14px; flex-direction: column" for="{{ item in category.items }}">
-            <text class="figure-desc">{{ item.value }}</text>
+      <div class="data-category" for="{{ category in weatherCategories }}">
+        <div class="detail-list">
+          <div class="figure-item" for="{{ item in category.items }}">
+            <text class="figure-desc">{{ item.value }}{{ item.unit }}</text>
             <text class="figure-title">{{ item.name }}</text>
           </div>
         </div>
@@ -70,45 +70,45 @@ export default {
       {
         // 基础气象指标
         items: [
-          { name: "紫外线指数", value: "__", uniqueId: 1 },
-          { name: "相对湿度 (%)", value: "__", uniqueId: 2 },
-          { name: "大气压强 (hPa)", value: "__", uniqueId: 5 },
-          { name: "能见度 (km)", value: "__", uniqueId: 7 },
-          { name: "云量 (%)", value: "__", uniqueId: 8 }
+          { name: "紫外线指数", value: "__", unit: "", uniqueId: 1 },
+          { name: "相对湿度", value: "__", unit: "%", uniqueId: 2 },
+          { name: "大气压强", value: "__", unit: "hPa", uniqueId: 5 },
+          { name: "能见度", value: "__", unit: "km", uniqueId: 7 },
+          { name: "云量", value: "__", unit: "%", uniqueId: 8 }
         ]
       },
       {
         // 降水指标
-        items: [{ name: "总降水量 (mm)", value: "__", uniqueId: 6 }]
+        items: [{ name: "总降水量", value: "__", unit: "mm", uniqueId: 6 }]
       },
       {
         // 日间天气
         items: [
-          { name: "白天天气描述", value: "__", uniqueId: 13 },
-          { name: "白天风向", value: "__", uniqueId: 3 },
-          { name: "白天风力等级", value: "__", uniqueId: 4 },
-          { name: "白天风速 (km/h)", value: "__", uniqueId: 17 },
-          { name: "白天风向角度", value: "__", uniqueId: 19 }
+          { name: "白天天气描述", value: "__", unit: "", uniqueId: 13 },
+          { name: "白天风向", value: "__", unit: "", uniqueId: 3 },
+          { name: "白天风力等级", value: "__", unit: "", uniqueId: 4 },
+          { name: "白天风速", value: "__", unit: "km/h", uniqueId: 17 },
+          { name: "白天风向角度", value: "__", unit: "°", uniqueId: 19 }
         ]
       },
       {
         // 夜间天气
         items: [
-          { name: "夜间天气描述", value: "__", uniqueId: 14 },
-          { name: "夜间风向", value: "__", uniqueId: 15 },
-          { name: "夜间风力等级", value: "__", uniqueId: 16 },
-          { name: "夜间风速 (km/h)", value: "__", uniqueId: 18 },
-          { name: "夜间风向角度", value: "__", uniqueId: 20 }
+          { name: "夜间天气描述", value: "__", unit: "", uniqueId: 14 },
+          { name: "夜间风向", value: "__", unit: "", uniqueId: 15 },
+          { name: "夜间风力等级", value: "__", unit: "", uniqueId: 16 },
+          { name: "夜间风速", value: "__", unit: "km/h", uniqueId: 18 },
+          { name: "夜间风向角度", value: "__", unit: "°", uniqueId: 20 }
         ]
       },
       {
         // 天文时间
         items: [
-          { name: "日出时间", value: "__", uniqueId: 9 },
-          { name: "日落时间", value: "__", uniqueId: 10 },
-          { name: "月升时间", value: "__", uniqueId: 21 },
-          { name: "月落时间", value: "__", uniqueId: 22 },
-          { name: "月相名称", value: "__", uniqueId: 23 }
+          { name: "日出时间", value: "__", unit: "", uniqueId: 9 },
+          { name: "日落时间", value: "__", unit: "", uniqueId: 10 },
+          { name: "月升时间", value: "__", unit: "", uniqueId: 21 },
+          { name: "月落时间", value: "__", unit: "", uniqueId: 22 },
+          { name: "月相名称", value: "__", unit: "", uniqueId: 23 }
         ]
       }
     ],
@@ -192,6 +192,5 @@ export default {
 
 .main {
   position: relative;
-  z-index: 1;
 }
 </style>

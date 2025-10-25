@@ -416,11 +416,11 @@ export const WeatherDataUtils = {
    */
   getBasicWeatherFigures(todayData) {
     return [
-      { name: "紫外线指数", value: todayData.uvIndex, uniqueId: 1 },
-      { name: "相对湿度 (%)", value: todayData.humidity, uniqueId: 2 },
-      { name: todayData.windDirDay || "风向", value: todayData.windScaleDay, uniqueId: 3 },
-      { name: "气压 (hPa)", value: todayData.pressure, uniqueId: 4 }
-    ]
+      { name: "紫外线指数", value: todayData.uvIndex || "__", unit: "", uniqueId: 1 },
+      { name: "相对湿度", value: todayData.humidity || "__", unit: "%", uniqueId: 2 },
+      { name: todayData.windDirDay || "风向", value: todayData.windScaleDay || "__", unit: "", uniqueId: 3 },
+      { name: "气压", value: todayData.pressure || "__", unit: "hPa", uniqueId: 4 }
+    ];    
   },
 
   /**
