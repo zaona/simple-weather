@@ -1,6 +1,6 @@
 <template>
   <!-- 页面容器 -->
-  <div class="page">
+  <div class="page-container">
     <!-- 背景图片 -->
     <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
 
@@ -10,46 +10,47 @@
       <image class="loading-icon" src="/common/loading.png" />
     </div>
 
-    <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0" if="{{ !isLoading }}">
+    <scroll class="main-content scroll-container" scroll-y="true" bounces="true" if="{{ !isLoading }}">
       <!-- 头部信息：地点和更新时间 -->
-      <div class="header">
-        <text class="location">{{ location }}</text>
-        <text class="page-subtitle">{{ updateTime }}</text>
+      <div class="page-header">
+        <text class="text-location">{{ location }}</text>
+        <text class="text-subtitle">{{ updateTime }}</text>
       </div>
 
       <!-- 当前天气概览 -->
-      <div class="hero-content">
-        <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
-        <text class="weather-text">{{ textDay }}</text>
-        <text class="temp-min-max">{{ tempMinMax }}</text>
+      <div class="content-hero card-margin">
+        <image class="icon-weather-main" src="/common/weather-icons/{{ iconCode }}.png" />
+        <text class="text-weather">{{ textDay }}</text>
+        <text class="text-temp-range">{{ tempMinMax }}</text>
       </div>
 
       <!-- 天气指标面板 -->
-      <div class="data-list" style="margin-top: 28px">
-        <div class="figure-item" for="{{ item in figure }}">
-        <text class="figure-desc">{{ item.value }}{{ item.unit }}</text>
-        <text class="figure-title">{{ item.name }}</text>
+      <div class="card card-double">
+        <div class="item-data" for="{{ item in figure }}">
+        <text class="text-data-value">{{ item.value }}{{ item.unit }}</text>
+        <text class="text-data-label">{{ item.name }}</text>
       </div>
     </div>
 
       <!-- 未来几天天气预报 -->
-      <div class="future-list">
-        <div style="margin-top: -8px; flex-direction: column">
-          <div class="day-weather-item" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
-            <text class="day-weather-title">{{ item.name }}</text>
-            <div style="justify-content: space-between">
-              <text class="day-weather-desc">{{ item.tempMinMax }}</text>
+      <div class="card card-single">
+        <div class="flex-col mt-negative-sm">
+          <div class="item-forecast" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
+            <text class="text-date">{{ item.name }}</text>
+            <div class="justify-between">
+              <text class="text-weather-desc">{{ item.tempMinMax }}</text>
               <image
-                class="small-weather-icon"
+                class="icon-weather-small"
                 src="/common/weather-icons/{{ item.iconCode }}.png"
               />
             </div>
           </div>
         </div>
       </div>
-      <div class="hero-content" style="margin-top: 24px">
-        <div class="button" onclick="About()">
-          <text class="button-text">关于</text>
+
+      <div class="content-hero mt-lg">
+        <div class="btn-primary" onclick="About()">
+          <text class="text-button">关于</text>
         </div>
       </div>
     </scroll>
@@ -280,37 +281,7 @@ export default {
 
 <style>
 /* 引入公共样式 */
-@import "../../common/style.css";
-@import "../../common/loading-styles.css";
-@import "../../common/page-bg-styles.css";
-
-/* 页面特定样式 */
-.page {
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-.main {
-  position: relative;
-}
-
-.day-weather-item {
-  margin-top: 16px;
-  flex-direction: column;
-}
-
-.day-weather-title {
-  font-size: 28px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.day-weather-desc {
-  font-size: 32px;
-}
-
-.small-weather-icon {
-  width: 48px;
-  height: 48px;
-}
+@import "../../common/css/style.css";
+@import "../../common/css/loading-styles.css";
+@import "../../common/css/page-bg-styles.css";
 </style>

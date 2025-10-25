@@ -1,36 +1,39 @@
 <template>
   <!-- 页面容器，支持右滑返回 -->
-  <div class="page" @swipe="toHomePage">
+  <div class="page-container" @swipe="toHomePageSwipe">
     <!-- 背景图片 -->
     <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
-    
+
     <!-- 加载动画容器 -->
     <div class="loading-container" if="{{ isLoading }}">
       <div class="loading-bg"></div>
       <image class="loading-icon" src="/common/loading.png" />
     </div>
-    
-    <scroll class="main" scroll-y="true" bounces="true" if="{{ !isLoading }}">
+
+    <scroll
+      class="main-content scroll-container"
+      scroll-y="true"
+      bounces="true"
+      if="{{ !isLoading }}"
+    >
       <!-- 头部信息：地点和选中日期 -->
-      <div class="header">
-        <text class="page-title">详情</text>
-        <text class="page-subtitle">{{ updateTime }}</text>
+      <div class="page-header">
+        <text class="text-title">详情</text>
+        <text class="text-subtitle">{{ updateTime }}</text>
       </div>
 
       <!-- 当前天气概览 -->
-      <div class="hero-content">
-        <image class="weather-icon" src="/common/weather-icons/{{ iconCode }}.png" />
-        <text class="weather-text">{{ textDay }}</text>
-        <text class="temp-min-max">{{ tempMinMax }}</text>
+      <div class="content-hero card-margin">
+        <image class="icon-weather-main" src="/common/weather-icons/{{ iconCode }}.png" />
+        <text class="text-weather">{{ textDay }}</text>
+        <text class="text-temp-range">{{ tempMinMax }}</text>
       </div>
 
       <!-- 按类别组织的详细天气数据 -->
-      <div class="data-category" for="{{ category in weatherCategories }}">
-        <div class="detail-list">
-          <div class="figure-item" for="{{ item in category.items }}">
-            <text class="figure-desc">{{ item.value }}{{ item.unit }}</text>
-            <text class="figure-title">{{ item.name }}</text>
-          </div>
+      <div class="card card-double" for="{{ category in weatherCategories }}">
+        <div class="item-data" for="{{ item in category.items }}">
+          <text class="text-data-value">{{ item.value }}{{ item.unit }}</text>
+          <text class="text-data-label">{{ item.name }}</text>
         </div>
       </div>
     </scroll>
@@ -40,14 +43,14 @@
 <script>
 // 导入系统模块
 import router from "@system.router"
-import { showToast } from "@system.prompt"
+import {showToast} from "@system.prompt"
 
 // 导入服务层
 import DataService from "../../services/data-service.js"
-import { MESSAGES, TOAST_DURATION } from "../../services/config.js"
+import {MESSAGES, TOAST_DURATION} from "../../services/config.js"
 
 // 导入工具类
-import { WeatherDataUtils } from "../../common/weather-utils.js"
+import {WeatherDataUtils} from "../../common/weather-utils.js"
 
 export default {
   // 接收来自 index 页面的 selectedDate 参数
@@ -70,45 +73,45 @@ export default {
       {
         // 基础气象指标
         items: [
-          { name: "紫外线指数", value: "__", unit: "", uniqueId: 1 },
-          { name: "相对湿度", value: "__", unit: "%", uniqueId: 2 },
-          { name: "大气压强", value: "__", unit: "hPa", uniqueId: 5 },
-          { name: "能见度", value: "__", unit: "km", uniqueId: 7 },
-          { name: "云量", value: "__", unit: "%", uniqueId: 8 }
+          {name: "紫外线指数", value: "__", unit: "", uniqueId: 1},
+          {name: "相对湿度", value: "__", unit: "%", uniqueId: 2},
+          {name: "大气压强", value: "__", unit: "hPa", uniqueId: 5},
+          {name: "能见度", value: "__", unit: "km", uniqueId: 7},
+          {name: "云量", value: "__", unit: "%", uniqueId: 8}
         ]
       },
       {
         // 降水指标
-        items: [{ name: "总降水量", value: "__", unit: "mm", uniqueId: 6 }]
+        items: [{name: "总降水量", value: "__", unit: "mm", uniqueId: 6}]
       },
       {
         // 日间天气
         items: [
-          { name: "白天天气描述", value: "__", unit: "", uniqueId: 13 },
-          { name: "白天风向", value: "__", unit: "", uniqueId: 3 },
-          { name: "白天风力等级", value: "__", unit: "", uniqueId: 4 },
-          { name: "白天风速", value: "__", unit: "km/h", uniqueId: 17 },
-          { name: "白天风向角度", value: "__", unit: "°", uniqueId: 19 }
+          {name: "白天天气描述", value: "__", unit: "", uniqueId: 13},
+          {name: "白天风向", value: "__", unit: "", uniqueId: 3},
+          {name: "白天风力等级", value: "__", unit: "", uniqueId: 4},
+          {name: "白天风速", value: "__", unit: "km/h", uniqueId: 17},
+          {name: "白天风向角度", value: "__", unit: "°", uniqueId: 19}
         ]
       },
       {
         // 夜间天气
         items: [
-          { name: "夜间天气描述", value: "__", unit: "", uniqueId: 14 },
-          { name: "夜间风向", value: "__", unit: "", uniqueId: 15 },
-          { name: "夜间风力等级", value: "__", unit: "", uniqueId: 16 },
-          { name: "夜间风速", value: "__", unit: "km/h", uniqueId: 18 },
-          { name: "夜间风向角度", value: "__", unit: "°", uniqueId: 20 }
+          {name: "夜间天气描述", value: "__", unit: "", uniqueId: 14},
+          {name: "夜间风向", value: "__", unit: "", uniqueId: 15},
+          {name: "夜间风力等级", value: "__", unit: "", uniqueId: 16},
+          {name: "夜间风速", value: "__", unit: "km/h", uniqueId: 18},
+          {name: "夜间风向角度", value: "__", unit: "°", uniqueId: 20}
         ]
       },
       {
         // 天文时间
         items: [
-          { name: "日出时间", value: "__", unit: "", uniqueId: 9 },
-          { name: "日落时间", value: "__", unit: "", uniqueId: 10 },
-          { name: "月升时间", value: "__", unit: "", uniqueId: 21 },
-          { name: "月落时间", value: "__", unit: "", uniqueId: 22 },
-          { name: "月相名称", value: "__", unit: "", uniqueId: 23 }
+          {name: "日出时间", value: "__", unit: "", uniqueId: 9},
+          {name: "日落时间", value: "__", unit: "", uniqueId: 10},
+          {name: "月升时间", value: "__", unit: "", uniqueId: 21},
+          {name: "月落时间", value: "__", unit: "", uniqueId: 22},
+          {name: "月相名称", value: "__", unit: "", uniqueId: 23}
         ]
       }
     ],
@@ -116,7 +119,7 @@ export default {
     /**
      * 右滑返回index页面
      */
-    toHomePage(eve) {
+    toHomePageSwipe(eve) {
       if (eve.direction === "right") {
         router.back()
       }
@@ -131,8 +134,8 @@ export default {
     const valueMap = WeatherDataUtils.getDetailedWeatherFigures(selectedData)
 
     // 遍历并更新各项数值
-    this.weatherCategories = this.weatherCategories.map(category => ({
-      items: category.items.map(item => ({
+    this.weatherCategories = this.weatherCategories.map((category) => ({
+      items: category.items.map((item) => ({
         ...item,
         value: valueMap[item.uniqueId] !== undefined ? valueMap[item.uniqueId] : item.value
       }))
@@ -146,9 +149,9 @@ export default {
     // 检查是否接收到日期参数
     if (!this.selectedDate) {
       this.isLoading = false
-      showToast({ 
-        message: MESSAGES.NO_DATE_RECEIVED, 
-        duration: TOAST_DURATION.NORMAL 
+      showToast({
+        message: MESSAGES.NO_DATE_RECEIVED,
+        duration: TOAST_DURATION.NORMAL
       })
       return
     }
@@ -158,9 +161,9 @@ export default {
 
     if (!selectedData) {
       this.isLoading = false
-      showToast({ 
-        message: MESSAGES.NO_DATA_FOR_DATE, 
-        duration: TOAST_DURATION.NORMAL 
+      showToast({
+        message: MESSAGES.NO_DATA_FOR_DATE,
+        duration: TOAST_DURATION.NORMAL
       })
       return
     }
@@ -179,18 +182,7 @@ export default {
 
 <style>
 /* 引入公共样式 */
-@import "../../common/style.css";
-@import "../../common/loading-styles.css";
-@import "../../common/page-bg-styles.css";
-
-/* 页面特定样式 */
-.page {
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-.main {
-  position: relative;
-}
+@import "../../common/css/style.css";
+@import "../../common/css/loading-styles.css";
+@import "../../common/css/page-bg-styles.css";
 </style>

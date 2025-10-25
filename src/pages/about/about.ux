@@ -1,26 +1,26 @@
 <template>
-  <div class="page" @swipe="toHomePage">
-    <scroll class="main" scroll-y="true" bounces="true">
-      <div class="header">
-        <text class="page-title">关于</text>
+  <div class="page-container" @swipe="toHomePage">
+    <scroll class="main-content" scroll-y="true" bounces="true">
+      <div class="page-header">
+        <text class="text-title">关于</text>
       </div>
-      <div class="page-list" style="margin-top: 20px">
-        <div class="app-info-container">
-          <image class="app-icon" src="/common/logo.png" />
-          <div class="app-text-container">
-            <text class="app-text">简明天气</text>
-            <text class="app-version">v1.7.0</text>
+      <div class="card card-single mt-xl">
+        <div class="container-app-info">
+          <image class="icon-app" src="/common/logo.png" />
+          <div class="container-app-text">
+            <text class="text-app-name">简明天气</text>
+            <text class="text-app-version">v1.7.0</text>
           </div>
         </div>
       </div>
 
       <!-- 调试面板（仅在调试模式下显示） -->
-      <div class="hero-content" style="margin-top: 24px" if="{{ showDebugPanel }}">
-        <div class="button" @click="handleInjectMockData">
-          <text class="button-text">模拟数据</text>
+      <div class="content-hero mt-lg" if="{{ showDebugPanel }}">
+        <div class="btn-primary" @click="handleInjectMockData">
+          <text class="text-button">模拟数据</text>
         </div>
-        <div class="button" @click="handleClearData" style="margin-top: 12px">
-          <text class="button-text">清除数据</text>
+        <div class="btn-primary mt-sm" @click="handleClearData">
+          <text class="text-button">清除数据</text>
         </div>
       </div>
     </scroll>
@@ -71,80 +71,6 @@ export default {
 </script>
 
 <style>
-@import "../../common/style.css";
-
-.page-list {
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  width: 95%;
-}
-
-/* 应用信息容器 - 默认竖排布局（窄屏） */
-.app-info-container {
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  margin: 24px 0 12px 0;
-}
-
-/* 文本容器 */
-.app-text-container {
-  flex-direction: column;
-  align-items: center;
-}
-
-.app-icon {
-  width: 85px;
-  height: 85px;
-  margin-bottom: 16px;
-}
-
-.app-text {
-  font-size: 30px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 4px;
-}
-
-.app-version {
-  font-size: 24px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-}
-
-/* 媒体查询 - 宽屏幕上横排布局 */
-@media (width: 160) or (width: 216) or (width: 233) {
-  .app-info-container {
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin: 24px 0 24px 0;
-  }
-
-  .app-icon {
-    margin-bottom: 0;
-    margin-right: 24px;
-  }
-
-  .app-text-container {
-    align-items: flex-start;
-  }
-
-  .app-text {
-    text-align: left;
-  }
-
-  .app-version {
-    text-align: left;
-  }
-}
-
-
-@media (width: 233px) {
-  .page-list{
-    width: 70%;
-
-  }}
+/* 引入公共样式 */
+@import "../../common/css/style.css";
 </style>

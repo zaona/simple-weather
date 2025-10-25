@@ -1,0 +1,338 @@
+/**
+ * 主样式文件
+ * 整合了布局、文本、组件样式
+ */
+
+/* ===== 基础布局样式 ===== */
+
+/* 页面容器 */
+.page-container {
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* 主内容区域 */
+.main-content {
+    color: #ffffff;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0px;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* 页面头部 */
+.page-header {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+
+/* 滚动容器 */
+.scroll-container {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+}
+
+/* ===== 文本样式 ===== */
+
+/* 页面标题 */
+.text-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 页面副标题 */
+.text-subtitle {
+    font-size: 22px;
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* 地点文本 */
+.text-location {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 天气描述文本 */
+.text-weather {
+    font-size: 36px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+/* 温度范围文本 */
+.text-temp-range {
+    font-size: 36px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 0px;
+    padding-left: 6px;
+    margin-bottom: 40px;
+}
+
+/* 日期文本 */
+.text-date {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* 天气描述文本 */
+.text-weather-desc {
+    font-size: 32px;
+}
+
+/* 数据值文本 */
+.text-data-value {
+    font-size: 37px;
+    font-weight: bold;
+    margin-left: -1px;
+}
+
+/* 数据标签文本 */
+.text-data-label {
+    font-size: 24px;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* 按钮文本 */
+.text-button {
+    font-size: 29px;
+}
+
+/* 应用名称文本 */
+.text-app-name {
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+/* 应用版本文本 */
+.text-app-version {
+    font-size: 24px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+}
+
+/* ===== 组件样式 ===== */
+
+/* 天气图标 */
+.icon-weather-main {
+    width: 85px;
+    height: 85px;
+    margin-top: 40px;
+}
+
+.icon-weather-small {
+    width: 48px;
+    height: 48px;
+}
+
+/* 按钮组件 */
+.btn-primary {
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 18px 30px;
+    border-radius: 50%;
+}
+
+/* 卡片组件 */
+.card {
+    width: 94%;
+    flex-direction: column;
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+
+/* 单列卡片 - 始终保持一列布局 */
+.card-single {
+    padding: 0 12px 12px 12px;
+    margin-top: 12px;
+}
+
+/* 双列卡片 - 在宽屏上分两列显示 */
+.card-double {
+    padding: 0 0 12px 12px;
+    margin-top: 12px;
+}
+
+/* 卡片外边距 */
+.card-margin {
+    margin-bottom: 12px;
+}
+
+/* 内容区域 */
+.content-hero {
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 数据项 */
+.item-forecast {
+    margin-top: 16px;
+    flex-direction: column;
+}
+
+.item-data {
+    flex-direction: column;
+    margin-top: 14px;
+}
+
+/* 应用信息容器 */
+.container-app-info {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 24px 0 12px 0;
+}
+
+.container-app-text {
+    flex-direction: column;
+    align-items: center;
+}
+
+.icon-app {
+    width: 85px;
+    height: 85px;
+    margin-bottom: 16px;
+}
+
+/* ===== 实用工具类 ===== */
+
+/* Flex布局 */
+.flex-col {
+    flex-direction: column;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+/* 常用间距 */
+.mt-sm {
+    margin-top: 12px;
+}
+
+.mt-lg {
+    margin-top: 24px;
+}
+
+.mt-xl {
+    margin-top: 36px;
+}
+
+.mt-negative-sm {
+    margin-top: -8px;
+}
+
+
+/* ===== 响应式样式 ===== */
+
+/* 针对圆表 (分辨率: 466px*466px, 水平dp值: 233) */
+@media (width: 233) {
+    .main-content {
+        padding: 20px 0px;
+    }
+
+    .text-location {
+        font-size: 36px;
+        font-weight: normal;
+    }
+
+    .text-title {
+        font-size: 36px;
+        font-weight: normal;
+    }
+
+    .text-subtitle {
+        font-size: 24px;
+        margin-top: 8px;
+    }
+
+    .icon-weather-main {
+        width: 120px;
+        height: 120px;
+    }
+
+    .text-weather {
+        font-size: 50px;
+    }
+
+    .text-temp-range {
+        font-size: 42px;
+    }
+
+    .text-date {
+        font-size: 30px;
+    }
+
+    .text-weather-desc {
+        font-size: 36px;
+    }
+
+    .icon-weather-small {
+        width: 56px;
+        height: 56px;
+    }
+
+    .card-single {
+        width: 80%;
+        padding: 16px;
+        margin-top: 12px;
+    }
+
+    .card-double {
+        width: 80%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 0 0px 16px 16px;
+    }
+
+    .card-margin {
+        margin-bottom: 24px;
+    }
+
+    .item-data {
+        width: 49%;
+        margin-right: 2px;
+    }
+
+    .container-app-info {
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        margin: 24px 0 24px 0;
+    }
+
+    .icon-app {
+        margin-bottom: 0;
+        margin-right: 24px;
+    }
+
+    .container-app-text {
+        align-items: flex-start;
+    }
+
+    .text-app-name {
+        text-align: left;
+    }
+
+    .text-app-version {
+        text-align: left;
+    }
+
+    .mt-negative-sm {
+        margin-top: -16px;
+    }
+}

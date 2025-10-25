@@ -27,7 +27,7 @@
   }
 }
 
-/* 针对REDMI Watch 5 (分辨率: 432*514, 水平dp值: 216) */
+/* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
 @media (width: 216) {
   .page-bg {
     width: 432px;
@@ -43,6 +43,7 @@
   }
 }
 
+/* 针对圆表 (分辨率: 466px*466px, 水平dp值: 233) */
 @media (width: 233) {
   .page-bg {
     width: 466px;
