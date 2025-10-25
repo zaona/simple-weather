@@ -85,10 +85,10 @@ export default {
 
     // 天气指标数据
     figure: [
-  { name: "紫外线指数", value: "__", unit: "", uniqueId: 1 },
-  { name: "相对湿度", value: "__", unit: "%", uniqueId: 2 },
-  { name: "__", value: "__", unit: "", uniqueId: 3 },
-  { name: "气压", value: "__", unit: "hPa", uniqueId: 4 }
+  { name: "紫外线指数", value: "__", uniqueId: 1 },
+  { name: "相对湿度", value: "__", uniqueId: 2 },
+  { name: "__", value: "__", uniqueId: 3 },
+  { name: "气压", value: "__", uniqueId: 4 }
 ],
 
 

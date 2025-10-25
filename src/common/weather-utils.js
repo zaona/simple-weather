@@ -418,7 +418,7 @@ export const WeatherDataUtils = {
     return [
       { name: "紫外线指数", value: todayData.uvIndex || "__", unit: "", uniqueId: 1 },
       { name: "相对湿度", value: todayData.humidity || "__", unit: "%", uniqueId: 2 },
-      { name: todayData.windDirDay || "风向", value: todayData.windScaleDay || "__", unit: "", uniqueId: 3 },
+      { name: todayData.windDirDay || "风向", value: todayData.windScaleDay || "__", unit: "级", uniqueId: 3 },
       { name: "气压", value: todayData.pressure || "__", unit: "hPa", uniqueId: 4 }
     ];    
   },
