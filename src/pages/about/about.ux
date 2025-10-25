@@ -9,7 +9,7 @@
           <image class="app-icon" src="/common/logo.png" />
           <div class="app-text-container">
             <text class="app-text">简明天气</text>
-            <text class="app-version">v1.6.0</text>
+            <text class="app-version">v1.6.1</text>
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default {
 }
 
 /* 媒体查询 - 宽屏幕上横排布局 */
-@media (min-width: 150) {
+@media (width: 160) or (width: 216) {
   .app-info-container {
     flex-direction: row;
     align-items: center;
