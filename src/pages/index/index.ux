@@ -13,7 +13,7 @@
     <scroll class="main" scroll-y="true" bounces="true" style="position: fixed; top: 0; bottom: 0" if="{{ !isLoading }}">
       <!-- 头部信息：地点和更新时间 -->
       <div class="header">
-        <text class="page-title">{{ location }}</text>
+        <text class="location">{{ location }}</text>
         <text class="page-subtitle">{{ updateTime }}</text>
       </div>
 
@@ -25,17 +25,15 @@
       </div>
 
       <!-- 天气指标面板 -->
-      <div class="page-list" style="margin-top: 28px">
-        <div style="margin-top: -2px; flex-direction: column">
-          <div style="margin-top: 14px; flex-direction: column" for="{{ item in figure }}">
-            <text class="figure-desc">{{ item.value }}</text>
-            <text class="figure-title">{{ item.name }}</text>
-          </div>
-        </div>
+      <div class="data-list" style="margin-top: 28px">
+        <div class="figure-item" for="{{ item in figure }}">
+        <text class="figure-desc">{{ item.value }}{{ item.unit }}</text>
+        <text class="figure-title">{{ item.name }}</text>
       </div>
+    </div>
 
       <!-- 未来几天天气预报 -->
-      <div class="page-list" style="margin-top: 12px">
+      <div class="future-list">
         <div style="margin-top: -8px; flex-direction: column">
           <div class="day-weather-item" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
             <text class="day-weather-title">{{ item.name }}</text>
@@ -86,11 +84,12 @@ export default {
 
     // 天气指标数据
     figure: [
-      { name: "紫外线指数", value: "__", uniqueId: 1 },
-      { name: "相对湿度 （%）", value: "__", uniqueId: 2 },
-      { name: "__", value: "__", uniqueId: 3 },
-      { name: "气压 （hPa）", value: "__", uniqueId: 4 }
-    ],
+  { name: "紫外线指数", value: "__", unit: "", uniqueId: 1 },
+  { name: "相对湿度", value: "__", unit: "%", uniqueId: 2 },
+  { name: "__", value: "__", unit: "", uniqueId: 3 },
+  { name: "气压", value: "__", unit: "hPa", uniqueId: 4 }
+],
+
 
     // 未来几天天气预报数据
     dayWeather: [{ name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1 }]
@@ -294,7 +293,6 @@ export default {
 
 .main {
   position: relative;
-  z-index: 1;
 }
 
 .day-weather-item {

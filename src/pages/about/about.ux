@@ -9,7 +9,7 @@
           <image class="app-icon" src="/common/logo.png" />
           <div class="app-text-container">
             <text class="app-text">简明天气</text>
-            <text class="app-version">v1.6.1</text>
+            <text class="app-version">v1.7.0</text>
           </div>
         </div>
       </div>
@@ -75,6 +75,9 @@ export default {
 
 .page-list {
   align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  width: 95%;
 }
 
 /* 应用信息容器 - 默认竖排布局（窄屏） */
@@ -112,12 +115,12 @@ export default {
 }
 
 /* 媒体查询 - 宽屏幕上横排布局 */
-@media (width: 160) or (width: 216) {
+@media (width: 160) or (width: 216) or (width: 233) {
   .app-info-container {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    margin: 36px 0 24px 0;
+    margin: 24px 0 24px 0;
   }
 
   .app-icon {
@@ -137,4 +140,11 @@ export default {
     text-align: left;
   }
 }
+
+
+@media (width: 233px) {
+  .page-list{
+    width: 70%;
+
+  }}
 </style>

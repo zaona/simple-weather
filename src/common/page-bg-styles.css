@@ -43,3 +43,9 @@
   }
 }
 
+@media (width: 233) {
+  .page-bg {
+    width: 466px;
+    height: 466px;
+  }
+}

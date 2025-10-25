@@ -12,7 +12,6 @@
   height: 100%;
   justify-content: center;
   align-items: center;
-  z-index: 999;
 }
 
 /* 加载动画背景遮罩 */
@@ -29,7 +28,6 @@
 .loading-icon {
   width: 60px;
   height: 60px;
-  z-index: 1000;
   animation-name: rotate;
   animation-duration: 1.5s;
   animation-iteration-count: infinite;
