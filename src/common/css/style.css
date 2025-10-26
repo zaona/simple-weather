@@ -316,6 +316,8 @@
     }
 
     .icon-app {
+        width: 100px;
+        height: 100px;
         margin-bottom: 0;
         margin-right: 24px;
     }
@@ -325,10 +327,115 @@
     }
 
     .text-app-name {
+        font-size: 36px;
         text-align: left;
     }
 
     .text-app-version {
+        font-size: 30px;
+        text-align: left;
+    }
+
+    .mt-negative-sm {
+        margin-top: -16px;
+    }
+}
+
+
+/* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 216) {
+    .main-content {
+        padding: 20px 0px;
+    }
+
+    .text-location {
+        font-size: 36px;
+        font-weight: normal;
+    }
+
+    .text-title {
+        font-size: 36px;
+        font-weight: normal;
+    }
+
+    .text-subtitle {
+        font-size: 24px;
+        margin-top: 8px;
+    }
+
+    .icon-weather-main {
+        margin-top: 56px;
+        width: 120px;
+        height: 120px;
+    }
+
+    .text-weather {
+        font-size: 50px;
+    }
+
+    .text-temp-range {
+        font-size: 42px;
+    }
+
+    .text-date {
+        font-size: 30px;
+    }
+
+    .text-weather-desc {
+        font-size: 36px;
+    }
+
+    .icon-weather-small {
+        width: 56px;
+        height: 56px;
+    }
+
+    .card-single {
+        padding: 16px;
+        margin-top: 12px;
+    }
+
+    .card-double {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 0 0px 16px 16px;
+    }
+
+    .card-margin {
+        margin-bottom: 48px;
+    }
+
+    .item-data {
+        width: 49%;
+        margin-right: 2px;
+    }
+
+    .container-app-info {
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        margin: 24px 0 24px 0;
+    }
+
+    .icon-app {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 0;
+        margin-right: 24px;
+    }
+
+    .container-app-text {
+        align-items: flex-start;
+    }
+
+    .text-app-name {
+        font-size: 36px;
+        text-align: left;
+    }
+
+    .text-app-version {
+        font-size: 30px;
         text-align: left;
     }
 
