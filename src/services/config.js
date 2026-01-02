@@ -6,7 +6,9 @@
 // 存储和文件配置
 export const STORAGE = {
   // 天气数据存储路径
-  WEATHER_FILE: 'internal://files/weather.txt'
+  WEATHER_FILE: 'internal://files/weather.txt',
+  // 设置存储路径
+  SETTINGS_FILE: 'internal://files/settings.txt'
 }
 
 // 连接相关配置
@@ -29,6 +31,18 @@ export const DATA = {
   CACHE_EXPIRY: 5 * 60 * 1000
 }
 
+// 自动更新配置
+export const AUTO_UPDATE = {
+  // 数据过期阈值（毫秒） - 1小时
+  EXPIRY_THRESHOLD: 60 * 60 * 1000
+}
+
+// 天气 API 配置（公共参数）
+export const WEATHER_API = {
+  DAILY_PATH: '/v7/weather/7d',
+  REQUEST_TIMEOUT: 10000
+}
+
 // 用户提示消息
 export const MESSAGES = {
   // 成功消息
@@ -46,12 +60,15 @@ export const MESSAGES = {
   DATA_FORMAT_ERROR: '数据格式错误',
   DATA_PARSE_ERROR: '数据解析失败',
   DATA_SAVE_ERROR: '数据保存失败',
+  FETCH_WEATHER_ERROR: '获取天气失败',
   NO_LOCAL_DATA: '本地无数据',
   NO_DATE_RECEIVED: '未接收到日期',
   NO_DATA_FOR_DATE: '数据缺失',
   CANNOT_READ_DATA: '无法读取天气数据',
   NAVIGATION_ERROR: '跳转详情页失败',
-  
+  LOCATION_INFO_MISSING: '无法获取本地位置信息',
+  SETTINGS_SAVE_ERROR: '设置保存失败',
+
   // 连接消息
   CONNECTION_ERROR: '连接错误',
   CONNECTION_CLOSED: '连接已关闭',

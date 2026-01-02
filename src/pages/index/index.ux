@@ -66,7 +66,9 @@ import { showToast } from "@system.prompt"
 import DataService from "../../services/data-service.js"
 import ConnectionService from "../../services/connection-service.js"
 import DebugService from "../../services/debug-service.js"
-import { MESSAGES, TOAST_DURATION } from "../../services/config.js"
+import SettingsService from "../../services/settings-service.js"
+import WeatherApiService, { WEATHER_API_ERRORS } from "../../services/weather-api-service.js"
+import { MESSAGES, TOAST_DURATION, AUTO_UPDATE } from "../../services/config.js"
 
 // 导入工具类
 import { DateUtils, WeatherDataUtils } from "../../common/weather-utils.js"
@@ -76,6 +78,8 @@ export default {
   private: {
     isLoading: true, // 加载状态
     isFirstLoad: true, // 是否是首次加载
+    autoUpdateEnabled: false, // 自动更新是否开启
+    autoUpdateInProgress: false, // 自动更新中标记
     location: "__", // 地点
     updateTime: "__", // 更新时间
     iconCode: "__", // 天气图标代码
@@ -126,18 +130,94 @@ export default {
   },
 
   /**
+   * 更新天气数据
+   * @param {Object|boolean} options - 配置项或是否自动触发
+   * @returns {Promise<boolean>}
+   */
+  async UpdateWeather(options = {}) {
+    let config = { auto: false, silent: false, showLoading: null }
+
+    if (typeof options === "boolean") {
+      config.auto = options
+    } else {
+      config = { ...config, ...options }
+    }
+
+    const shouldShowLoading =
+      config.showLoading !== null ? config.showLoading : !config.auto
+
+    if (this.isLoading && shouldShowLoading) {
+      return false
+    }
+
+    if (shouldShowLoading) {
+      this.isLoading = true
+    }
+
+    try {
+      const weatherData = await WeatherApiService.fetchWeatherWithLocation()
+      const saved = await DataService.saveWeatherData(JSON.stringify(weatherData))
+
+      if (!saved) {
+        return false
+      }
+
+      const result = await this.loadWeatherData(true)
+
+      if (!result || !result.success) {
+        if (!config.silent) {
+          showToast({
+            message: MESSAGES.DATA_PARSE_ERROR,
+            duration: TOAST_DURATION.NORMAL
+          })
+        }
+        return false
+      }
+
+      if (!config.silent) {
+        showToast({
+          message: MESSAGES.DATA_UPDATED,
+          duration: TOAST_DURATION.SHORT
+        })
+      }
+
+      return true
+    } catch (error) {
+      console.error("获取天气失败:", error)
+      const toastMessage =
+        error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+          ? MESSAGES.LOCATION_INFO_MISSING
+          : MESSAGES.FETCH_WEATHER_ERROR
+
+      if (!config.silent) {
+        showToast({
+          message: toastMessage,
+          duration: TOAST_DURATION.NORMAL
+        })
+      }
+
+      return false
+    } finally {
+      if (shouldShowLoading) {
+        this.isLoading = false
+      }
+    }
+  },
+
+  /**
    * 加载并显示天气数据
    * @param {boolean} silent - 静默模式，不显示错误Toast
-   * @returns {Object} 返回 { success: boolean, status: string }
+   * @returns {Object} 返回 { success: boolean, status: string, weatherData?: Object }
    */
   async loadWeatherData(silent = false) {
     const result = await DataService.getTodayData(silent)
 
     // 检查加载状态
     if (!result || result.status !== 'success') {
-      return { 
-        success: false, 
-        status: result?.status || 'unknown' 
+      return {
+        success: false,
+        status: result?.status || 'unknown',
+        weatherData: null
       }
     }
 
@@ -153,7 +233,70 @@ export default {
     this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
     this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
     
-    return { success: true, status: 'success' }
+    return { success: true, status: 'success', weatherData }
+  },
+
+  /**
+   * 同步自动更新设置
+   */
+   async syncAutoUpdateSetting(forceReload = false) {
+    try {
+      if (forceReload && SettingsService.clearCache) {
+    SettingsService.clearCache()
+    }
+      const settings = await SettingsService.getSettings()
+      this.autoUpdateEnabled = !!settings.autoUpdateEnabled
+    } catch (error) {
+      console.error("同步设置失败:", error)
+    }
+  },
+
+  /**
+   * 判断天气数据是否过期
+   * @param {Object} weatherData
+   * @returns {boolean}
+   */
+  isWeatherDataExpired(weatherData) {
+    if (!weatherData || !weatherData.updateTime) {
+      return false
+    }
+
+    const updatedAt = new Date(weatherData.updateTime).getTime()
+    if (Number.isNaN(updatedAt)) {
+      return false
+    }
+
+    return Date.now() - updatedAt >= AUTO_UPDATE.EXPIRY_THRESHOLD
+  },
+
+  /**
+   * 根据设置尝试自动更新天气
+   * @param {Object|null} weatherData
+   * @param {Object} options
+   */
+  async maybeAutoUpdate(weatherData, options = {}) {
+    if (!this.autoUpdateEnabled || this.autoUpdateInProgress) {
+      return
+    }
+
+    const { silent = true, showLoading = false } = options
+    const data = weatherData || (await DataService.readWeatherData(true))
+
+    if (!data || !this.isWeatherDataExpired(data)) {
+      return
+    }
+
+    this.autoUpdateInProgress = true
+
+    try {
+      await this.UpdateWeather({
+        auto: true,
+        silent,
+        showLoading
+      })
+    } finally {
+      this.autoUpdateInProgress = false
+    }
   },
 
   /**
@@ -164,6 +307,8 @@ export default {
     // 取消下面的注释可启用模拟数据注入
     // await DebugService.injectMockData()
 
+    await this.syncAutoUpdateSetting()
+
     // 加载本地数据（静默模式）
     const result = await this.loadWeatherData(true)
 
@@ -173,29 +318,56 @@ export default {
         // 有数据，关闭加载动画
         this.isLoading = false
       } else {
-        // 无数据或数据过期，保持加载动画，根据状态显示不同提示
-        let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
-        
-        if (result.status === 'expired') {
-          toastMessage = MESSAGES.WAITING_FOR_UPDATE
-        } else if (result.status === 'no_data') {
-          toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+        const shouldAutoUpdate =
+          this.autoUpdateEnabled && (result.status === 'expired' || result.status === 'no_data')
+
+        if (shouldAutoUpdate) {
+          await this.UpdateWeather({ auto: true, showLoading: true })
+        } else {
+          let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+
+          if (result.status === 'expired') {
+            toastMessage = MESSAGES.WAITING_FOR_UPDATE
+          } else if (result.status === 'no_data') {
+            toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+          }
+          
+          showToast({ 
+            message: toastMessage, 
+            duration: TOAST_DURATION.LONG 
+          })
         }
-        
-        showToast({ 
-          message: toastMessage, 
-          duration: TOAST_DURATION.LONG 
-        })
-        // 不关闭 isLoading，等待 handleWeatherData 接收数据后关闭
       }
       this.isFirstLoad = false
+    }
+
+    if (result.success) {
+      await this.maybeAutoUpdate(result.weatherData)
     }
   },
 
   /**
-   * 页面显示时初始化连接
+   * 页面显示时初始化连接并刷新缓存
    */
-  onShow() {
+  async onShow() {
+    await this.syncAutoUpdateSetting()
+    await this.syncAutoUpdateSetting(true)
+
+    // 清除缓存，确保重新从本地文件读取
+    DataService.clearCache()
+
+    // 重新加载一次，以便反映其他页面的修改
+    const result = await this.loadWeatherData(true)
+
+    if (result.success) {
+      await this.maybeAutoUpdate(result.weatherData, { silent: true })
+    } else if (this.autoUpdateEnabled) {
+      const shouldAutoUpdate = result.status === 'expired' || result.status === 'no_data'
+      if (shouldAutoUpdate) {
+        await this.UpdateWeather({ auto: true, silent: true, showLoading: false })
+      }
+    }
+
     // 初始化连接并注册消息处理
     ConnectionService.init((data) => {
       this.handleWeatherData(data)

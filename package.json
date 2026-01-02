@@ -1,6 +1,6 @@
 {
   "name": "simple-weather",
-  "version": "1.7.1",
+  "version": "1.8.1",
   "description": "",
   "engines": {
     "node": ">=8.10"

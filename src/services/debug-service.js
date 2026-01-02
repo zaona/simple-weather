@@ -22,6 +22,7 @@ const DEBUG_MODE = false  // ⚠️ 发版时改为 false
 const MOCK_WEATHER_DATA = {
   location: "北京",
   updateTime: new Date().toISOString(),
+  // updateTime: "2026-01-02T15:04:05.789Z",
   fxLink: "https://www.qweather.com/weather/jiangyin-101190202.html",
   daily: [
     {

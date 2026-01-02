@@ -9,13 +9,34 @@
           <image class="icon-app" src="/common/logo.png" />
           <div class="container-app-text">
             <text class="text-app-name">简明天气</text>
-            <text class="text-app-version">v1.7.1</text>
+            <text class="text-app-version">v1.8.1</text>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-single mt-sm">
+        <div style="margin: 12px; display: flex; flex-direction: column">
+          <div style="display: flex; flex-direction: row; justify-content: space-between;align-items: center;">
+            <div style="display: flex; flex-direction: column">
+              <text>自动更新</text>
+              <text class="text-subtitle">
+                超过1h自动更新天气
+              </text>
+            </div>
+            <switch
+              style="width: 80px; height: 40px"
+              checked="{{ autoUpdateEnabled }}"
+              @change="handleAutoUpdateToggle"
+            />
+          </div>
+          <div class="btn-secondary mt-lg" style="border-radius: 8px" @click="handleUpdateWeather">
+            <text class="text-button">{{ isUpdating ? "更新中..." : "更新天气" }}</text>
           </div>
         </div>
       </div>
 
       <!-- 调试面板（仅在调试模式下显示） -->
-      <div class="content-hero mt-lg" if="{{ showDebugPanel }}">
+      <div class="card card-single mt-sm" if="{{ showDebugPanel }}">
         <div class="btn-primary" @click="handleInjectMockData">
           <text class="text-button">模拟数据</text>
         </div>
@@ -29,20 +50,28 @@
 
 <script>
 import router from "@system.router"
+import {showToast} from "@system.prompt"
 import DebugService from "../../services/debug-service.js"
+import DataService from "../../services/data-service.js"
+import SettingsService from "../../services/settings-service.js"
+import WeatherApiService, {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
+import {MESSAGES, TOAST_DURATION} from "../../services/config.js"
 
 export default {
   // 页面私有数据
   private: {
-    showDebugPanel: false // 是否显示调试面板
+    showDebugPanel: false, // 是否显示调试面板
+    isUpdating: false, // 是否正在更新天气
+    autoUpdateEnabled: false // 自动更新开关
   },
 
   /**
    * 页面初始化
    */
-  onInit() {
+  async onInit() {
     // 根据调试模式决定是否显示调试面板
     this.showDebugPanel = DebugService.isDebugMode()
+    await this.loadAutoUpdateSetting()
   },
 
   /**
@@ -51,6 +80,69 @@ export default {
   toHomePage(eve) {
     if (eve.direction === "right") {
       router.back()
+    }
+  },
+
+  /**
+   * 加载自动更新配置
+   */
+  async loadAutoUpdateSetting() {
+    try {
+      const settings = await SettingsService.getSettings()
+      this.autoUpdateEnabled = !!settings.autoUpdateEnabled
+    } catch (error) {
+      console.error("加载设置失败:", error)
+    }
+  },
+
+  /**
+   * 切换自动更新
+   */
+  async handleAutoUpdateToggle(event) {
+    const nextValue = typeof event.checked === "boolean" ? event.checked : !!event.detail?.checked
+    const previousValue = this.autoUpdateEnabled
+    this.autoUpdateEnabled = nextValue
+
+    const saved = await SettingsService.setAutoUpdateEnabled(nextValue)
+    if (!saved) {
+      this.autoUpdateEnabled = previousValue
+    }
+  },
+
+  /**
+   * 通过 API 更新天气数据
+   */
+  async handleUpdateWeather() {
+    if (this.isUpdating) {
+      return
+    }
+
+    this.isUpdating = true
+
+    try {
+      const weatherData = await WeatherApiService.fetchWeatherWithLocation()
+      const saved = await DataService.saveWeatherData(JSON.stringify(weatherData))
+
+      if (!saved) {
+        return
+      }
+
+      showToast({
+        message: MESSAGES.DATA_UPDATED,
+        duration: TOAST_DURATION.SHORT
+      })
+    } catch (error) {
+      const toastMessage =
+        error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+          ? MESSAGES.LOCATION_INFO_MISSING
+          : MESSAGES.FETCH_WEATHER_ERROR
+
+      showToast({
+        message: toastMessage,
+        duration: TOAST_DURATION.NORMAL
+      })
+    } finally {
+      this.isUpdating = false
     }
   },
 

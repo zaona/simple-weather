@@ -144,6 +144,14 @@
     border-radius: 50%;
 }
 
+.btn-secondary {
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    padding: 18px 30px;
+    border-radius: 50%;
+}
+
 /* 卡片组件 */
 .card {
     width: 94%;
