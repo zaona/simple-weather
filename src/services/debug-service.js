@@ -22,9 +22,10 @@ const DEBUG_MODE = false  // ⚠️ 发版时改为 false
 const MOCK_WEATHER_DATA = {
   location: "北京",
   updateTime: new Date().toISOString(),
+  fxLink: "https://www.qweather.com/weather/jiangyin-101190202.html",
   daily: [
     {
-      fxDate: "2025-10-20",
+      fxDate: "2026-01-02",
       tempMax: "25",
       tempMin: "15",
       textDay: "晴",
@@ -52,7 +53,7 @@ const MOCK_WEATHER_DATA = {
       moonPhase: "上弦月"
     },
     {
-      fxDate: "2025-10-21",
+      fxDate: "2026-01-03",
       tempMax: "26",
       tempMin: "16",
       textDay: "多云",
@@ -80,7 +81,7 @@ const MOCK_WEATHER_DATA = {
       moonPhase: "满月"
     },
     {
-      fxDate: "2025-10-22",
+      fxDate: "2026-01-04",
       tempMax: "24",
       tempMin: "14",
       textDay: "小雨",
@@ -108,7 +109,7 @@ const MOCK_WEATHER_DATA = {
       moonPhase: "满月"
     },
     {
-      fxDate: "2025-10-23",
+      fxDate: "2026-01-05",
       tempMax: "22",
       tempMin: "13",
       textDay: "阴",
@@ -136,7 +137,7 @@ const MOCK_WEATHER_DATA = {
       moonPhase: "亏凸月"
     },
     {
-      fxDate: "2025-10-24",
+      fxDate: "2026-01-06",
       tempMax: "23",
       tempMin: "12",
       textDay: "晴",
@@ -164,7 +165,7 @@ const MOCK_WEATHER_DATA = {
       moonPhase: "下弦月"
     },
     {
-      fxDate: "2025-10-25",
+      fxDate: "2026-01-07",
       tempMax: "25",
       tempMin: "14",
       textDay: "晴",
@@ -192,7 +193,7 @@ const MOCK_WEATHER_DATA = {
       moonPhase: "残月"
     },
     {
-      fxDate: "2025-10-26",
+      fxDate: "2026-01-08",
       tempMax: "27",
       tempMin: "15",
       textDay: "多云",
