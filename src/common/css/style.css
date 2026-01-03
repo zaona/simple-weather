@@ -49,7 +49,7 @@
 .text-subtitle {
     font-size: 22px;
     margin-top: 6px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 /* 地点文本 */
@@ -69,26 +69,44 @@
 .text-temp-range {
     font-size: 36px;
     font-weight: bold;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.6);
     margin-top: 0px;
     padding-left: 6px;
     margin-bottom: 40px;
 }
 
-/* 日期文本 */
-.text-date {
+/* 每日文本 */
+.text-daily {
     font-size: 28px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.6);
 }
 
-/* 天气描述文本 */
-.text-weather-desc {
+/* 每日温度文本 */
+.text-daily-temp {
     font-size: 32px;
+    font-weight: bold;
+}
+
+/* 每小时文本 */
+.text-hourly {
+    font-size: 30px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+/* 每小时温度文本 */
+.text-hourly-temp {
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 8px;
+    margin-left: 6px;
 }
 
 /* 数据值文本 */
 .text-data-value {
-    font-size: 37px;
+    font-size: 36px;
     font-weight: bold;
     margin-left: -1px;
 }
@@ -97,7 +115,7 @@
 .text-data-label {
     font-size: 24px;
     margin-top: 2px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 /* 按钮文本 */
@@ -117,7 +135,7 @@
 .text-app-version {
     font-size: 24px;
     font-weight: bold;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.6);
     text-align: center;
 }
 
@@ -131,8 +149,8 @@
 }
 
 .icon-weather-small {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
 }
 
 /* 按钮组件 */
@@ -194,6 +212,12 @@
 .item-data {
     flex-direction: column;
     margin-top: 14px;
+}
+
+.item-hourly {
+    margin-right: 42px;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* 应用信息容器 */
@@ -280,12 +304,24 @@
         font-size: 42px;
     }
 
-    .text-date {
+    .text-daily {
         font-size: 30px;
     }
 
-    .text-weather-desc {
+    .text-daily-temp {
         font-size: 36px;
+    }
+
+    .text-data-value {
+        font-size: 36px;
+        font-weight: bold;
+        margin-left: -1px;
+    }
+
+    .text-data-label {
+        font-size: 26px;
+        margin-top: 2px;
+        color: rgba(255, 255, 255, 0.6);
     }
 
     .icon-weather-small {
@@ -314,6 +350,12 @@
     .item-data {
         width: 49%;
         margin-right: 2px;
+    }
+
+    .item-hourly {
+        margin-right: 30px;
+        flex-direction: column;
+        align-items: center;
     }
 
     .container-app-info {
@@ -385,12 +427,24 @@
         font-size: 42px;
     }
 
-    .text-date {
+    .text-daily {
         font-size: 30px;
     }
 
-    .text-weather-desc {
+    .text-daily-temp {
         font-size: 36px;
+    }
+
+    .text-data-value {
+        font-size: 36px;
+        font-weight: bold;
+        margin-left: -1px;
+    }
+
+    .text-data-label {
+        font-size: 26px;
+        margin-top: 2px;
+        color: rgba(255, 255, 255, 0.6);
     }
 
     .icon-weather-small {

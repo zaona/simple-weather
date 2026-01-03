@@ -10,7 +10,12 @@
       <image class="loading-icon" src="/common/loading.png" />
     </div>
 
-    <scroll class="main-content scroll-container" scroll-y="true" bounces="true" if="{{ !isLoading }}">
+    <scroll
+      class="main-content scroll-container"
+      scroll-y="true"
+      bounces="true"
+      if="{{ !isLoading }}"
+    >
       <!-- 头部信息：地点和更新时间 -->
       <div class="page-header">
         <text class="text-location">{{ location }}</text>
@@ -24,21 +29,41 @@
         <text class="text-temp-range">{{ tempMinMax }}</text>
       </div>
 
+      <!-- 逐小时天气预报 -->
+      <div class="card card-single">
+        <scroll
+          class="mt-negative-sm"
+          style="margin: -4px"
+          scroll-x="true"
+          bounces="true"
+        >
+          <div class="item-hourly" for="{{ item in figureHourly }}">
+            <text class="text-hourly">
+              {{ item.name }}
+            </text>
+            <image class="icon-weather-small" src="/common/weather-icons/{{ item.iconCode }}.png" />
+            <text class="text-hourly-temp" style="">
+              {{ item.temp }}
+            </text>
+          </div>
+        </scroll>
+      </div>
+
       <!-- 天气指标面板 -->
       <div class="card card-double">
         <div class="item-data" for="{{ item in figure }}">
-        <text class="text-data-value">{{ item.value }}{{ item.unit }}</text>
-        <text class="text-data-label">{{ item.name }}</text>
+          <text class="text-data-value">{{ item.value }}{{ item.unit }}</text>
+          <text class="text-data-label">{{ item.name }}</text>
+        </div>
       </div>
-    </div>
 
       <!-- 未来几天天气预报 -->
       <div class="card card-single">
         <div class="flex-col mt-negative-sm">
           <div class="item-forecast" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
-            <text class="text-date">{{ item.name }}</text>
+            <text class="text-daily">{{ item.name }}</text>
             <div class="justify-between">
-              <text class="text-weather-desc">{{ item.tempMinMax }}</text>
+              <text class="text-daily-temp">{{ item.tempMinMax }}</text>
               <image
                 class="icon-weather-small"
                 src="/common/weather-icons/{{ item.iconCode }}.png"
@@ -60,18 +85,18 @@
 <script>
 // 导入系统模块
 import router from "@system.router"
-import { showToast } from "@system.prompt"
+import {showToast} from "@system.prompt"
 
 // 导入服务层
 import DataService from "../../services/data-service.js"
 import ConnectionService from "../../services/connection-service.js"
 import DebugService from "../../services/debug-service.js"
 import SettingsService from "../../services/settings-service.js"
-import WeatherApiService, { WEATHER_API_ERRORS } from "../../services/weather-api-service.js"
-import { MESSAGES, TOAST_DURATION, AUTO_UPDATE } from "../../services/config.js"
+import WeatherApiService, {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
+import {MESSAGES, TOAST_DURATION, AUTO_UPDATE} from "../../services/config.js"
 
 // 导入工具类
-import { DateUtils, WeatherDataUtils } from "../../common/weather-utils.js"
+import {DateUtils, WeatherDataUtils} from "../../common/weather-utils.js"
 
 export default {
   // 页面私有数据
@@ -89,15 +114,25 @@ export default {
 
     // 天气指标数据
     figure: [
-  { name: "紫外线指数", value: "__", uniqueId: 1 },
-  { name: "相对湿度", value: "__", uniqueId: 2 },
-  { name: "__", value: "__", uniqueId: 3 },
-  { name: "气压", value: "__", uniqueId: 4 }
-],
+      {name: "紫外线指数", value: "__", uniqueId: 1},
+      {name: "相对湿度", value: "__", uniqueId: 2},
+      {name: "__", value: "__", uniqueId: 3},
+      {name: "气压", value: "__", uniqueId: 4}
+    ],
 
+    // 逐小时天气预报数据
+    figureHourly: [
+      {name: "9:00", temp: "5°", iconCode: "sunny", uniqueId: 1},
+      {name: "__", temp: "__", iconCode: "__", uniqueId: 2},
+      {name: "__", temp: "__", iconCode: "__", uniqueId: 3},
+      {name: "__", temp: "__", iconCode: "__", uniqueId: 4},
+      {name: "__", temp: "__", iconCode: "__", uniqueId: 2},
+      {name: "__", temp: "__", iconCode: "__", uniqueId: 3},
+      {name: "__", temp: "__", iconCode: "__", uniqueId: 4}
+    ],
 
     // 未来几天天气预报数据
-    dayWeather: [{ name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1 }]
+    dayWeather: [{name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1}]
   },
 
   /**
@@ -113,9 +148,9 @@ export default {
         }
       })
     } else {
-      showToast({ 
-        message: MESSAGES.NAVIGATION_ERROR, 
-        duration: TOAST_DURATION.NORMAL 
+      showToast({
+        message: MESSAGES.NAVIGATION_ERROR,
+        duration: TOAST_DURATION.NORMAL
       })
     }
   },
@@ -135,16 +170,15 @@ export default {
    * @returns {Promise<boolean>}
    */
   async UpdateWeather(options = {}) {
-    let config = { auto: false, silent: false, showLoading: null }
+    let config = {auto: false, silent: false, showLoading: null}
 
     if (typeof options === "boolean") {
       config.auto = options
     } else {
-      config = { ...config, ...options }
+      config = {...config, ...options}
     }
 
-    const shouldShowLoading =
-      config.showLoading !== null ? config.showLoading : !config.auto
+    const shouldShowLoading = config.showLoading !== null ? config.showLoading : !config.auto
 
     if (this.isLoading && shouldShowLoading) {
       return false
@@ -213,15 +247,15 @@ export default {
     const result = await DataService.getTodayData(silent)
 
     // 检查加载状态
-    if (!result || result.status !== 'success') {
+    if (!result || result.status !== "success") {
       return {
         success: false,
-        status: result?.status || 'unknown',
+        status: result?.status || "unknown",
         weatherData: null
       }
     }
 
-    const { weatherData, todayData } = result
+    const {weatherData, todayData} = result
 
     // 计算更新时间
     const updateTime = new Date(weatherData.updateTime)
@@ -232,18 +266,18 @@ export default {
     this.location = weatherData.location || "未知地点"
     this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
     this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
-    
-    return { success: true, status: 'success', weatherData }
+
+    return {success: true, status: "success", weatherData}
   },
 
   /**
    * 同步自动更新设置
    */
-   async syncAutoUpdateSetting(forceReload = false) {
+  async syncAutoUpdateSetting(forceReload = false) {
     try {
       if (forceReload && SettingsService.clearCache) {
-    SettingsService.clearCache()
-    }
+        SettingsService.clearCache()
+      }
       const settings = await SettingsService.getSettings()
       this.autoUpdateEnabled = !!settings.autoUpdateEnabled
     } catch (error) {
@@ -279,7 +313,7 @@ export default {
       return
     }
 
-    const { silent = true, showLoading = false } = options
+    const {silent = true, showLoading = false} = options
     const data = weatherData || (await DataService.readWeatherData(true))
 
     if (!data || !this.isWeatherDataExpired(data)) {
@@ -319,22 +353,22 @@ export default {
         this.isLoading = false
       } else {
         const shouldAutoUpdate =
-          this.autoUpdateEnabled && (result.status === 'expired' || result.status === 'no_data')
+          this.autoUpdateEnabled && (result.status === "expired" || result.status === "no_data")
 
         if (shouldAutoUpdate) {
-          await this.UpdateWeather({ auto: true, showLoading: true })
+          await this.UpdateWeather({auto: true, showLoading: true})
         } else {
           let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
 
-          if (result.status === 'expired') {
+          if (result.status === "expired") {
             toastMessage = MESSAGES.WAITING_FOR_UPDATE
-          } else if (result.status === 'no_data') {
+          } else if (result.status === "no_data") {
             toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
           }
-          
-          showToast({ 
-            message: toastMessage, 
-            duration: TOAST_DURATION.LONG 
+
+          showToast({
+            message: toastMessage,
+            duration: TOAST_DURATION.LONG
           })
         }
       }
@@ -360,11 +394,11 @@ export default {
     const result = await this.loadWeatherData(true)
 
     if (result.success) {
-      await this.maybeAutoUpdate(result.weatherData, { silent: true })
+      await this.maybeAutoUpdate(result.weatherData, {silent: true})
     } else if (this.autoUpdateEnabled) {
-      const shouldAutoUpdate = result.status === 'expired' || result.status === 'no_data'
+      const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
       if (shouldAutoUpdate) {
-        await this.UpdateWeather({ auto: true, silent: true, showLoading: false })
+        await this.UpdateWeather({auto: true, silent: true, showLoading: false})
       }
     }
 
@@ -385,9 +419,9 @@ export default {
 
       // 验证数据格式
       if (!DataService.validateWeatherData(weatherData)) {
-        showToast({ 
-          message: MESSAGES.DATA_FORMAT_ERROR, 
-          duration: TOAST_DURATION.NORMAL 
+        showToast({
+          message: MESSAGES.DATA_FORMAT_ERROR,
+          duration: TOAST_DURATION.NORMAL
         })
         this.isLoading = false
         return
@@ -399,12 +433,12 @@ export default {
       const todayStr = DateUtils.getTodayString()
 
       // 查找今天的数据
-      const todayData = weatherData.daily.find(day => day.fxDate === todayStr)
+      const todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
 
       if (!todayData) {
-        showToast({ 
-          message: MESSAGES.DATA_MISSING, 
-          duration: TOAST_DURATION.NORMAL 
+        showToast({
+          message: MESSAGES.DATA_MISSING,
+          duration: TOAST_DURATION.NORMAL
         })
         return
       }
@@ -418,15 +452,14 @@ export default {
       // 保存数据到本地
       await DataService.saveWeatherData(data.data)
 
-      showToast({ 
-        message: MESSAGES.DATA_UPDATED, 
-        duration: TOAST_DURATION.SHORT 
+      showToast({
+        message: MESSAGES.DATA_UPDATED,
+        duration: TOAST_DURATION.SHORT
       })
-
     } catch (e) {
-      showToast({ 
-        message: MESSAGES.DATA_PARSE_ERROR, 
-        duration: TOAST_DURATION.NORMAL 
+      showToast({
+        message: MESSAGES.DATA_PARSE_ERROR,
+        duration: TOAST_DURATION.NORMAL
       })
       console.error("数据解析失败:", e)
     } finally {
