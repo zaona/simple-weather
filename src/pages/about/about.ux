@@ -9,12 +9,12 @@
           <image class="icon-app" src="/common/logo.png" />
           <div class="container-app-text">
             <text class="text-app-name">简明天气</text>
-            <text class="text-app-version">v1.8.1</text>
+            <text class="text-app-version">v1.8.2</text>
           </div>
         </div>
       </div>
 
-      <div class="card card-single mt-sm">
+      <div class="card card-single mt-sm" if="{{ showAutoUpdateCard }}">
         <div style="margin: 12px; display: flex; flex-direction: column">
           <div style="display: flex; flex-direction: row; justify-content: space-between;align-items: center;">
             <div style="display: flex; flex-direction: column">
@@ -50,6 +50,7 @@
 
 <script>
 import router from "@system.router"
+import device from "@system.device"
 import {showToast} from "@system.prompt"
 import DebugService from "../../services/debug-service.js"
 import DataService from "../../services/data-service.js"
@@ -57,12 +58,23 @@ import SettingsService from "../../services/settings-service.js"
 import WeatherApiService, {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
 import {MESSAGES, TOAST_DURATION} from "../../services/config.js"
 
+const SUPPORTED_AUTO_UPDATE_PRODUCTS = [
+  "Emulator-Vela",
+  "Xiaomi Watch S3 eSIM",
+  "Xiaomi Watch S4 eSIM",
+  "Xiaomi Watch S4 Sport",
+  "Redmi Watch 5 eSIM",
+  "marconi_o62m_watch",
+]
+
 export default {
   // 页面私有数据
   private: {
     showDebugPanel: false, // 是否显示调试面板
     isUpdating: false, // 是否正在更新天气
-    autoUpdateEnabled: false // 自动更新开关
+    autoUpdateEnabled: false, // 自动更新开关
+    showAutoUpdateCard: false,
+    deviceProduct: ""
   },
 
   /**
@@ -71,7 +83,48 @@ export default {
   async onInit() {
     // 根据调试模式决定是否显示调试面板
     this.showDebugPanel = DebugService.isDebugMode()
-    await this.loadAutoUpdateSetting()
+    await this.setupAutoUpdatePanel()
+  },
+
+  /**
+   * 初始化自动更新面板（检测设备信息后再决定是否展示）
+   */
+  async setupAutoUpdatePanel() {
+    try {
+      const isSupportedDevice = await this.fetchDeviceProduct()
+      this.showAutoUpdateCard = isSupportedDevice
+
+      if (isSupportedDevice) {
+        await this.loadAutoUpdateSetting()
+      } else {
+        this.autoUpdateEnabled = false
+      }
+    } catch (error) {
+      console.error("设备信息处理失败:", error)
+    }
+  },
+
+  /**
+   * 获取设备 product 信息，判断是否为模拟器
+   */
+  fetchDeviceProduct() {
+    return new Promise((resolve) => {
+      if (!device || typeof device.getInfo !== "function") {
+        resolve(false)
+        return
+      }
+
+      device.getInfo({
+        success: (info = {}) => {
+          const product = info.product || ""
+          this.deviceProduct = product
+          resolve(SUPPORTED_AUTO_UPDATE_PRODUCTS.includes(product))
+        },
+        fail: () => {
+          resolve(false)
+        }
+      })
+    })
   },
 
   /**
