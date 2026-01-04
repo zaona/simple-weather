@@ -30,7 +30,7 @@
       </div>
 
       <!-- 逐小时天气预报 -->
-      <div class="card card-single">
+      <div class="card card-single" if="{{ showHourlyForecastCard }}">
         <scroll
           class="mt-negative-sm"
           style="margin: -4px"
@@ -92,8 +92,10 @@ import DataService from "../../services/data-service.js"
 import ConnectionService from "../../services/connection-service.js"
 import DebugService from "../../services/debug-service.js"
 import SettingsService from "../../services/settings-service.js"
+import HourlyDataService from "../../services/hourly-data-service.js"
+import DeviceService from "../../services/device-service.js"
 import WeatherApiService, {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
-import {MESSAGES, TOAST_DURATION, AUTO_UPDATE} from "../../services/config.js"
+import {MESSAGES, TOAST_DURATION, AUTO_UPDATE, ADVANCED_FEATURE_PRODUCTS} from "../../services/config.js"
 
 // 导入工具类
 import {DateUtils, WeatherDataUtils} from "../../common/weather-utils.js"
@@ -104,6 +106,10 @@ export default {
     isLoading: true, // 加载状态
     isFirstLoad: true, // 是否是首次加载
     autoUpdateEnabled: false, // 自动更新是否开启
+    hourlyForecastEnabled: false, // 逐小时天气是否开启
+    showHourlyForecastCard: false, // 是否显示逐小时卡片
+    supportsAdvancedFeatures: false, // 设备是否支持高级功能
+    hasHourlyData: false, // 是否有可用的逐小时数据
     autoUpdateInProgress: false, // 自动更新中标记
     location: "__", // 地点
     updateTime: "__", // 更新时间
@@ -121,15 +127,7 @@ export default {
     ],
 
     // 逐小时天气预报数据
-    figureHourly: [
-      {name: "9:00", temp: "5°", iconCode: "sunny", uniqueId: 1},
-      {name: "__", temp: "__", iconCode: "__", uniqueId: 2},
-      {name: "__", temp: "__", iconCode: "__", uniqueId: 3},
-      {name: "__", temp: "__", iconCode: "__", uniqueId: 4},
-      {name: "__", temp: "__", iconCode: "__", uniqueId: 2},
-      {name: "__", temp: "__", iconCode: "__", uniqueId: 3},
-      {name: "__", temp: "__", iconCode: "__", uniqueId: 4}
-    ],
+    figureHourly: [],
 
     // 未来几天天气预报数据
     dayWeather: [{name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1}]
@@ -266,23 +264,135 @@ export default {
     this.location = weatherData.location || "未知地点"
     this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
     this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
+    await this.loadHourlyForecastData({silent})
 
     return {success: true, status: "success", weatherData}
   },
 
   /**
-   * 同步自动更新设置
+   * 同步高级功能配置
    */
-  async syncAutoUpdateSetting(forceReload = false) {
+  async syncFeatureSettings(forceReload = false) {
     try {
       if (forceReload && SettingsService.clearCache) {
         SettingsService.clearCache()
       }
+
+      if (!this.supportsAdvancedFeatures) {
+        this.autoUpdateEnabled = false
+        this.hourlyForecastEnabled = false
+        this.hasHourlyData = false
+        this.updateHourlyCardVisibility()
+        return
+      }
+
       const settings = await SettingsService.getSettings()
       this.autoUpdateEnabled = !!settings.autoUpdateEnabled
+      this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
     } catch (error) {
       console.error("同步设置失败:", error)
+    } finally {
+      this.updateHourlyCardVisibility()
     }
+  },
+
+  /**
+   * 更新逐小时卡片的可见性
+   */
+  updateHourlyCardVisibility() {
+    const canShowFeature = this.supportsAdvancedFeatures && this.hourlyForecastEnabled
+    const shouldShow = canShowFeature && this.hasHourlyData
+    this.showHourlyForecastCard = shouldShow
+    if (!shouldShow) {
+      this.figureHourly = []
+    }
+  },
+
+  /**
+   * 检测设备是否支持高级功能
+   */
+  async detectAdvancedFeatureSupport() {
+    try {
+      this.supportsAdvancedFeatures = await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+    } catch (error) {
+      console.error("检测设备能力失败:", error)
+      this.supportsAdvancedFeatures = false
+    } finally {
+      this.updateHourlyCardVisibility()
+    }
+  },
+
+  /**
+   * 读取或拉取逐小时天气数据
+   * @param {Object} options
+   */
+  async loadHourlyForecastData(options = {}) {
+    if (!this.supportsAdvancedFeatures || !this.hourlyForecastEnabled) {
+      this.hasHourlyData = false
+      this.updateHourlyCardVisibility()
+      return
+    }
+
+    const {silent = true, forceRefresh = false} = options
+
+    if (forceRefresh) {
+      HourlyDataService.clearCache()
+    }
+
+    const localData = await HourlyDataService.readHourlyData(true)
+
+    if (localData && HourlyDataService.validateHourlyData(localData)) {
+      this.applyHourlyForecastList(localData.hourly)
+      return
+    }
+
+    await this.updateHourlyForecastFromApi(silent)
+  },
+
+  /**
+   * 通过 API 获取逐小时天气
+   * @param {boolean} silent
+   */
+  async updateHourlyForecastFromApi(silent = true) {
+    if (!this.supportsAdvancedFeatures || !this.hourlyForecastEnabled) {
+      this.hasHourlyData = false
+      this.updateHourlyCardVisibility()
+      return false
+    }
+
+    try {
+      const hourlyData = await WeatherApiService.fetchHourlyForecast()
+      await HourlyDataService.saveHourlyData(JSON.stringify(hourlyData))
+      this.applyHourlyForecastList(hourlyData.hourly)
+      return true
+    } catch (error) {
+      console.error("获取逐小时天气失败:", error)
+      if (!silent) {
+        const toastMessage =
+          error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+            ? MESSAGES.LOCATION_INFO_MISSING
+            : MESSAGES.FETCH_WEATHER_ERROR
+
+        showToast({
+          message: toastMessage,
+          duration: TOAST_DURATION.NORMAL
+        })
+      }
+      this.hasHourlyData = false
+      this.updateHourlyCardVisibility()
+      return false
+    }
+  },
+
+  /**
+   * 应用逐小时天气数据
+   * @param {Array} hourlyList
+   */
+  applyHourlyForecastList(hourlyList = []) {
+    const processed = WeatherDataUtils.processHourlyForecast(hourlyList)
+    this.figureHourly = processed
+    this.hasHourlyData = processed.length > 0
+    this.updateHourlyCardVisibility()
   },
 
   /**
@@ -341,7 +451,8 @@ export default {
     // 取消下面的注释可启用模拟数据注入
     // await DebugService.injectMockData()
 
-    await this.syncAutoUpdateSetting()
+    await this.detectAdvancedFeatureSupport()
+    await this.syncFeatureSettings()
 
     // 加载本地数据（静默模式）
     const result = await this.loadWeatherData(true)
@@ -384,11 +495,12 @@ export default {
    * 页面显示时初始化连接并刷新缓存
    */
   async onShow() {
-    await this.syncAutoUpdateSetting()
-    await this.syncAutoUpdateSetting(true)
+    await this.syncFeatureSettings()
+    await this.syncFeatureSettings(true)
 
     // 清除缓存，确保重新从本地文件读取
     DataService.clearCache()
+    HourlyDataService.clearCache()
 
     // 重新加载一次，以便反映其他页面的修改
     const result = await this.loadWeatherData(true)

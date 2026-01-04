@@ -7,6 +7,8 @@
 export const STORAGE = {
   // 天气数据存储路径
   WEATHER_FILE: 'internal://files/weather.txt',
+  // 逐小时天气数据存储路径
+  HOURLY_WEATHER_FILE: 'internal://files/weather-hourly.txt',
   // 设置存储路径
   SETTINGS_FILE: 'internal://files/settings.txt'
 }
@@ -40,8 +42,19 @@ export const AUTO_UPDATE = {
 // 天气 API 配置（公共参数）
 export const WEATHER_API = {
   DAILY_PATH: '/v7/weather/7d',
+  HOURLY_PATH: '/v7/weather/24h',
   REQUEST_TIMEOUT: 10000
 }
+
+// 支持高级功能的设备 product 名称列表
+export const ADVANCED_FEATURE_PRODUCTS = [
+  'Emulator-Vela',
+  'Xiaomi Watch S3 eSIM',
+  'Xiaomi Watch S4 eSIM',
+  'Xiaomi Watch S4 Sport',
+  'Redmi Watch 5 eSIM',
+  'marconi_o62m_watch'
+]
 
 // 用户提示消息
 export const MESSAGES = {

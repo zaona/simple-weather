@@ -101,6 +101,36 @@ class WeatherApiService {
   }
 
   /**
+   * 获取逐小时天气预报
+   * @returns {Promise<Object>}
+   */
+  async fetchHourlyForecast() {
+    const locationInfo = await this.deriveLocationInfoFromCache()
+
+    if (!locationInfo) {
+      const error = new Error('Location info missing')
+      error.code = WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+      throw error
+    }
+
+    const url = buildUrl(WEATHER_API_PRIVATE.HOST, WEATHER_API.HOURLY_PATH, {
+      location: locationInfo.locationId,
+      key: WEATHER_API_PRIVATE.KEY
+    })
+
+    const hourlyData = await fetchJson(url)
+
+    if (!hourlyData || hourlyData.code !== '200') {
+      throw new Error(`逐小时天气接口返回异常: ${hourlyData?.code || 'unknown'}`)
+    }
+
+    return {
+      ...hourlyData,
+      location: locationInfo.locationName || hourlyData.location || ''
+    }
+  }
+
+  /**
    * 从缓存中提取 locationId 与地名
    * @returns {Promise<{locationId: string, locationName: string} | null>}
    */

@@ -9,14 +9,16 @@
           <image class="icon-app" src="/common/logo.png" />
           <div class="container-app-text">
             <text class="text-app-name">简明天气</text>
-            <text class="text-app-version">v1.8.2</text>
+            <text class="text-app-version">v1.8.4</text>
           </div>
         </div>
       </div>
 
       <div class="card card-single mt-sm" if="{{ showAutoUpdateCard }}">
         <div style="margin: 12px; display: flex; flex-direction: column">
-          <div style="display: flex; flex-direction: row; justify-content: space-between;align-items: center;">
+          <div
+            style="display: flex; flex-direction: row; justify-content: space-between;align-items: center;"
+          >
             <div style="display: flex; flex-direction: column">
               <text>自动更新</text>
               <text class="text-subtitle">
@@ -29,6 +31,23 @@
               @change="handleAutoUpdateToggle"
             />
           </div>
+
+          <div
+            style="display: flex; flex-direction: row; justify-content: space-between;align-items: center; margin-top: 16px;"
+          >
+            <div style="display: flex; flex-direction: column">
+              <text>逐小时天气预报</text>
+              <text class="text-subtitle">
+                显示逐小时天气卡片
+              </text>
+            </div>
+            <switch
+              style="width: 80px; height: 40px"
+              checked="{{ hourlyForecastEnabled }}"
+              @change="handleHourlyForecastToggle"
+            />
+          </div>
+
           <div class="btn-secondary mt-lg" style="border-radius: 8px" @click="handleUpdateWeather">
             <text class="text-button">{{ isUpdating ? "更新中..." : "更新天气" }}</text>
           </div>
@@ -50,22 +69,14 @@
 
 <script>
 import router from "@system.router"
-import device from "@system.device"
 import {showToast} from "@system.prompt"
 import DebugService from "../../services/debug-service.js"
 import DataService from "../../services/data-service.js"
 import SettingsService from "../../services/settings-service.js"
+import HourlyDataService from "../../services/hourly-data-service.js"
+import DeviceService from "../../services/device-service.js"
 import WeatherApiService, {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
-import {MESSAGES, TOAST_DURATION} from "../../services/config.js"
-
-const SUPPORTED_AUTO_UPDATE_PRODUCTS = [
-  "Emulator-Vela",
-  "Xiaomi Watch S3 eSIM",
-  "Xiaomi Watch S4 eSIM",
-  "Xiaomi Watch S4 Sport",
-  "Redmi Watch 5 eSIM",
-  "marconi_o62m_watch",
-]
+import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../services/config.js"
 
 export default {
   // 页面私有数据
@@ -73,8 +84,8 @@ export default {
     showDebugPanel: false, // 是否显示调试面板
     isUpdating: false, // 是否正在更新天气
     autoUpdateEnabled: false, // 自动更新开关
-    showAutoUpdateCard: false,
-    deviceProduct: ""
+    hourlyForecastEnabled: false, // 逐小时天气开关
+    showAutoUpdateCard: false
   },
 
   /**
@@ -91,40 +102,18 @@ export default {
    */
   async setupAutoUpdatePanel() {
     try {
-      const isSupportedDevice = await this.fetchDeviceProduct()
+      const isSupportedDevice = await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
       this.showAutoUpdateCard = isSupportedDevice
 
       if (isSupportedDevice) {
-        await this.loadAutoUpdateSetting()
+        await this.loadFeatureSettings()
       } else {
         this.autoUpdateEnabled = false
+        this.hourlyForecastEnabled = false
       }
     } catch (error) {
       console.error("设备信息处理失败:", error)
     }
-  },
-
-  /**
-   * 获取设备 product 信息，判断是否为模拟器
-   */
-  fetchDeviceProduct() {
-    return new Promise((resolve) => {
-      if (!device || typeof device.getInfo !== "function") {
-        resolve(false)
-        return
-      }
-
-      device.getInfo({
-        success: (info = {}) => {
-          const product = info.product || ""
-          this.deviceProduct = product
-          resolve(SUPPORTED_AUTO_UPDATE_PRODUCTS.includes(product))
-        },
-        fail: () => {
-          resolve(false)
-        }
-      })
-    })
   },
 
   /**
@@ -137,12 +126,13 @@ export default {
   },
 
   /**
-   * 加载自动更新配置
+   * 加载高级功能配置
    */
-  async loadAutoUpdateSetting() {
+  async loadFeatureSettings() {
     try {
       const settings = await SettingsService.getSettings()
       this.autoUpdateEnabled = !!settings.autoUpdateEnabled
+      this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
     } catch (error) {
       console.error("加载设置失败:", error)
     }
@@ -159,6 +149,20 @@ export default {
     const saved = await SettingsService.setAutoUpdateEnabled(nextValue)
     if (!saved) {
       this.autoUpdateEnabled = previousValue
+    }
+  },
+
+  /**
+   * 切换逐小时天气展示
+   */
+  async handleHourlyForecastToggle(event) {
+    const nextValue = typeof event.checked === "boolean" ? event.checked : !!event.detail?.checked
+    const previousValue = this.hourlyForecastEnabled
+    this.hourlyForecastEnabled = nextValue
+
+    const saved = await SettingsService.setHourlyForecastEnabled(nextValue)
+    if (!saved) {
+      this.hourlyForecastEnabled = previousValue
     }
   },
 
@@ -180,6 +184,10 @@ export default {
         return
       }
 
+      if (this.hourlyForecastEnabled) {
+        await this.updateHourlyForecastFromApi(true)
+      }
+
       showToast({
         message: MESSAGES.DATA_UPDATED,
         duration: TOAST_DURATION.SHORT
@@ -196,6 +204,32 @@ export default {
       })
     } finally {
       this.isUpdating = false
+    }
+  },
+
+  /**
+   * 从 API 拉取逐小时天气并保存
+   * @param {boolean} silent
+   */
+  async updateHourlyForecastFromApi(silent = true) {
+    try {
+      const hourlyData = await WeatherApiService.fetchHourlyForecast()
+      await HourlyDataService.saveHourlyData(JSON.stringify(hourlyData))
+      return true
+    } catch (error) {
+      console.error("获取逐小时天气失败:", error)
+      if (!silent) {
+        const toastMessage =
+          error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+            ? MESSAGES.LOCATION_INFO_MISSING
+            : MESSAGES.FETCH_WEATHER_ERROR
+
+        showToast({
+          message: toastMessage,
+          duration: TOAST_DURATION.NORMAL
+        })
+      }
+      return false
     }
   },
 

@@ -490,5 +490,66 @@ export const WeatherDataUtils = {
           uniqueId: dayDiff + 1
         }
       })
+  },
+
+  /**
+   * 处理逐小时天气数据
+   * @param {Array<Object>} hourlyList - 逐小时天气数组
+   * @param {number} limit - 截取的小时数量
+   * @returns {Array<Object>}
+   */
+  processHourlyForecast(hourlyList = [], limit = 12) {
+    if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
+      return []
+    }
+
+    const now = Date.now()
+    const threshold = now - 60 * 60 * 1000
+
+    const filtered = hourlyList
+      .map((item) => {
+        const fxTime = item.fxTime || item.time || ''
+        const timestamp = fxTime ? Date.parse(fxTime) : NaN
+        return {
+          raw: item,
+          fxTime,
+          timestamp
+        }
+      })
+      .filter((entry) => {
+        if (Number.isNaN(entry.timestamp)) {
+          return false
+        }
+        return entry.timestamp >= threshold
+      })
+
+    if (filtered.length === 0) {
+      return []
+    }
+
+    return filtered.slice(0, limit).map((entry, index) => {
+      const { raw, fxTime, timestamp } = entry
+      let displayHour = '--:--'
+      let isNight = false
+
+      if (!Number.isNaN(timestamp)) {
+        const parsed = new Date(timestamp)
+        const hours = parsed.getHours()
+        const minutes = parsed.getMinutes()
+        displayHour = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+        isNight = hours >= 18 || hours < 6
+      }
+
+      const tempValue = raw.temp !== undefined ? `${raw.temp}°` : '__°'
+      const iconCodeRaw = Number(raw.icon)
+      const mappedIcon = this.getMappedIconCode(Number.isNaN(iconCodeRaw) ? raw.icon : iconCodeRaw, isNight)
+
+      return {
+        name: displayHour,
+        temp: tempValue,
+        iconCode: mappedIcon,
+        uniqueId: fxTime ? `${fxTime}-${index}` : `hour-${index}`
+      }
+    })
   }
 }

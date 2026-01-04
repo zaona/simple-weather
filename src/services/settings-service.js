@@ -3,7 +3,8 @@ import { showToast } from '@system.prompt'
 import { STORAGE, MESSAGES, TOAST_DURATION } from './config.js'
 
 const DEFAULT_SETTINGS = {
-  autoUpdateEnabled: false
+  autoUpdateEnabled: false,
+  hourlyForecastEnabled: false
 }
 
 class SettingsService {
@@ -86,6 +87,15 @@ class SettingsService {
   }
 
   /**
+   * 检查逐小时天气是否开启
+   * @returns {Promise<boolean>}
+   */
+  async isHourlyForecastEnabled() {
+    const settings = await this.getSettings()
+    return !!settings.hourlyForecastEnabled
+  }
+
+  /**
    * 更新自动更新配置
    * @param {boolean} enabled
    * @returns {Promise<boolean>}
@@ -95,6 +105,20 @@ class SettingsService {
     const nextSettings = {
       ...settings,
       autoUpdateEnabled: !!enabled
+    }
+    return this.saveSettings(nextSettings)
+  }
+
+  /**
+   * 更新逐小时天气配置
+   * @param {boolean} enabled
+   * @returns {Promise<boolean>}
+   */
+  async setHourlyForecastEnabled(enabled) {
+    const settings = await this.getSettings()
+    const nextSettings = {
+      ...settings,
+      hourlyForecastEnabled: !!enabled
     }
     return this.saveSettings(nextSettings)
   }
