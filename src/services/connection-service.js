@@ -3,9 +3,9 @@
  * 统一管理 interconnect 连接、握手协议和消息传递
  */
 
-import interconnect from '@system.interconnect'
-import { CONNECTION, MESSAGES, TOAST_DURATION } from './config.js'
-import { showToast } from '@system.prompt'
+import interconnect from "@system.interconnect"
+import {CONNECTION, MESSAGES, TOAST_DURATION} from "./config.js"
+import {showToast} from "@system.prompt"
 
 /**
  * 连接服务类
@@ -43,14 +43,14 @@ class ConnectionService {
 
     // 设置错误处理
     this.connection.onerror = (error) => {
-      console.error('Connection error:', error)
+      console.error("Connection error:", error)
       // 重置连接状态
       this.isConnecting = false
     }
 
     // 设置关闭处理
     this.connection.onclose = () => {
-      console.log('Connection closed')
+      console.log("Connection closed")
       // 延迟重连
       setTimeout(() => {
         if (this.connection) {
@@ -71,7 +71,7 @@ class ConnectionService {
    */
   handleMessage(data) {
     // 检查是否为握手预检消息
-    if (data.data === 'start') {
+    if (data.data === "start") {
       this.handleHandshake()
       return
     }
@@ -97,11 +97,11 @@ class ConnectionService {
 
     // 发送ready响应的递归函数
     let retryCount = 0
-    
+
     const sendReadyResponse = () => {
       // 检查是否已超过最大重试次数
       if (retryCount >= CONNECTION.MAX_READY_RETRIES) {
-        console.log('已达到最大重试次数，停止发送ready响应')
+        console.log("已达到最大重试次数，停止发送ready响应")
         this.isConnecting = false
         return
       }
@@ -110,7 +110,7 @@ class ConnectionService {
 
       // 构造ready消息
       const messageData = {
-        action: 'ready',
+        action: "ready",
         timestamp: Date.now()
       }
 
@@ -148,18 +148,18 @@ class ConnectionService {
   send(data) {
     return new Promise((resolve, reject) => {
       if (!this.connection) {
-        reject(new Error('连接未初始化'))
+        reject(new Error("连接未初始化"))
         return
       }
 
       this.connection.send({
         data: data,
         success: () => {
-          console.log('消息发送成功')
+          console.log("消息发送成功")
           resolve(true)
         },
         fail: (error) => {
-          console.error('消息发送失败:', error)
+          console.error("消息发送失败:", error)
           reject(error)
         }
       })
@@ -174,7 +174,7 @@ class ConnectionService {
     this.isConnecting = false
 
     // 关闭连接
-    if (this.connection && typeof this.connection.close === 'function') {
+    if (this.connection && typeof this.connection.close === "function") {
       this.connection.close()
       this.connection = null
     }
@@ -194,4 +194,3 @@ class ConnectionService {
 
 // 导出单例
 export default new ConnectionService()
-

@@ -17,13 +17,16 @@
       <div class="card card-single mt-sm" if="{{ showAutoUpdateCard }}">
         <div style="margin: 12px; display: flex; flex-direction: column">
           <div
-            style="display: flex; flex-direction: row; justify-content: space-between;align-items: center;"
+            style="
+              display: flex;
+              flex-direction: row;
+              justify-content: space-between;
+              align-items: center;
+            "
           >
             <div style="display: flex; flex-direction: column">
               <text>自动更新</text>
-              <text class="text-subtitle">
-                超过1h自动更新天气
-              </text>
+              <text class="text-subtitle">超过1h自动更新天气</text>
             </div>
             <switch
               style="width: 80px; height: 40px"
@@ -33,13 +36,17 @@
           </div>
 
           <div
-            style="display: flex; flex-direction: row; justify-content: space-between;align-items: center; margin-top: 16px;"
+            style="
+              display: flex;
+              flex-direction: row;
+              justify-content: space-between;
+              align-items: center;
+              margin-top: 16px;
+            "
           >
             <div style="display: flex; flex-direction: column">
               <text>逐小时天气预报</text>
-              <text class="text-subtitle">
-                显示逐小时天气卡片
-              </text>
+              <text class="text-subtitle">显示逐小时天气卡片</text>
             </div>
             <switch
               style="width: 80px; height: 40px"

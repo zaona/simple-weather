@@ -3,9 +3,9 @@
  * 负责读写 hourly 天气文件并在内存中缓存结果
  */
 
-import file from '@system.file'
-import { showToast } from '@system.prompt'
-import { STORAGE, DATA, MESSAGES, TOAST_DURATION } from './config.js'
+import file from "@system.file"
+import {showToast} from "@system.prompt"
+import {STORAGE, DATA, MESSAGES, TOAST_DURATION} from "./config.js"
 
 class HourlyDataService {
   constructor() {
@@ -37,7 +37,7 @@ class HourlyDataService {
             this.cacheTime = Date.now()
             resolve(parsed)
           } catch (error) {
-            console.error('逐小时数据解析失败:', error)
+            console.error("逐小时数据解析失败:", error)
             if (!silent) {
               showToast({
                 message: MESSAGES.DATA_FORMAT_ERROR,
@@ -75,7 +75,7 @@ class HourlyDataService {
           try {
             this.cache = JSON.parse(dataText)
           } catch (error) {
-            console.error('逐小时缓存更新失败:', error)
+            console.error("逐小时缓存更新失败:", error)
             this.cache = null
           }
           this.cacheTime = Date.now()

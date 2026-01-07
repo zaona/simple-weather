@@ -31,12 +31,7 @@
 
       <!-- 逐小时天气预报 -->
       <div class="card card-single" if="{{ showHourlyForecastCard }}">
-        <scroll
-          class="mt-negative-sm"
-          style="margin: -4px"
-          scroll-x="true"
-          bounces="true"
-        >
+        <scroll class="mt-negative-sm" style="margin: -4px" scroll-x="true" bounces="true">
           <div class="item-hourly" for="{{ item in figureHourly }}">
             <text class="text-hourly">
               {{ item.name }}
@@ -95,7 +90,12 @@ import SettingsService from "../../services/settings-service.js"
 import HourlyDataService from "../../services/hourly-data-service.js"
 import DeviceService from "../../services/device-service.js"
 import WeatherApiService, {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
-import {MESSAGES, TOAST_DURATION, AUTO_UPDATE, ADVANCED_FEATURE_PRODUCTS} from "../../services/config.js"
+import {
+  MESSAGES,
+  TOAST_DURATION,
+  AUTO_UPDATE,
+  ADVANCED_FEATURE_PRODUCTS
+} from "../../services/config.js"
 
 // 导入工具类
 import {DateUtils, WeatherDataUtils} from "../../common/weather-utils.js"
@@ -313,7 +313,8 @@ export default {
    */
   async detectAdvancedFeatureSupport() {
     try {
-      this.supportsAdvancedFeatures = await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+      this.supportsAdvancedFeatures =
+        await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
     } catch (error) {
       console.error("检测设备能力失败:", error)
       this.supportsAdvancedFeatures = false

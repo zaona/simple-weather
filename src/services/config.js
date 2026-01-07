@@ -6,11 +6,11 @@
 // 存储和文件配置
 export const STORAGE = {
   // 天气数据存储路径
-  WEATHER_FILE: 'internal://files/weather.txt',
+  WEATHER_FILE: "internal://files/weather.txt",
   // 逐小时天气数据存储路径
-  HOURLY_WEATHER_FILE: 'internal://files/weather-hourly.txt',
+  HOURLY_WEATHER_FILE: "internal://files/weather-hourly.txt",
   // 设置存储路径
-  SETTINGS_FILE: 'internal://files/settings.txt'
+  SETTINGS_FILE: "internal://files/settings.txt"
 }
 
 // 连接相关配置
@@ -41,57 +41,57 @@ export const AUTO_UPDATE = {
 
 // 天气 API 配置（公共参数）
 export const WEATHER_API = {
-  DAILY_PATH: '/v7/weather/7d',
-  HOURLY_PATH: '/v7/weather/24h',
+  DAILY_PATH: "/v7/weather/7d",
+  HOURLY_PATH: "/v7/weather/24h",
   REQUEST_TIMEOUT: 10000
 }
 
 // 支持高级功能的设备 product 名称列表
 export const ADVANCED_FEATURE_PRODUCTS = [
-  'Emulator-Vela',
-  'Xiaomi Watch S3 eSIM',
-  'Xiaomi Watch S4 eSIM',
-  'Xiaomi Watch S4 Sport',
-  'Redmi Watch 5 eSIM',
-  'marconi_o62m_watch'
+  "Emulator-Vela",
+  "Xiaomi Watch S3 eSIM",
+  "Xiaomi Watch S4 eSIM",
+  "Xiaomi Watch S4 Sport",
+  "Redmi Watch 5 eSIM",
+  "marconi_o62m_watch"
 ]
 
 // 用户提示消息
 export const MESSAGES = {
   // 成功消息
-  DATA_UPDATED: '数据已更新',
-  DATA_SAVED: '数据已保存',
-  CONNECTION_SUCCESS: '连接成功',
-  
+  DATA_UPDATED: "数据已更新",
+  DATA_SAVED: "数据已保存",
+  CONNECTION_SUCCESS: "连接成功",
+
   // 等待消息
-  WAITING_FOR_FIRST_DATA: '本地无数据',
-  WAITING_FOR_UPDATE: '数据已过期',
-  
+  WAITING_FOR_FIRST_DATA: "本地无数据",
+  WAITING_FOR_UPDATE: "数据已过期",
+
   // 错误消息
-  DATA_EXPIRED: '数据已过期',
-  DATA_MISSING: '数据存在缺失',
-  DATA_FORMAT_ERROR: '数据格式错误',
-  DATA_PARSE_ERROR: '数据解析失败',
-  DATA_SAVE_ERROR: '数据保存失败',
-  FETCH_WEATHER_ERROR: '获取天气失败',
-  NO_LOCAL_DATA: '本地无数据',
-  NO_DATE_RECEIVED: '未接收到日期',
-  NO_DATA_FOR_DATE: '数据缺失',
-  CANNOT_READ_DATA: '无法读取天气数据',
-  NAVIGATION_ERROR: '跳转详情页失败',
-  LOCATION_INFO_MISSING: '无法获取本地位置信息',
-  SETTINGS_SAVE_ERROR: '设置保存失败',
+  DATA_EXPIRED: "数据已过期",
+  DATA_MISSING: "数据存在缺失",
+  DATA_FORMAT_ERROR: "数据格式错误",
+  DATA_PARSE_ERROR: "数据解析失败",
+  DATA_SAVE_ERROR: "数据保存失败",
+  FETCH_WEATHER_ERROR: "获取天气失败",
+  NO_LOCAL_DATA: "本地无数据",
+  NO_DATE_RECEIVED: "未接收到日期",
+  NO_DATA_FOR_DATE: "数据缺失",
+  CANNOT_READ_DATA: "无法读取天气数据",
+  NAVIGATION_ERROR: "跳转详情页失败",
+  LOCATION_INFO_MISSING: "无法获取本地位置信息",
+  SETTINGS_SAVE_ERROR: "设置保存失败",
 
   // 连接消息
-  CONNECTION_ERROR: '连接错误',
-  CONNECTION_CLOSED: '连接已关闭',
-  SEND_SUCCESS: '消息发送成功',
-  SEND_ERROR: '发送失败',
-  
+  CONNECTION_ERROR: "连接错误",
+  CONNECTION_CLOSED: "连接已关闭",
+  SEND_SUCCESS: "消息发送成功",
+  SEND_ERROR: "发送失败",
+
   // 调试消息
-  DEBUG_MOCK_DATA_LOADED: '模拟数据加载',
-  DEBUG_MOCK_DATA_FAILED: '模拟数据失败',
-  DEBUG_DATA_CLEARED: '数据已清除'
+  DEBUG_MOCK_DATA_LOADED: "模拟数据加载",
+  DEBUG_MOCK_DATA_FAILED: "模拟数据失败",
+  DEBUG_DATA_CLEARED: "数据已清除"
 }
 
 // 提示持续时间（毫秒）
@@ -100,4 +100,3 @@ export const TOAST_DURATION = {
   NORMAL: 2000,
   LONG: 3000
 }
-

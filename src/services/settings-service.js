@@ -1,6 +1,6 @@
-import file from '@system.file'
-import { showToast } from '@system.prompt'
-import { STORAGE, MESSAGES, TOAST_DURATION } from './config.js'
+import file from "@system.file"
+import {showToast} from "@system.prompt"
+import {STORAGE, MESSAGES, TOAST_DURATION} from "./config.js"
 
 const DEFAULT_SETTINGS = {
   autoUpdateEnabled: false,
@@ -27,15 +27,15 @@ class SettingsService {
         success: (data) => {
           try {
             const settings = JSON.parse(data.text)
-            this.cache = { ...DEFAULT_SETTINGS, ...settings }
+            this.cache = {...DEFAULT_SETTINGS, ...settings}
             resolve(this.cache)
           } catch (error) {
-            console.error('设置解析失败:', error)
-            resolve({ ...DEFAULT_SETTINGS })
+            console.error("设置解析失败:", error)
+            resolve({...DEFAULT_SETTINGS})
           }
         },
         fail: () => {
-          resolve({ ...DEFAULT_SETTINGS })
+          resolve({...DEFAULT_SETTINGS})
         }
       })
     })
@@ -53,11 +53,11 @@ class SettingsService {
         uri: STORAGE.SETTINGS_FILE,
         text: dataText,
         success: () => {
-          this.cache = { ...settings }
+          this.cache = {...settings}
           resolve(true)
         },
         fail: (error) => {
-          console.error('设置保存失败:', error)
+          console.error("设置保存失败:", error)
           showToast({
             message: MESSAGES.SETTINGS_SAVE_ERROR,
             duration: TOAST_DURATION.NORMAL
@@ -74,7 +74,7 @@ class SettingsService {
    */
   async getSettings() {
     const settings = await this.readSettings()
-    return { ...DEFAULT_SETTINGS, ...settings }
+    return {...DEFAULT_SETTINGS, ...settings}
   }
 
   /**

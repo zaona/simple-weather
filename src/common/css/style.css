@@ -7,501 +7,499 @@
 
 /* 页面容器 */
 .page-container {
-    flex-direction: column;
-    align-items: center;
-    position: relative;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
 
 /* 主内容区域 */
 .main-content {
-    color: #ffffff;
-    flex-direction: column;
-    align-items: center;
-    padding: 24px 0px;
-    height: 100%;
-    width: 100%;
-    position: relative;
+  color: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0px;
+  height: 100%;
+  width: 100%;
+  position: relative;
 }
 
 /* 页面头部 */
 .page-header {
-    flex-direction: column;
-    width: 100%;
-    align-items: center;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
 }
 
 /* 滚动容器 */
 .scroll-container {
-    position: fixed;
-    top: 0;
-    bottom: 0;
+  position: fixed;
+  top: 0;
+  bottom: 0;
 }
 
 /* ===== 文本样式 ===== */
 
 /* 页面标题 */
 .text-title {
-    font-size: 24px;
-    font-weight: bold;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 /* 页面副标题 */
 .text-subtitle {
-    font-size: 22px;
-    margin-top: 6px;
-    color: rgba(255, 255, 255, 0.6);
+  font-size: 22px;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* 地点文本 */
 .text-location {
-    font-size: 24px;
-    font-weight: bold;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 /* 天气描述文本 */
 .text-weather {
-    font-size: 36px;
-    font-weight: bold;
-    margin-top: 8px;
+  font-size: 36px;
+  font-weight: bold;
+  margin-top: 8px;
 }
 
 /* 温度范围文本 */
 .text-temp-range {
-    font-size: 36px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.6);
-    margin-top: 0px;
-    padding-left: 6px;
-    margin-bottom: 40px;
+  font-size: 36px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0px;
+  padding-left: 6px;
+  margin-bottom: 40px;
 }
 
 /* 每日文本 */
 .text-daily {
-    font-size: 28px;
-    color: rgba(255, 255, 255, 0.6);
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* 每日温度文本 */
 .text-daily-temp {
-    font-size: 32px;
-    font-weight: bold;
+  font-size: 32px;
+  font-weight: bold;
 }
 
 /* 每小时文本 */
 .text-hourly {
-    font-size: 30px;
-    color: rgba(255, 255, 255, 0.6);
-    text-align: center;
-    margin-bottom: 8px;
-    width: 96px;
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-bottom: 8px;
+  width: 96px;
 }
 
 /* 每小时温度文本 */
 .text-hourly-temp {
-    font-size: 30px;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 8px;
-    margin-left: 6px;
+  font-size: 30px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 8px;
+  margin-left: 6px;
 }
 
 /* 数据值文本 */
 .text-data-value {
-    font-size: 36px;
-    font-weight: bold;
-    margin-left: -1px;
+  font-size: 36px;
+  font-weight: bold;
+  margin-left: -1px;
 }
 
 /* 数据标签文本 */
 .text-data-label {
-    font-size: 24px;
-    margin-top: 2px;
-    color: rgba(255, 255, 255, 0.6);
+  font-size: 24px;
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* 按钮文本 */
 .text-button {
-    font-size: 29px;
+  font-size: 29px;
 }
 
 /* 应用名称文本 */
 .text-app-name {
-    font-size: 30px;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 4px;
+  font-size: 30px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 4px;
 }
 
 /* 应用版本文本 */
 .text-app-version {
-    font-size: 24px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.6);
-    text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
 }
 
 /* ===== 组件样式 ===== */
 
 /* 天气图标 */
 .icon-weather-main {
-    width: 85px;
-    height: 85px;
-    margin-top: 40px;
+  width: 85px;
+  height: 85px;
+  margin-top: 40px;
 }
 
 .icon-weather-small {
-    width: 42px;
-    height: 42px;
+  width: 42px;
+  height: 42px;
 }
 
 /* 按钮组件 */
 .btn-primary {
-    flex-direction: column;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0.2);
-    padding: 18px 30px;
-    border-radius: 50%;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 50%;
 }
 
 .btn-secondary {
-    flex-direction: column;
-    align-items: center;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    padding: 18px 30px;
-    border-radius: 50%;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 50%;
 }
 
 /* 卡片组件 */
 .card {
-    width: 94%;
-    flex-direction: column;
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    box-sizing: border-box;
+  width: 94%;
+  flex-direction: column;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-sizing: border-box;
 }
 
 /* 单列卡片 - 始终保持一列布局 */
 .card-single {
-    padding: 0 12px 12px 12px;
-    margin-top: 12px;
+  padding: 0 12px 12px 12px;
+  margin-top: 12px;
 }
 
 /* 双列卡片 - 在宽屏上分两列显示 */
 .card-double {
-    padding: 0 0 12px 12px;
-    margin-top: 12px;
+  padding: 0 0 12px 12px;
+  margin-top: 12px;
 }
 
 /* 卡片外边距 */
 .card-margin {
-    margin-bottom: 12px;
+  margin-bottom: 12px;
 }
 
 /* 内容区域 */
 .content-hero {
-    flex-direction: column;
-    align-items: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* 数据项 */
 .item-forecast {
-    margin-top: 16px;
-    flex-direction: column;
+  margin-top: 16px;
+  flex-direction: column;
 }
 
 .item-data {
-    flex-direction: column;
-    margin-top: 14px;
+  flex-direction: column;
+  margin-top: 14px;
 }
 
 .item-hourly {
-    flex-direction: column;
-    align-items: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* 应用信息容器 */
 .container-app-info {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    margin: 24px 0 12px 0;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 24px 0 12px 0;
 }
 
 .container-app-text {
-    flex-direction: column;
-    align-items: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .icon-app {
-    width: 85px;
-    height: 85px;
-    margin-bottom: 16px;
+  width: 85px;
+  height: 85px;
+  margin-bottom: 16px;
 }
 
 /* ===== 实用工具类 ===== */
 
 /* Flex布局 */
 .flex-col {
-    flex-direction: column;
+  flex-direction: column;
 }
 
 .justify-between {
-    justify-content: space-between;
+  justify-content: space-between;
 }
 
 /* 常用间距 */
 .mt-sm {
-    margin-top: 12px;
+  margin-top: 12px;
 }
 
 .mt-lg {
-    margin-top: 24px;
+  margin-top: 24px;
 }
 
 .mt-xl {
-    margin-top: 36px;
+  margin-top: 36px;
 }
 
 .mt-negative-sm {
-    margin-top: -8px;
+  margin-top: -8px;
 }
-
 
 /* ===== 响应式样式 ===== */
 
 /* 针对圆表 (分辨率: 466px*466px, 水平dp值: 233) */
 @media (width: 233) {
-    .main-content {
-        padding: 20px 0px;
-    }
+  .main-content {
+    padding: 20px 0px;
+  }
 
-    .text-location {
-        font-size: 36px;
-        font-weight: normal;
-    }
+  .text-location {
+    font-size: 36px;
+    font-weight: normal;
+  }
 
-    .text-title {
-        font-size: 36px;
-        font-weight: normal;
-    }
+  .text-title {
+    font-size: 36px;
+    font-weight: normal;
+  }
 
-    .text-subtitle {
-        font-size: 24px;
-        margin-top: 8px;
-    }
+  .text-subtitle {
+    font-size: 24px;
+    margin-top: 8px;
+  }
 
-    .icon-weather-main {
-        width: 120px;
-        height: 120px;
-    }
+  .icon-weather-main {
+    width: 120px;
+    height: 120px;
+  }
 
-    .text-weather {
-        font-size: 50px;
-    }
+  .text-weather {
+    font-size: 50px;
+  }
 
-    .text-temp-range {
-        font-size: 42px;
-    }
+  .text-temp-range {
+    font-size: 42px;
+  }
 
-    .text-daily {
-        font-size: 30px;
-    }
+  .text-daily {
+    font-size: 30px;
+  }
 
-    .text-daily-temp {
-        font-size: 36px;
-    }
+  .text-daily-temp {
+    font-size: 36px;
+  }
 
-    .text-data-value {
-        font-size: 36px;
-        font-weight: bold;
-        margin-left: -1px;
-    }
+  .text-data-value {
+    font-size: 36px;
+    font-weight: bold;
+    margin-left: -1px;
+  }
 
-    .text-data-label {
-        font-size: 26px;
-        margin-top: 2px;
-        color: rgba(255, 255, 255, 0.6);
-    }
+  .text-data-label {
+    font-size: 26px;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.6);
+  }
 
-    .icon-weather-small {
-        width: 56px;
-        height: 56px;
-    }
+  .icon-weather-small {
+    width: 56px;
+    height: 56px;
+  }
 
-    .card-single {
-        width: 80%;
-        padding: 16px;
-        margin-top: 12px;
-    }
+  .card-single {
+    width: 80%;
+    padding: 16px;
+    margin-top: 12px;
+  }
 
-    .card-double {
-        width: 80%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        padding: 0 0px 16px 16px;
-    }
+  .card-double {
+    width: 80%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0 0px 16px 16px;
+  }
 
-    .card-margin {
-        margin-bottom: 24px;
-    }
+  .card-margin {
+    margin-bottom: 24px;
+  }
 
-    .item-data {
-        width: 49%;
-        margin-right: 2px;
-    }
+  .item-data {
+    width: 49%;
+    margin-right: 2px;
+  }
 
-    .item-hourly {
-        margin-right: 30px;
-        flex-direction: column;
-        align-items: center;
-    }
+  .item-hourly {
+    margin-right: 30px;
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .container-app-info {
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        margin: 24px 0 24px 0;
-    }
+  .container-app-info {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 24px 0 24px 0;
+  }
 
-    .icon-app {
-        width: 100px;
-        height: 100px;
-        margin-bottom: 0;
-        margin-right: 24px;
-    }
+  .icon-app {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 0;
+    margin-right: 24px;
+  }
 
-    .container-app-text {
-        align-items: flex-start;
-    }
+  .container-app-text {
+    align-items: flex-start;
+  }
 
-    .text-app-name {
-        font-size: 36px;
-        text-align: left;
-    }
+  .text-app-name {
+    font-size: 36px;
+    text-align: left;
+  }
 
-    .text-app-version {
-        font-size: 30px;
-        text-align: left;
-    }
+  .text-app-version {
+    font-size: 30px;
+    text-align: left;
+  }
 
-    .mt-negative-sm {
-        margin-top: -16px;
-    }
+  .mt-negative-sm {
+    margin-top: -16px;
+  }
 }
-
 
 /* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
 @media (width: 216) {
-    .main-content {
-        padding: 20px 0px;
-    }
+  .main-content {
+    padding: 20px 0px;
+  }
 
-    .text-location {
-        font-size: 36px;
-        font-weight: normal;
-    }
+  .text-location {
+    font-size: 36px;
+    font-weight: normal;
+  }
 
-    .text-title {
-        font-size: 36px;
-        font-weight: normal;
-    }
+  .text-title {
+    font-size: 36px;
+    font-weight: normal;
+  }
 
-    .text-subtitle {
-        font-size: 24px;
-        margin-top: 8px;
-    }
+  .text-subtitle {
+    font-size: 24px;
+    margin-top: 8px;
+  }
 
-    .icon-weather-main {
-        margin-top: 56px;
-        width: 120px;
-        height: 120px;
-    }
+  .icon-weather-main {
+    margin-top: 56px;
+    width: 120px;
+    height: 120px;
+  }
 
-    .text-weather {
-        font-size: 50px;
-    }
+  .text-weather {
+    font-size: 50px;
+  }
 
-    .text-temp-range {
-        font-size: 42px;
-    }
+  .text-temp-range {
+    font-size: 42px;
+  }
 
-    .text-daily {
-        font-size: 30px;
-    }
+  .text-daily {
+    font-size: 30px;
+  }
 
-    .text-daily-temp {
-        font-size: 36px;
-    }
+  .text-daily-temp {
+    font-size: 36px;
+  }
 
-    .text-data-value {
-        font-size: 36px;
-        font-weight: bold;
-        margin-left: -1px;
-    }
+  .text-data-value {
+    font-size: 36px;
+    font-weight: bold;
+    margin-left: -1px;
+  }
 
-    .text-data-label {
-        font-size: 26px;
-        margin-top: 2px;
-        color: rgba(255, 255, 255, 0.6);
-    }
+  .text-data-label {
+    font-size: 26px;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.6);
+  }
 
-    .icon-weather-small {
-        width: 56px;
-        height: 56px;
-    }
+  .icon-weather-small {
+    width: 56px;
+    height: 56px;
+  }
 
-    .card-single {
-        padding: 16px;
-        margin-top: 12px;
-    }
+  .card-single {
+    padding: 16px;
+    margin-top: 12px;
+  }
 
-    .card-double {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        padding: 0 0px 16px 16px;
-    }
+  .card-double {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0 0px 16px 16px;
+  }
 
-    .card-margin {
-        margin-bottom: 48px;
-    }
+  .card-margin {
+    margin-bottom: 48px;
+  }
 
-    .item-data {
-        width: 49%;
-        margin-right: 2px;
-    }
+  .item-data {
+    width: 49%;
+    margin-right: 2px;
+  }
 
-    .container-app-info {
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        margin: 24px 0 24px 0;
-    }
+  .container-app-info {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 24px 0 24px 0;
+  }
 
-    .icon-app {
-        width: 100px;
-        height: 100px;
-        margin-bottom: 0;
-        margin-right: 24px;
-    }
+  .icon-app {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 0;
+    margin-right: 24px;
+  }
 
-    .container-app-text {
-        align-items: flex-start;
-    }
+  .container-app-text {
+    align-items: flex-start;
+  }
 
-    .text-app-name {
-        font-size: 36px;
-        text-align: left;
-    }
+  .text-app-name {
+    font-size: 36px;
+    text-align: left;
+  }
 
-    .text-app-version {
-        font-size: 30px;
-        text-align: left;
-    }
+  .text-app-version {
+    font-size: 30px;
+    text-align: left;
+  }
 
-    .mt-negative-sm {
-        margin-top: -16px;
-    }
+  .mt-negative-sm {
+    margin-top: -16px;
+  }
 }

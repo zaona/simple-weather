@@ -4,16 +4,16 @@
  * ⚠️ 发版时设置 DEBUG_MODE = false
  */
 
-import file from '@system.file'
-import { showToast } from '@system.prompt'
-import { STORAGE, TOAST_DURATION, MESSAGES } from './config.js'
+import file from "@system.file"
+import {showToast} from "@system.prompt"
+import {STORAGE, TOAST_DURATION, MESSAGES} from "./config.js"
 
 /**
  * 调试模式开关
  * true: 启用调试功能
  * false: 禁用调试功能（发版时使用）
  */
-const DEBUG_MODE = false  // ⚠️ 发版时改为 false
+const DEBUG_MODE = false // ⚠️ 发版时改为 false
 
 /**
  * 模拟天气数据
@@ -243,7 +243,7 @@ class DebugService {
    */
   injectMockData() {
     if (!DEBUG_MODE) {
-      console.log('非调试模式，跳过注入模拟数据')
+      console.log("非调试模式，跳过注入模拟数据")
       return Promise.resolve(false)
     }
 
@@ -254,7 +254,7 @@ class DebugService {
         uri: STORAGE.WEATHER_FILE,
         text: mockDataText,
         success: () => {
-          console.log('模拟数据注入成功')
+          console.log("模拟数据注入成功")
           showToast({
             message: MESSAGES.DEBUG_MOCK_DATA_LOADED,
             duration: TOAST_DURATION.SHORT
@@ -262,7 +262,7 @@ class DebugService {
           resolve(true)
         },
         fail: (data, code) => {
-          console.error('模拟数据注入失败:', code)
+          console.error("模拟数据注入失败:", code)
           showToast({
             message: `${MESSAGES.DEBUG_MOCK_DATA_FAILED}: ${code}`,
             duration: TOAST_DURATION.NORMAL
@@ -280,7 +280,7 @@ class DebugService {
    */
   clearLocalData() {
     if (!DEBUG_MODE) {
-      console.log('非调试模式，跳过清除数据')
+      console.log("非调试模式，跳过清除数据")
       return Promise.resolve(false)
     }
 
@@ -288,7 +288,7 @@ class DebugService {
       file.delete({
         uri: STORAGE.WEATHER_FILE,
         success: () => {
-          console.log('本地数据已清除')
+          console.log("本地数据已清除")
           showToast({
             message: MESSAGES.DEBUG_DATA_CLEARED,
             duration: TOAST_DURATION.SHORT
@@ -296,7 +296,7 @@ class DebugService {
           resolve(true)
         },
         fail: (data, code) => {
-          console.log('清除数据失败（可能文件不存在）:', code)
+          console.log("清除数据失败（可能文件不存在）:", code)
           resolve(false)
         }
       })
@@ -327,4 +327,3 @@ class DebugService {
 
 // 导出单例
 export default new DebugService()
-

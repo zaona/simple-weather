@@ -1,4 +1,4 @@
-import device from '@system.device'
+import device from "@system.device"
 
 /**
  * 设备信息服务
@@ -6,7 +6,7 @@ import device from '@system.device'
  */
 class DeviceService {
   constructor() {
-    this.product = ''
+    this.product = ""
     this.fetchingPromise = null
   }
 
@@ -24,17 +24,17 @@ class DeviceService {
     }
 
     this.fetchingPromise = new Promise((resolve) => {
-      if (!device || typeof device.getInfo !== 'function') {
-        resolve('')
+      if (!device || typeof device.getInfo !== "function") {
+        resolve("")
         return
       }
 
       device.getInfo({
         success: (info = {}) => {
-          resolve(info.product || '')
+          resolve(info.product || "")
         },
         fail: () => {
-          resolve('')
+          resolve("")
         }
       })
     }).then((product) => {
@@ -64,7 +64,7 @@ class DeviceService {
    * 清除缓存，通常用于调试或切换设备
    */
   clearCache() {
-    this.product = ''
+    this.product = ""
     this.fetchingPromise = null
   }
 }

@@ -9,7 +9,7 @@
     "start": "aiot start --watch",
     "build": "aiot build",
     "release": "aiot release --drop-console=true --enable-protobuf --enable-jsc",
-    "lint": "eslint --format codeframe --fix --ext .ux,.js src/"
+    "format": "prettier --write \"src/**/*.{ux,js,less,css}\""
   },
   "lint-staged": {
     "*.{ux,js}": [
@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@aiot-toolkit/jsc": "^1.0.3",
-    "aiot-toolkit": "^2.0.4"
+    "aiot-toolkit": "^2.0.4",
+    "prettier": "^3.7.4"
   }
 }
