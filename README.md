@@ -22,7 +22,7 @@ com.application.zaona.weather
 
 ### 开关
 
-在 `src/services/debug-service.js` 中：
+在 `src/services/debug-service.js` 中
 
 ```javascript
 const DEBUG_MODE = true // 发版时改为 false
@@ -52,12 +52,6 @@ npm run start
 ```
 npm run build
 npm run release
-```
-
-调试
-
-```
-npm run watch
 ```
 
 格式化

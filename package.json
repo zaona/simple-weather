@@ -11,18 +11,6 @@
     "release": "aiot release --drop-console=true --enable-protobuf --enable-jsc",
     "format": "prettier --write \"src/**/*.{ux,js,less,css}\""
   },
-  "lint-staged": {
-    "*.{ux,js}": [
-      "prettier --write",
-      "eslint --format codeframe --fix",
-      "git add"
-    ],
-    "*.{less,css}": [
-      "prettier --write",
-      "stylelint --fix --custom-syntax postcss-less",
-      "git add"
-    ]
-  },
   "devDependencies": {
     "@aiot-toolkit/jsc": "^1.0.3",
     "aiot-toolkit": "^2.0.4",
