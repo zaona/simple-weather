@@ -361,7 +361,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    margin: 24px 0 24px 0;
+    margin: 24px 0 24px -8px;
   }
 
   .icon-app {
@@ -475,7 +475,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    margin: 24px 0 24px 0;
+    margin: 24px 0 24px -8px;
   }
 
   .icon-app {
