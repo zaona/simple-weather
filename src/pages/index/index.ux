@@ -89,13 +89,9 @@ import DebugService from "../../services/debug-service.js"
 import SettingsService from "../../services/settings-service.js"
 import HourlyDataService from "../../services/hourly-data-service.js"
 import DeviceService from "../../services/device-service.js"
-import WeatherApiService, {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
-import {
-  MESSAGES,
-  TOAST_DURATION,
-  AUTO_UPDATE,
-  ADVANCED_FEATURE_PRODUCTS
-} from "../../services/config.js"
+import {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
+import RefreshController from "../../services/refresh-controller.js"
+import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../services/config.js"
 
 // 导入工具类
 import {DateUtils, WeatherDataUtils} from "../../common/weather-utils.js"
@@ -187,12 +183,7 @@ export default {
     }
 
     try {
-      const weatherData = await WeatherApiService.fetchWeatherWithLocation()
-      const saved = await DataService.saveWeatherData(JSON.stringify(weatherData))
-
-      if (!saved) {
-        return false
-      }
+      await RefreshController.refreshDailyData()
 
       const result = await this.loadWeatherData(true, {
         hourly: {
@@ -221,12 +212,15 @@ export default {
       return true
     } catch (error) {
       console.error("获取天气失败:", error)
-      const toastMessage =
-        error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
-          ? MESSAGES.LOCATION_INFO_MISSING
-          : MESSAGES.FETCH_WEATHER_ERROR
+      let toastMessage = null
 
-      if (!config.silent) {
+      if (error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING) {
+        toastMessage = MESSAGES.LOCATION_INFO_MISSING
+      } else if (error?.code !== "DATA_SAVE_FAILED") {
+        toastMessage = MESSAGES.FETCH_WEATHER_ERROR
+      }
+
+      if (!config.silent && toastMessage) {
         showToast({
           message: toastMessage,
           duration: TOAST_DURATION.NORMAL
@@ -259,6 +253,7 @@ export default {
     }
 
     const {weatherData, todayData} = result
+    RefreshController.recordDailyUpdate(weatherData)
 
     // 计算更新时间
     const updateTime = new Date(weatherData.updateTime)
@@ -346,48 +341,30 @@ export default {
 
     const {silent = true, forceRefresh = false} = options
 
-    if (forceRefresh) {
-      HourlyDataService.clearCache()
-    }
-
-    const localData = await HourlyDataService.readHourlyData(true)
-    const hasValidLocalData = localData && HourlyDataService.validateHourlyData(localData)
-
-    if (hasValidLocalData && !forceRefresh && !this.isHourlyDataExpired(localData)) {
-      this.applyHourlyForecastList(localData.hourly)
-      return
-    }
-
-    const updated = await this.updateHourlyForecastFromApi(silent)
-
-    if (!updated && hasValidLocalData) {
-      this.applyHourlyForecastList(localData.hourly)
-    }
-  },
-
-  /**
-   * 通过 API 获取逐小时天气
-   * @param {boolean} silent
-   */
-  async updateHourlyForecastFromApi(silent = true) {
-    if (!this.supportsAdvancedFeatures || !this.hourlyForecastEnabled) {
-      this.hasHourlyData = false
-      this.updateHourlyCardVisibility()
-      return false
-    }
-
     try {
-      const hourlyData = await WeatherApiService.fetchHourlyForecast()
-      const payload = {
-        ...hourlyData,
-        fetchedAt: new Date().toISOString()
+      const result = await RefreshController.ensureHourlyData({forceRefresh})
+      const hourlyData = result?.hourlyData
+
+      if (hourlyData && Array.isArray(hourlyData.hourly)) {
+        this.applyHourlyForecastList(hourlyData.hourly)
+
+        if (result.error && !silent && result.error?.code !== "DATA_SAVE_FAILED") {
+          const toastMessage =
+            result.error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+              ? MESSAGES.LOCATION_INFO_MISSING
+              : MESSAGES.FETCH_WEATHER_ERROR
+
+          showToast({
+            message: toastMessage,
+            duration: TOAST_DURATION.NORMAL
+          })
+        }
+
+        return
       }
-      await HourlyDataService.saveHourlyData(JSON.stringify(payload))
-      this.applyHourlyForecastList(payload.hourly)
-      return true
     } catch (error) {
       console.error("获取逐小时天气失败:", error)
-      if (!silent) {
+      if (!silent && error?.code !== "DATA_SAVE_FAILED") {
         const toastMessage =
           error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
             ? MESSAGES.LOCATION_INFO_MISSING
@@ -398,10 +375,10 @@ export default {
           duration: TOAST_DURATION.NORMAL
         })
       }
-      this.hasHourlyData = false
-      this.updateHourlyCardVisibility()
-      return false
     }
+
+    this.hasHourlyData = false
+    this.updateHourlyCardVisibility()
   },
 
   /**
@@ -413,70 +390,6 @@ export default {
     this.figureHourly = processed
     this.hasHourlyData = processed.length > 0
     this.updateHourlyCardVisibility()
-  },
-
-  /**
-   * 判断逐小时天气是否过期
-   * @param {Object} hourlyData
-   * @returns {boolean}
-   */
-  isHourlyDataExpired(hourlyData) {
-    if (!hourlyData) {
-      return true
-    }
-
-    const now = Date.now()
-    const timestamps = []
-
-    if (typeof hourlyData.updateTime === "string") {
-      const parsedUpdateTime = Date.parse(hourlyData.updateTime)
-      if (!Number.isNaN(parsedUpdateTime)) {
-        timestamps.push(parsedUpdateTime)
-      }
-    }
-
-    if (typeof hourlyData.fetchedAt === "string") {
-      const parsedFetchedAt = Date.parse(hourlyData.fetchedAt)
-      if (!Number.isNaN(parsedFetchedAt)) {
-        timestamps.push(parsedFetchedAt)
-      }
-    }
-
-    if (Array.isArray(hourlyData.hourly) && hourlyData.hourly.length > 0) {
-      const firstEntry = hourlyData.hourly[0]
-      const fxTime = firstEntry.fxTime || firstEntry.time
-      if (fxTime) {
-        const parsedFxTime = Date.parse(fxTime)
-        if (!Number.isNaN(parsedFxTime)) {
-          timestamps.push(parsedFxTime)
-        }
-      }
-    }
-
-    if (timestamps.length === 0) {
-      return true
-    }
-
-    const latestTimestamp = Math.max(...timestamps)
-    return now - latestTimestamp >= AUTO_UPDATE.EXPIRY_THRESHOLD
-  },
-
-  /**
-   * 判断天气数据是否过期
-   * @param {Object} weatherData
-   * @returns {boolean}
-   */
-  isWeatherDataExpired(weatherData) {
-    if (!weatherData || !weatherData.updateTime) {
-      return false
-    }
-
-    const updatedAt = new Date(weatherData.updateTime).getTime()
-    if (Number.isNaN(updatedAt)) {
-      return false
-    }
-
-    return Date.now() - updatedAt >= AUTO_UPDATE.EXPIRY_THRESHOLD
   },
 
   /**
@@ -492,7 +405,7 @@ export default {
     const {silent = true, showLoading = false} = options
     const data = weatherData || (await DataService.readWeatherData(true))
 
-    if (!data || !this.isWeatherDataExpired(data)) {
+    if (!data || !RefreshController.isDailyExpired(data)) {
       return
     }
 
@@ -626,6 +539,7 @@ export default {
       this.location = weatherData.location || "未知地点"
       this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
       this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
+      RefreshController.recordDailyUpdate(weatherData)
 
       // 保存数据到本地
       await DataService.saveWeatherData(data.data)
@@ -653,14 +567,22 @@ export default {
    * 页面隐藏时关闭连接
    */
   onHide() {
-    ConnectionService.close()
+    try {
+      ConnectionService.close()
+    } catch (error) {
+      console.error("关闭连接失败:", error)
+    }
   },
 
   /**
    * 页面销毁时关闭连接
    */
   onDestroy() {
-    ConnectionService.close()
+    try {
+      ConnectionService.close()
+    } catch (error) {
+      console.error("关闭连接失败:", error)
+    }
   }
 }
 </script>

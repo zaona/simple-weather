@@ -78,11 +78,10 @@
 import router from "@system.router"
 import {showToast} from "@system.prompt"
 import DebugService from "../../services/debug-service.js"
-import DataService from "../../services/data-service.js"
 import SettingsService from "../../services/settings-service.js"
-import HourlyDataService from "../../services/hourly-data-service.js"
 import DeviceService from "../../services/device-service.js"
-import WeatherApiService, {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
+import RefreshController from "../../services/refresh-controller.js"
+import {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
 import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../services/config.js"
 
 export default {
@@ -184,15 +183,14 @@ export default {
     this.isUpdating = true
 
     try {
-      const weatherData = await WeatherApiService.fetchWeatherWithLocation()
-      const saved = await DataService.saveWeatherData(JSON.stringify(weatherData))
-
-      if (!saved) {
-        return
-      }
+      await RefreshController.refreshDailyData()
 
       if (this.hourlyForecastEnabled) {
-        await this.updateHourlyForecastFromApi(true)
+        try {
+          await RefreshController.refreshHourlyData()
+        } catch (error) {
+          console.error("获取逐小时天气失败:", error)
+        }
       }
 
       showToast({
@@ -200,6 +198,11 @@ export default {
         duration: TOAST_DURATION.SHORT
       })
     } catch (error) {
+      const isSaveError = error?.code === "DATA_SAVE_FAILED"
+      if (isSaveError) {
+        return
+      }
+
       const toastMessage =
         error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
           ? MESSAGES.LOCATION_INFO_MISSING
@@ -211,32 +214,6 @@ export default {
       })
     } finally {
       this.isUpdating = false
-    }
-  },
-
-  /**
-   * 从 API 拉取逐小时天气并保存
-   * @param {boolean} silent
-   */
-  async updateHourlyForecastFromApi(silent = true) {
-    try {
-      const hourlyData = await WeatherApiService.fetchHourlyForecast()
-      await HourlyDataService.saveHourlyData(JSON.stringify(hourlyData))
-      return true
-    } catch (error) {
-      console.error("获取逐小时天气失败:", error)
-      if (!silent) {
-        const toastMessage =
-          error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
-            ? MESSAGES.LOCATION_INFO_MISSING
-            : MESSAGES.FETCH_WEATHER_ERROR
-
-        showToast({
-          message: toastMessage,
-          duration: TOAST_DURATION.NORMAL
-        })
-      }
-      return false
     }
   },
 
