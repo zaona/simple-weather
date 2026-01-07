@@ -194,7 +194,12 @@ export default {
         return false
       }
 
-      const result = await this.loadWeatherData(true)
+      const result = await this.loadWeatherData(true, {
+        hourly: {
+          forceRefresh: true,
+          silent: config.silent
+        }
+      })
 
       if (!result || !result.success) {
         if (!config.silent) {
@@ -241,7 +246,7 @@ export default {
    * @param {boolean} silent - 静默模式，不显示错误Toast
    * @returns {Object} 返回 { success: boolean, status: string, weatherData?: Object }
    */
-  async loadWeatherData(silent = false) {
+  async loadWeatherData(silent = false, options = {}) {
     const result = await DataService.getTodayData(silent)
 
     // 检查加载状态
@@ -264,7 +269,12 @@ export default {
     this.location = weatherData.location || "未知地点"
     this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
     this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
-    await this.loadHourlyForecastData({silent})
+    const hourlyOptions = options.hourly || {}
+    const mergedHourlyOptions = {
+      silent: hourlyOptions.silent !== undefined ? hourlyOptions.silent : silent,
+      ...hourlyOptions
+    }
+    await this.loadHourlyForecastData(mergedHourlyOptions)
 
     return {success: true, status: "success", weatherData}
   },
@@ -341,13 +351,18 @@ export default {
     }
 
     const localData = await HourlyDataService.readHourlyData(true)
+    const hasValidLocalData = localData && HourlyDataService.validateHourlyData(localData)
 
-    if (localData && HourlyDataService.validateHourlyData(localData)) {
+    if (hasValidLocalData && !forceRefresh && !this.isHourlyDataExpired(localData)) {
       this.applyHourlyForecastList(localData.hourly)
       return
     }
 
-    await this.updateHourlyForecastFromApi(silent)
+    const updated = await this.updateHourlyForecastFromApi(silent)
+
+    if (!updated && hasValidLocalData) {
+      this.applyHourlyForecastList(localData.hourly)
+    }
   },
 
   /**
@@ -363,8 +378,12 @@ export default {
 
     try {
       const hourlyData = await WeatherApiService.fetchHourlyForecast()
-      await HourlyDataService.saveHourlyData(JSON.stringify(hourlyData))
-      this.applyHourlyForecastList(hourlyData.hourly)
+      const payload = {
+        ...hourlyData,
+        fetchedAt: new Date().toISOString()
+      }
+      await HourlyDataService.saveHourlyData(JSON.stringify(payload))
+      this.applyHourlyForecastList(payload.hourly)
       return true
     } catch (error) {
       console.error("获取逐小时天气失败:", error)
@@ -394,6 +413,52 @@ export default {
     this.figureHourly = processed
     this.hasHourlyData = processed.length > 0
     this.updateHourlyCardVisibility()
+  },
+
+  /**
+   * 判断逐小时天气是否过期
+   * @param {Object} hourlyData
+   * @returns {boolean}
+   */
+  isHourlyDataExpired(hourlyData) {
+    if (!hourlyData) {
+      return true
+    }
+
+    const now = Date.now()
+    const timestamps = []
+
+    if (typeof hourlyData.updateTime === "string") {
+      const parsedUpdateTime = Date.parse(hourlyData.updateTime)
+      if (!Number.isNaN(parsedUpdateTime)) {
+        timestamps.push(parsedUpdateTime)
+      }
+    }
+
+    if (typeof hourlyData.fetchedAt === "string") {
+      const parsedFetchedAt = Date.parse(hourlyData.fetchedAt)
+      if (!Number.isNaN(parsedFetchedAt)) {
+        timestamps.push(parsedFetchedAt)
+      }
+    }
+
+    if (Array.isArray(hourlyData.hourly) && hourlyData.hourly.length > 0) {
+      const firstEntry = hourlyData.hourly[0]
+      const fxTime = firstEntry.fxTime || firstEntry.time
+      if (fxTime) {
+        const parsedFxTime = Date.parse(fxTime)
+        if (!Number.isNaN(parsedFxTime)) {
+          timestamps.push(parsedFxTime)
+        }
+      }
+    }
+
+    if (timestamps.length === 0) {
+      return true
+    }
+
+    const latestTimestamp = Math.max(...timestamps)
+    return now - latestTimestamp >= AUTO_UPDATE.EXPIRY_THRESHOLD
   },
 
   /**
@@ -564,6 +629,9 @@ export default {
 
       // 保存数据到本地
       await DataService.saveWeatherData(data.data)
+
+      // 与每日数据同时刷新逐小时数据
+      await this.loadHourlyForecastData({silent: true, forceRefresh: true})
 
       showToast({
         message: MESSAGES.DATA_UPDATED,
