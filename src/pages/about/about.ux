@@ -9,7 +9,7 @@
           <image class="icon-app" src="/common/logo.png" />
           <div class="container-app-text">
             <text class="text-app-name">简明天气</text>
-            <text class="text-app-version">v1.8.4</text>
+            <text class="text-app-version">v1.8.5</text>
           </div>
         </div>
       </div>
@@ -177,6 +177,17 @@ export default {
    */
   async handleUpdateWeather() {
     if (this.isUpdating) {
+      return
+    }
+
+    const remainingTime = await RefreshController.getManualRefreshRemainingTime()
+    if (remainingTime > 0) {
+      const minutesLeft = Math.max(1, Math.ceil(remainingTime / (60 * 1000)))
+      const message = (MESSAGES.MANUAL_UPDATE_TOO_SOON || "").replace("{minutes}", minutesLeft)
+      showToast({
+        message,
+        duration: TOAST_DURATION.NORMAL
+      })
       return
     }
 

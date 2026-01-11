@@ -1,7 +1,7 @@
 import DataService from "./data-service.js"
 import HourlyDataService from "./hourly-data-service.js"
 import WeatherApiService from "./weather-api-service.js"
-import {AUTO_UPDATE} from "./config.js"
+import {AUTO_UPDATE, MANUAL_UPDATE} from "./config.js"
 
 /**
  * 刷新调度器
@@ -27,6 +27,45 @@ class RefreshController {
     if (timestamp) {
       this.hourlyTimestamp = timestamp
     }
+  }
+
+  async getLastDailyUpdateTimestamp() {
+    if (this.dailyTimestamp) {
+      return this.dailyTimestamp
+    }
+
+    try {
+      const weatherData = await DataService.readWeatherData(true)
+      const timestamp = this.extractDailyTimestamp(weatherData)
+      if (timestamp) {
+        this.dailyTimestamp = timestamp
+        return timestamp
+      }
+    } catch (error) {
+      console.error("获取天气更新时间失败:", error)
+    }
+
+    return null
+  }
+
+  async getManualRefreshRemainingTime() {
+    const minInterval = MANUAL_UPDATE?.MIN_INTERVAL
+    if (!minInterval) {
+      return 0
+    }
+
+    const lastTimestamp = await this.getLastDailyUpdateTimestamp()
+    if (!lastTimestamp) {
+      return 0
+    }
+
+    const elapsed = Date.now() - lastTimestamp
+    return elapsed >= minInterval ? 0 : minInterval - elapsed
+  }
+
+  async canTriggerManualRefresh() {
+    const remainingTime = await this.getManualRefreshRemainingTime()
+    return remainingTime === 0
   }
 
   extractDailyTimestamp(weatherData) {

@@ -39,6 +39,12 @@ export const AUTO_UPDATE = {
   EXPIRY_THRESHOLD: 60 * 60 * 1000
 }
 
+// 手动更新配置
+export const MANUAL_UPDATE = {
+  // 手动触发更新的最小间隔（毫秒） - 10分钟
+  MIN_INTERVAL: 10 * 60 * 1000
+}
+
 // 天气 API 配置（公共参数）
 export const WEATHER_API = {
   DAILY_PATH: "/v7/weather/7d",
@@ -91,7 +97,10 @@ export const MESSAGES = {
   // 调试消息
   DEBUG_MOCK_DATA_LOADED: "模拟数据加载",
   DEBUG_MOCK_DATA_FAILED: "模拟数据失败",
-  DEBUG_DATA_CLEARED: "数据已清除"
+  DEBUG_DATA_CLEARED: "数据已清除",
+
+  // 手动更新限制
+  MANUAL_UPDATE_TOO_SOON: "请{minutes}分钟后再试"
 }
 
 // 提示持续时间（毫秒）
