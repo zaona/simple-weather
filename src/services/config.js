@@ -58,7 +58,7 @@ export const ADVANCED_FEATURE_PRODUCTS = [
   "Xiaomi Watch S3 eSIM",
   "Xiaomi Watch S4 eSIM",
   "Xiaomi Watch S4 Sport",
-  "Redmi Watch 5 eSIM",
+  "o65m",
   "marconi_o62m_watch"
 ]
 
