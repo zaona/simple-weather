@@ -26,13 +26,13 @@
 
 /* 加载动画图标 */
 .loading-icon {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   animation-name: rotate;
   animation-duration: 1.5s;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
-  transform-origin: 30px 30px;
+  transform-origin: 32px 32px;
 }
 
 /* 旋转动画关键帧 */
