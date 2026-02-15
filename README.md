@@ -18,7 +18,7 @@
 
 com.application.zaona.weather
 
-## 调试功能
+## 数据传输调试
 
 ### 开关
 
@@ -36,6 +36,21 @@ const DEBUG_MODE = true // 发版时改为 false
 // 🔧 调试模式：注入模拟数据（可选）
 // 取消下面的注释可启用模拟数据注入
 // await DebugService.injectMockData()
+```
+
+## 手表请求调试
+
+在 `src/services/weather-api-config-example.js` 中
+
+复制一份文件，将文件名改为 `weather-api-config.js`
+
+在文件中填写自己的和风天气API主机地址和密钥
+
+可参考 [获取和风天气API配置](https://www.yuque.com/zaona/weather/api)
+
+```javascript
+HOST: "https://xxx.re.qweatherapi.com",
+KEY: "xxx"
 ```
 
 ## 快速开始
