@@ -7,3 +7,5 @@
 /docs
 .husky/
 src/services/weather-api-config.js
+
+/VelaDocs
