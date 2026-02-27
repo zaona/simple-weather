@@ -8,6 +8,11 @@
     <div class="loading-container" if="{{ isLoading }}">
       <div class="loading-bg"></div>
       <image class="loading-icon" src="/common/loading.png" />
+      <div class="loading-actions" if="{{ showDebugEntry }}">
+        <div class="btn-primary" onclick="About()">
+          <text class="text-button">关于</text>
+        </div>
+      </div>
     </div>
 
     <scroll
@@ -105,6 +110,7 @@ export default {
     hourlyForecastEnabled: false, // 逐小时天气是否开启
     showHourlyForecastCard: false, // 是否显示逐小时卡片
     supportsAdvancedFeatures: false, // 设备是否支持高级功能
+    showDebugEntry: false, // 加载态调试入口
     hasHourlyData: false, // 是否有可用的逐小时数据
     autoUpdateInProgress: false, // 自动更新中标记
     location: "__", // 地点
@@ -426,9 +432,7 @@ export default {
    * 页面初始化
    */
   async onInit() {
-    // 🔧 调试模式：注入模拟数据（可选）
-    // 取消下面的注释可启用模拟数据注入
-    // await DebugService.injectMockData()
+    this.showDebugEntry = DebugService.isDebugMode()
 
     await this.detectAdvancedFeatureSupport()
     await this.syncFeatureSettings()

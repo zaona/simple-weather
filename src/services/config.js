@@ -109,3 +109,9 @@ export const TOAST_DURATION = {
   NORMAL: 2000,
   LONG: 3000
 }
+
+// 调试配置
+export const DEBUG = {
+  // true: 启用调试功能；false: 禁用调试功能（发版时使用）
+  ENABLED: false
+}

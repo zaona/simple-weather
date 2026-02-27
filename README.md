@@ -20,23 +20,17 @@ com.application.zaona.weather
 
 ## 数据传输调试
 
-### 开关
-
-在 `src/services/debug-service.js` 中
+在 `src/services/config.js` 中
 
 ```javascript
-const DEBUG_MODE = true // 发版时改为 false
+// 调试配置
+export const DEBUG = {
+  // true: 启用调试功能；false: 禁用调试功能（发版时使用）
+  ENABLED: false
+}
 ```
 
-### 启动时自动注入
-
-在 `src/pages/index/index.ux` 中
-
-```javascript
-// 🔧 调试模式：注入模拟数据（可选）
-// 取消下面的注释可启用模拟数据注入
-// await DebugService.injectMockData()
-```
+开启后会在loading界面显示“关于”按钮，点击进入关于页面，在关于页面内可进行模拟数据和清除数据
 
 ## 手表请求调试
 
