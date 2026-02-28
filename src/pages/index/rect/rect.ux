@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
+    <image class="page-bg" src="/common/weather-bgs/rect/{{ backgroundImage }}.png" />
 
     <swiper class="swiper" vertical="true" loop="false">
         <div class="section">
