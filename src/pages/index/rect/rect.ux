@@ -27,7 +27,7 @@
           </div>
         </div>
 
-        <div class="section">
+        <div class="section" if="{{ supportsAdvancedFeatures && hourlyForecastEnabled }}">
           <div class="title-bar">
             <text class="title-bar__text">天气预测</text>
             <text class="title-bar__time">{{ current.time }}</text>
@@ -66,7 +66,7 @@
           </div>
 
           <div class="forecast-daily">
-            <div class="forecast-daily__item" for="{{ item in forecastDaily }}">
+            <div class="forecast-daily__item" for="{{ item in forecastDaily.slice(0, 7) }}">
               <div class="forecast-daily__left">
                 <image class="forecast-daily__icon" src="{{ item.icon }}" />
                 <text class="forecast-daily__time">{{ item.time }}</text>
@@ -171,9 +171,9 @@
                 <text class="indices__value">{{ indices[2].value }}</text>
               </div>
               <div class="indices__icon">
-                <image src="/common/wind/wind1.png" />
+                <image style="width: 128px;height: 128px;" src="/common/wind/wind1.png" />
                 <image class="wind-arrow {{ indices[2].rotationClass }}" src="/common/wind/wind3.png" />
-                <image style="position: absolute; top: 0; left: 0" src="/common/wind/wind2.png" />
+                <image style="position: absolute; top: 0; left: 0;width: 128px;height: 128px;" src="/common/wind/wind2.png" />
               </div>
             </div>
 
@@ -1461,7 +1461,7 @@ export default {
 }
 
 .forecast-hourly {
-  margin-top: 60px;
+  margin-top: 64px;
   width: 100%;
 }
 
@@ -1473,8 +1473,9 @@ export default {
 .forecast-hourly__item {
   flex-direction: column;
   align-items: center;
-  margin-left: 32px;
+  margin-left: 16px;
   flex-shrink: 0;
+  width: 88px;
 }
 
 .forecast-hourly__time {
@@ -1495,7 +1496,7 @@ export default {
 }
 
 .progress-bar {
-  margin-top: 120px;
+  margin-top: 116px;
   flex-direction: column;
   align-items: center;
 }
@@ -1602,6 +1603,8 @@ export default {
   top: 0;
   left: 0;
   transform-origin: 64px 64px;
+  width: 128px;
+  height: 128px;
 }
 
 .wind-rotate-0 {
