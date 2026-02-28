@@ -23,7 +23,7 @@ import RefreshController from "../../services/refresh-controller.js"
 import SettingsService from "../../services/settings-service.js"
 import {ADVANCED_FEATURE_PRODUCTS, MESSAGES} from "../../services/config.js"
 
-const RECT_SCREEN_PRODUCTS = ["redmi watch 5", "redmi watch 6", "o65m"]
+const RECT_SCREEN_PRODUCTS = ["redmi watch 5", "redmi watch 6", "o65m", "emulator-vela"]
 const CIRCLE_SCREEN_PRODUCTS = [
   "xiaomi watch s3",
   "xiaomi watch s3 esim",

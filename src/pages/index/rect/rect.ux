@@ -1,72 +1,261 @@
 <template>
-  <!-- 页面容器 -->
-  <div class="page-container">
-    <!-- 背景图片 -->
+  <div class="page">
     <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
 
-    <scroll
-      class="main-content scroll-container"
-      scroll-y="true"
-      bounces="true"
-    >
-      <!-- 头部信息：地点和更新时间 -->
-      <div class="page-header">
-        <text class="text-location">{{ location }}</text>
-        <text class="text-subtitle">{{ updateTime }}</text>
-      </div>
+    <swiper class="swiper" vertical="true" loop="false">
+        <div class="section">
+          <div class="title">
+            <text class="title__location">{{ current.location }}</text>
+            <text class="title__time">{{ current.relativeTime }}</text>
+          </div>
 
-      <!-- 当前天气概览 -->
-      <div class="content-hero card-margin">
-        <image class="icon-weather-main" src="/common/weather-icons/{{ iconCode }}.png" />
-        <text class="text-weather">{{ textDay }}</text>
-        <text class="text-temp-range">{{ tempMinMax }}</text>
-      </div>
-
-      <!-- 逐小时天气预报 -->
-      <div class="card card-single" if="{{ showHourlyForecastCard }}">
-        <scroll class="mt-negative-sm" style="margin: -4px" scroll-x="true" bounces="true">
-          <div class="item-hourly" for="{{ item in figureHourly }}">
-            <text class="text-hourly">
-              {{ item.name }}
-            </text>
-            <image class="icon-weather-small" src="/common/weather-icons/{{ item.iconCode }}.png" />
-            <text class="text-hourly-temp" style="">
-              {{ item.temp }}
+          <div class="current">
+            <div style="margin-left: 16px">
+              <text class="current__temperature">{{ current.temperature }}</text>
+              <text class="current__temperature__unit">°</text>
+            </div>
+            <text class="current__weather">{{ current.weather }}</text>
+            <text class="current__daily">
+              {{ current.temperatureDaily.from }}°/{{ current.temperatureDaily.to }}°
             </text>
           </div>
-        </scroll>
-      </div>
 
-      <!-- 天气指标面板 -->
-      <div class="card card-double">
-        <div class="item-data" for="{{ item in figure }}">
-          <text class="text-data-value">{{ item.value }}{{ item.unit }}</text>
-          <text class="text-data-label">{{ item.name }}</text>
-        </div>
-      </div>
-
-      <!-- 未来几天天气预报 -->
-      <div class="card card-single">
-        <div class="flex-col mt-negative-sm">
-          <div class="item-forecast" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
-            <text class="text-daily">{{ item.name }}</text>
-            <div class="justify-between">
-              <text class="text-daily-temp">{{ item.tempMinMax }}</text>
-              <image
-                class="icon-weather-small"
-                src="/common/weather-icons/{{ item.iconCode }}.png"
-              />
+          <div class="alert">
+            <div class="alert__card">
+              <image class="alert__icon" src="{{ current.icon }}" />
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="content-hero mt-lg">
-        <div class="btn-primary" onclick="About()">
-          <text class="text-button">关于</text>
+        <div class="section">
+          <div class="title-bar">
+            <text class="title-bar__text">天气预测</text>
+            <text class="title-bar__time">{{ current.time }}</text>
+          </div>
+
+          <scroll
+            id="hourlyScroll"
+            class="forecast-hourly"
+            scroll-x="true"
+            bounces="true"
+            @scroll="handleHourlyScroll"
+          >
+            <div id="hourlyContent" class="forecast-hourly__content">
+              <div class="forecast-hourly__item" for="{{ item in forecastHourly }}">
+                <text class="forecast-hourly__time">{{ item.time }}</text>
+                <text class="forecast-hourly__temperature">{{ item.temperature }}°</text>
+                <image class="forecast-hourly__icon" src="{{ item.icon }}" />
+              </div>
+            </div>
+          </scroll>
+
+          <div class="progress-bar" if="{{ hourlyIndicatorReady }}">
+            <div class="progress-bar__bg">
+              <div
+                class="progress-bar__fill"
+                style="left: {{ hourlyIndicatorOffset }}px; width: {{ hourlyIndicatorWidth }}px;"
+              ></div>
+            </div>
+          </div>
         </div>
-      </div>
-    </scroll>
+
+        <div class="section">
+          <div class="title-bar">
+            <text class="title-bar__text">未来天气</text>
+            <text class="title-bar__time">{{ current.time }}</text>
+          </div>
+
+          <div class="forecast-daily">
+            <div class="forecast-daily__item" for="{{ item in forecastDaily }}">
+              <div class="forecast-daily__left">
+                <image class="forecast-daily__icon" src="{{ item.icon }}" />
+                <text class="forecast-daily__time">{{ item.time }}</text>
+              </div>
+              <text class="forecast-daily__temperature">
+                {{ item.temperature.from }}°/{{ item.temperature.to }}°
+              </text>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="title-bar">
+            <text class="title-bar__text">天气指数</text>
+            <text class="title-bar__time">{{ current.time }}</text>
+          </div>
+
+          <scroll class="indices" scroll-y="true" bounces="true">
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[0].type }}</text>
+                <text class="indices__value">{{ indices[0].value }}</text>
+              </div>
+              <div class="indices__icon">
+                <image src="/common/uv/uv1.png" />
+                <text
+                  style="
+                    position: absolute;
+                    top: 43px;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 42px;
+                    font-size: 42px;
+                    font-weight: bold;
+                    color: white;
+                  "
+                >
+                  {{ indices[0].desc }}
+                </text>
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 4px;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 24px;
+                    font-size: 24px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                  UV
+                </text>
+              </div>
+            </div>
+
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[1].type }}</text>
+                <text class="indices__value">{{ indices[1].value }}%</text>
+              </div>
+              <div class="indices__icon">
+                <progress
+                  class="indices__icon__humidity"
+                  percent="{{ indices[1].percent }}"
+                  type="arc"
+                ></progress>
+                <div
+                  style="
+                    position: absolute;
+                    top: 0px;
+                    left: 0px;
+                    width: 100%;
+                    height: 100%;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <image src="/common/hum/hum_wight.png" />
+                </div>
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 6px;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 20px;
+                    font-size: 20px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                  {{ indices[1].desc }}
+                </text>
+              </div>
+            </div>
+
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[2].type }}</text>
+                <text class="indices__value">{{ indices[2].value }}</text>
+              </div>
+              <div class="indices__icon">
+                <image src="/common/wind/wind1.png" />
+                <image style="position: absolute; top: 0; left: 0" src="/common/wind/wind3.png" />
+                <image style="position: absolute; top: 0; left: 0" src="/common/wind/wind2.png" />
+              </div>
+            </div>
+
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[3].type }}</text>
+                <text class="indices__value">{{ indices[3].value }}</text>
+              </div>
+              <div class="indices__icon">
+                <image src="/common/air/Air13.png" />
+                <div
+                  style="
+                    position: absolute;
+                    top: 0px;
+                    left: 0px;
+                    width: 100%;
+                    height: 100%;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <image src="/common/uv/uv14.png" />
+                </div>
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 6px;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 20px;
+                    font-size: 20px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                  hpa
+                </text>
+              </div>
+            </div>
+
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[4].type }}</text>
+                <text class="indices__value">{{ indices[4].value }}</text>
+              </div>
+              <div class="indices__icon">
+                <image style="margin:-8px" src="/common/sunset/sunset20.png" />
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 20px;
+                    left: 2px;
+                    line-height: 20px;
+                    font-size: 20px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                {{ indices[4].value }}
+                </text>
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 2px;
+                    line-height: 20px;
+                    font-size: 20px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                {{ indices[4].desc }}
+                </text>
+              </div>
+            </div>
+
+            <div class="content-hero mt-lg">
+              <div class="btn-primary" onclick="About()">
+                <text class="text-button">关于</text>
+              </div>
+            </div>
+          </scroll>
+        </div>
+    </swiper>
   </div>
 </template>
 
@@ -105,7 +294,7 @@ export default {
     tempMinMax: "__°/__°", // 最高/最低温度
     backgroundImage: "", // 背景图片
 
-    // 天气指标数据
+    // 原有天气指标数据
     figure: [
       {name: "紫外线指数", value: "__", uniqueId: 1},
       {name: "相对湿度", value: "__", uniqueId: 2},
@@ -117,24 +306,323 @@ export default {
     figureHourly: [],
 
     // 未来几天天气预报数据
-    dayWeather: [{name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1}]
+    dayWeather: [{name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1}],
+
+    // 新版界面数据
+    current: {
+      location: "__",
+      time: "__",
+      relativeTime: "__",
+      weather: "__",
+      temperature: "__",
+      temperatureDaily: {
+        from: "__",
+        to: "__"
+      },
+      icon: "/common/weather-icons/cloudy.png"
+    },
+    forecastHourly: [],
+    forecastDaily: [],
+    indices: [
+      {type: "__", value: "__", desc: "__", percent: 0},
+      {type: "__", value: "__", desc: "__", percent: 0},
+      {type: "__", value: "__", desc: "__", percent: 0},
+      {type: "__", value: "__", desc: "__", percent: 0},
+      {type: "__", value: "__", desc: "__", percent: 0}
+    ],
+    hourlyScrollContentWidth: 0,
+    hourlyScrollViewWidth: 216,
+    hourlyIndicatorTrackWidth: 100,
+    hourlyIndicatorWidth: 40,
+    hourlyIndicatorOffset: 0,
+    hourlyLastScrollX: 0,
+    hourlyIndicatorReady: false,
+    hourlyMetricRetryPending: false,
+    hourlyMetricRetryCount: 0
   },
 
   applyPreloadedData(preloaded) {
     if (!preloaded || !preloaded.weatherData || !preloaded.todayData) {
       return false
     }
+    this.applyWeatherData(preloaded.weatherData, preloaded.todayData)
+    return true
+  },
 
-    const {weatherData, todayData} = preloaded
+  normalizeTempRange(rangeText) {
+    if (!rangeText || typeof rangeText !== "string") {
+      return {from: "__", to: "__"}
+    }
+    const parts = rangeText.replace("℃", "°").split("/")
+    if (parts.length !== 2) {
+      return {from: "__", to: "__"}
+    }
+    return {
+      from: parts[0].replace("°", "") || "__",
+      to: parts[1].replace("°", "") || "__"
+    }
+  },
+
+  normalizeTemperatureValue(value) {
+    if (value === null || value === undefined) {
+      return "__"
+    }
+    const numeric = Number(value)
+    if (Number.isNaN(numeric)) {
+      return String(value)
+    }
+    return String(Math.round(numeric))
+  },
+
+  calculateAverageTemperature(todayData) {
+    if (!todayData) {
+      return "__"
+    }
+    const min = Number(todayData.tempMin)
+    const max = Number(todayData.tempMax)
+    if (Number.isNaN(min) || Number.isNaN(max)) {
+      return "__"
+    }
+    return this.normalizeTemperatureValue((min + max) / 2)
+  },
+
+  getCurrentTemperature(todayData, hourlyList = []) {
+    if (Array.isArray(hourlyList) && hourlyList.length > 0) {
+      const tempText = hourlyList[0].temp || hourlyList[0].temperature
+      if (typeof tempText === "string") {
+        return tempText.replace("°", "")
+      }
+      if (tempText !== undefined && tempText !== null) {
+        return this.normalizeTemperatureValue(tempText)
+      }
+    }
+    return this.calculateAverageTemperature(todayData)
+  },
+
+  getHumidityDesc(percent) {
+    if (typeof percent !== "number" || Number.isNaN(percent)) {
+      return ""
+    }
+    if (percent < 30) {
+      return "干燥"
+    }
+    if (percent < 40) {
+      return "偏干"
+    }
+    if (percent < 60) {
+      return "舒适"
+    }
+    if (percent < 70) {
+      return "偏湿"
+    }
+    return "潮湿"
+  },
+
+  getUvDesc(indexValue) {
+    const numeric = Number(indexValue)
+    if (Number.isNaN(numeric)) {
+      return "__"
+    }
+    if (numeric <= 2) {
+      return "弱"
+    }
+    if (numeric <= 5) {
+      return "中等"
+    }
+    if (numeric <= 7) {
+      return "强"
+    }
+    if (numeric <= 10) {
+      return "很强"
+    }
+    return "极强"
+  },
+
+  buildForecastHourly(hourlyList = []) {
+    if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
+      return []
+    }
+    return hourlyList.slice(0, 12).map((item, index) => {
+      const temperature = (item.temp || "").replace("°", "")
+      const icon = item.iconCode
+        ? `/common/weather-icons/${item.iconCode}.png`
+        : "/common/weather-icons/cloudy.png"
+      return {
+        time: index === 0 ? "现在" : item.name || "--:--",
+        temperature: temperature || "__",
+        icon
+      }
+    })
+  },
+
+  buildForecastDaily(dayWeather = []) {
+    if (!Array.isArray(dayWeather) || dayWeather.length === 0) {
+      return []
+    }
+    return dayWeather.map((item) => {
+      const temp = this.normalizeTempRange(item.tempMinMax)
+      const icon = item.iconCode
+        ? `/common/weather-icons/${item.iconCode}.png`
+        : "/common/weather-icons/cloudy.png"
+      return {
+        time: item.name || "--",
+        temperature: temp,
+        icon
+      }
+    })
+  },
+
+  buildIndices(todayData) {
+    if (!todayData) {
+      return [
+        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0},
+        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0},
+        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0},
+        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0},
+        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0}
+      ]
+    }
+
+    const uvValue = todayData.uvIndex || "__"
+    const humidityValue = todayData.humidity || "__"
+    const humidityNumber = Number(humidityValue)
+    const humidityPercent = Number.isNaN(humidityNumber)
+      ? 0
+      : Math.min(Math.max(Math.round(humidityNumber), 0), 100)
+    const humidityDesc = this.getHumidityDesc(humidityPercent)
+    const windType = todayData.windDirDay || "风向"
+    const windValue = todayData.windScaleDay ? `${todayData.windScaleDay}级` : "__"
+    const pressureValue = todayData.pressure ? `${todayData.pressure}` : "__"
+    const sunriseValue = todayData.sunrise || "--"
+    const sunsetValue = todayData.sunset || "--"
+
+    const uvDesc = this.getUvDesc(uvValue)
+
+    return [
+      {type: "紫外线", value: uvDesc, desc: uvValue, percent: 0},
+      {type: "湿度", value: humidityValue, desc: humidityDesc, percent: humidityPercent},
+      {type: windType, value: windValue, desc: "", percent: 0},
+      {type: "气压", value: pressureValue, desc: "", percent: 0},
+      {type: "日出", value: sunriseValue, desc: sunsetValue, percent: 0}
+    ]
+  },
+
+  applyWeatherData(weatherData, todayData) {
     const updateTime = new Date(weatherData.updateTime)
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
+    const timeText = this.formatTime(updateTime)
 
     WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
     this.location = weatherData.location || "未知地点"
     this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
     this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
     RefreshController.recordDailyUpdate(weatherData)
-    return true
+
+    const currentTemperature = this.getCurrentTemperature(todayData, this.figureHourly)
+    this.current = {
+      location: this.location,
+      time: timeText,
+      relativeTime: timeAgo,
+      weather: todayData.textDay || "__",
+      temperature: currentTemperature,
+      temperatureDaily: {
+        from: todayData.tempMin || "__",
+        to: todayData.tempMax || "__"
+      },
+      icon: this.iconCode ? `/common/weather-icons/${this.iconCode}.png` : "/common/weather-icons/cloudy.png"
+    }
+    this.forecastDaily = this.buildForecastDaily(this.dayWeather)
+    this.indices = this.buildIndices(todayData)
+  },
+
+  updateHourlyScrollMetrics() {
+    const scrollEl = this.$element && this.$element("hourlyScroll")
+    if (!scrollEl) {
+      return
+    }
+
+    this.hourlyIndicatorReady = false
+
+    scrollEl.getScrollRect({
+      success: ({width}) => {
+        if (typeof width === "number" && width > 0) {
+          this.hourlyScrollContentWidth = width
+          this.updateHourlyIndicator(this.hourlyLastScrollX)
+        } else {
+          this.scheduleHourlyMetricRetry()
+        }
+      }
+    })
+
+    if (typeof scrollEl.getBoundingClientRect === "function") {
+      scrollEl.getBoundingClientRect({
+        success: ({width}) => {
+          if (typeof width === "number" && width > 0) {
+            this.hourlyScrollViewWidth = width
+            this.updateHourlyIndicator(this.hourlyLastScrollX)
+          } else {
+            this.scheduleHourlyMetricRetry()
+          }
+        }
+      })
+    }
+  },
+
+  scheduleHourlyMetricRetry() {
+    if (this.hourlyMetricRetryPending) {
+      return
+    }
+    this.hourlyMetricRetryPending = true
+    setTimeout(() => {
+      this.hourlyMetricRetryPending = false
+      this.hourlyMetricRetryCount = (this.hourlyMetricRetryCount || 0) + 1
+      this.updateHourlyScrollMetrics()
+    }, 60)
+  },
+
+  updateHourlyIndicator(scrollX = 0) {
+    const contentWidth = this.hourlyScrollContentWidth
+    const viewWidth = this.hourlyScrollViewWidth || 0
+    if (contentWidth <= 0 || viewWidth <= 0) {
+      this.hourlyIndicatorReady = false
+      return
+    }
+    const maxScroll = Math.max(0, contentWidth - viewWidth)
+    const trackWidth = this.hourlyIndicatorTrackWidth
+    const widthRatio = contentWidth > 0 ? Math.min(viewWidth / contentWidth, 1) : 1
+    const indicatorWidth = Math.max(24, Math.round(trackWidth * widthRatio))
+    const maxOffset = Math.max(0, trackWidth - indicatorWidth)
+    const progress = maxScroll > 0 ? Math.min(Math.max(scrollX / maxScroll, 0), 1) : 0
+    this.hourlyIndicatorWidth = indicatorWidth
+    this.hourlyIndicatorOffset = Math.round(progress * maxOffset)
+    this.hourlyIndicatorReady = contentWidth > viewWidth
+  },
+
+  handleHourlyScroll(event = {}) {
+    const detail = event.detail || event || {}
+    const scrollX = typeof detail.scrollX === "number" ? detail.scrollX : 0
+    const scrollWidth =
+      typeof detail.scrollWidth === "number" ? detail.scrollWidth : this.hourlyScrollContentWidth
+    const clientWidth =
+      typeof detail.clientWidth === "number" ? detail.clientWidth : this.hourlyScrollViewWidth
+
+    this.hourlyLastScrollX = scrollX
+    if (typeof scrollWidth === "number" && scrollWidth > 0) {
+      this.hourlyScrollContentWidth = scrollWidth
+    }
+    if (typeof clientWidth === "number" && clientWidth > 0) {
+      this.hourlyScrollViewWidth = clientWidth
+    }
+    this.updateHourlyIndicator(scrollX)
+  },
+
+  formatTime(dateValue) {
+    if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) {
+      return "__:__"
+    }
+    const hours = String(dateValue.getHours()).padStart(2, "0")
+    const minutes = String(dateValue.getMinutes()).padStart(2, "0")
+    return `${hours}:${minutes}`
   },
 
   /**
@@ -261,17 +749,7 @@ export default {
     }
 
     const {weatherData, todayData} = result
-    RefreshController.recordDailyUpdate(weatherData)
-
-    // 计算更新时间
-    const updateTime = new Date(weatherData.updateTime)
-    const timeAgo = DateUtils.formatTimeAgo(updateTime)
-
-    // 更新界面数据
-    WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
-    this.location = weatherData.location || "未知地点"
-    this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
-    this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
+    this.applyWeatherData(weatherData, todayData)
     const hourlyOptions = options.hourly || {}
     const mergedHourlyOptions = {
       silent: hourlyOptions.silent !== undefined ? hourlyOptions.silent : silent,
@@ -396,8 +874,18 @@ export default {
   applyHourlyForecastList(hourlyList = []) {
     const processed = WeatherDataUtils.processHourlyForecast(hourlyList)
     this.figureHourly = processed
+    this.forecastHourly = this.buildForecastHourly(processed)
+    if (processed.length > 0) {
+      this.current = {
+        ...this.current,
+        temperature: this.getCurrentTemperature(null, processed)
+      }
+    }
     this.hasHourlyData = processed.length > 0
     this.updateHourlyCardVisibility()
+    this.hourlyMetricRetryCount = 0
+    this.updateHourlyScrollMetrics()
+    this.scheduleHourlyMetricRetry()
   },
 
   /**
@@ -448,6 +936,10 @@ export default {
     if (result.success) {
       await this.maybeAutoUpdate(result.weatherData)
     }
+
+    this.hourlyMetricRetryCount = 0
+    this.updateHourlyScrollMetrics()
+    this.scheduleHourlyMetricRetry()
   },
 
   /**
@@ -477,6 +969,10 @@ export default {
     ConnectionService.init((data) => {
       this.handleWeatherData(data)
     })
+
+    this.hourlyMetricRetryCount = 0
+    this.updateHourlyScrollMetrics()
+    this.scheduleHourlyMetricRetry()
   },
 
   /**
@@ -515,11 +1011,7 @@ export default {
       }
 
       // 更新界面
-      WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
-      this.location = weatherData.location || "未知地点"
-      this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
-      this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
-      RefreshController.recordDailyUpdate(weatherData)
+      this.applyWeatherData(weatherData, todayData)
 
       // 保存数据到本地
       await DataService.saveWeatherData(data.data)
@@ -569,6 +1061,299 @@ export default {
 
 <style>
 /* 引入公共样式 */
-@import "../../../common/css/style.css";
 @import "../../../common/css/page-bg-styles.css";
+
+.page {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  flex-direction: column;
+}
+
+.swiper {
+  height: 100%;
+  width: 100%;
+  indicator-right: 4px;
+  indicator-size: 14px;
+  indicator-color: rgba(255, 255, 255, 0.25);
+  indicator-selected-color: rgba(255, 255, 255);
+}
+
+.section {
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+.title {
+  flex-shrink: 0;
+  margin-top: 26px;
+  width: 100%;
+  flex-direction: column;
+}
+
+.title__location {
+  width: 100%;
+  line-height: 32px;
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+.title__time {
+  margin-top: 12px;
+  line-height: 24px;
+  width: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.current {
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.current__temperature {
+  line-height: 120px;
+  font-size: 120px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+.current__temperature__unit {
+  height: 64px;
+  margin-top: 4px;
+  line-height: 64px;
+  font-size: 64px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.current__weather {
+  margin-top: 16px;
+  line-height: 32px;
+  width: 100%;
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.current__daily {
+  margin-top: 14px;
+  margin-left: 3px;
+  line-height: 32px;
+  width: 100%;
+  font-size: 32px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.alert {
+  margin-bottom: 22px;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.alert__card {
+  padding: 8px 12px 8px 12px;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert__icon {
+  width: 32px;
+  height: 32px;
+}
+
+.title-bar {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 15px 48px 24px 43px;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.title-bar__text {
+  line-height: 32px;
+  font-size: 32px;
+  color: white;
+}
+
+.title-bar__time {
+  line-height: 33px;
+  font-size: 33px;
+  color: white;
+}
+
+.forecast-hourly {
+  margin-top: 60px;
+  width: 100%;
+}
+
+.forecast-hourly__content {
+  padding-right: 16px;
+  flex-direction: row;
+}
+
+.forecast-hourly__item {
+  flex-direction: column;
+  align-items: center;
+  margin-left: 32px;
+  flex-shrink: 0;
+}
+
+.forecast-hourly__time {
+  line-height: 28px;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.forecast-hourly__temperature {
+  margin-top: 62px;
+  line-height: 28px;
+  font-size: 28px;
+  color: white;
+}
+
+.forecast-hourly__icon {
+  margin-top: 58px;
+}
+
+.progress-bar {
+  margin-top: 120px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.progress-bar__bg {
+  width: 100px;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  position: relative;
+}
+
+.progress-bar__fill {
+  height: 8px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  left: 0;
+}
+
+.forecast-daily {
+  width: 100%;
+  padding: 0 32px;
+  flex-direction: column;
+}
+
+.forecast-daily__item {
+  align-items: center;
+  margin-bottom: 12px;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.forecast-daily__left {
+  flex-direction: row;
+  align-items: center;
+}
+
+.forecast-daily__time {
+  margin-left: 16px;
+  line-height: 32px;
+  font-size: 32px;
+  color: white;
+}
+
+.forecast-daily__temperature {
+  line-height: 30px;
+  font-size: 30px;
+  color: white;
+}
+
+.indices {
+  height: 100%;
+  margin-top: 6px;
+  padding: 0 8px 28px 8px;
+  flex-direction: column;
+}
+
+.indices__item {
+  padding: 16px 36px 16px 28px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 32px;
+  margin-bottom: 12px;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.indices__content {
+  flex-direction: column;
+  justify-content: center;
+}
+
+.indices__type {
+  line-height: 28px;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.indices__value {
+  margin-top: 14px;
+  line-height: 56px;
+  font-size: 56px;
+  color: white;
+  font-weight: bold;
+}
+
+.indices__icon {
+  position: relative;
+  width: 128px;
+  height: 128px;
+}
+
+.indices__icon__humidity {
+  padding: 5px;
+  width: 100%;
+  height: 100%;
+  layer-color: rgba(255, 255, 255, 0.6);
+  color: white;
+  stroke-width: 10px;
+}
+
+/* 复用原 style.css 中用到的按钮与间距样式 */
+.text-button {
+  font-size: 29px;
+  color: #ffffff;
+}
+
+.btn-primary {
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 50%;
+}
+
+.content-hero {
+  flex-direction: column;
+  align-items: center;
+}
+
+.mt-lg {
+  margin-top: 12px;
+}
 </style>
