@@ -2,11 +2,23 @@
   <div class="page">
     <image class="page-bg" src="/common/weather-bgs/rect/{{ backgroundImage }}.png" />
 
+    <!-- 加载动画容器 -->
+    <div class="loading-container" if="{{ isLoading }}">
+      <div class="loading-bg"></div>
+      <image class="loading-icon" src="/common/loading.png" />
+      <div class="loading-actions" if="{{ showDebugEntry }}">
+        <div class="btn-primary" onclick="About()">
+          <text class="text-button">关于</text>
+        </div>
+      </div>
+    </div>
+
     <scroll
       class="section-scroll"
       scroll-y="true"
       bounces="true"
       style="scroll-snap-type: y mandatory; scroll-snap-stop: always;"
+      if="{{ !isLoading }}"
     >
         <div class="section section--snap">
           <div class="title">
@@ -275,6 +287,7 @@ import ConnectionService from "../../../services/connection-service.js"
 import SettingsService from "../../../services/settings-service.js"
 import HourlyDataService from "../../../services/hourly-data-service.js"
 import DeviceService from "../../../services/device-service.js"
+import DebugService from "../../../services/debug-service.js"
 import {WEATHER_API_ERRORS} from "../../../services/weather-api-service.js"
 import RefreshController from "../../../services/refresh-controller.js"
 import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../../services/config.js"
@@ -285,11 +298,13 @@ import {DateUtils, WeatherDataUtils} from "../../../common/weather-utils.js"
 export default {
   // 页面私有数据
   private: {
-    isLoading: false, // 加载状态
+    isLoading: true, // 加载状态
+    isFirstLoad: true, // 是否是首次加载
     autoUpdateEnabled: false, // 自动更新是否开启
     hourlyForecastEnabled: false, // 逐小时天气是否开启
     showHourlyForecastCard: false, // 是否显示逐小时卡片
     supportsAdvancedFeatures: false, // 设备是否支持高级功能
+    showDebugEntry: false, // 加载态调试入口
     hasHourlyData: false, // 是否有可用的逐小时数据
     autoUpdateInProgress: false, // 自动更新中标记
     location: "__", // 地点
@@ -775,17 +790,15 @@ export default {
     ]
   },
 
-  applyWeatherData(weatherData, todayData) {
-    const updateTime = new Date(weatherData.updateTime)
-    const timeAgo = DateUtils.formatTimeAgo(updateTime)
-    const timeText = this.formatTime(updateTime)
-
+  syncRectWeather(weatherData, todayData, timeAgo) {
+    RefreshController.recordDailyUpdate(weatherData)
     WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
     this.location = weatherData.location || "未知地点"
     this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
     this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
-    RefreshController.recordDailyUpdate(weatherData)
 
+    const updateTime = new Date(weatherData.updateTime)
+    const timeText = this.formatTime(updateTime)
     const currentTemperature = this.getCurrentTemperature(todayData, this.figureHourly)
     this.current = {
       location: this.location,
@@ -801,6 +814,12 @@ export default {
     }
     this.forecastDaily = this.buildForecastDaily(this.dayWeather)
     this.indices = this.buildIndices(todayData)
+  },
+
+  applyWeatherData(weatherData, todayData) {
+    const updateTime = new Date(weatherData.updateTime)
+    const timeAgo = DateUtils.formatTimeAgo(updateTime)
+    this.syncRectWeather(weatherData, todayData, timeAgo)
   },
 
   updateHourlyScrollMetrics() {
@@ -1017,7 +1036,9 @@ export default {
     }
 
     const {weatherData, todayData} = result
-    this.applyWeatherData(weatherData, todayData)
+    const updateTime = new Date(weatherData.updateTime)
+    const timeAgo = DateUtils.formatTimeAgo(updateTime)
+    this.syncRectWeather(weatherData, todayData, timeAgo)
     const hourlyOptions = options.hourly || {}
     const mergedHourlyOptions = {
       silent: hourlyOptions.silent !== undefined ? hourlyOptions.silent : silent,
@@ -1190,6 +1211,8 @@ export default {
    * 页面初始化
    */
   async onInit() {
+    this.showDebugEntry = DebugService.isDebugMode()
+
     if (typeof globalThis !== "undefined" && globalThis.__preloadedWeatherData) {
       this.applyPreloadedData(globalThis.__preloadedWeatherData)
       globalThis.__preloadedWeatherData = null
@@ -1200,6 +1223,35 @@ export default {
 
     // 加载本地数据（静默模式）
     const result = await this.loadWeatherData(true)
+
+    // 首次加载完成
+    if (this.isFirstLoad) {
+      if (result.success) {
+        // 有数据，关闭加载动画
+        this.isLoading = false
+      } else {
+        const shouldAutoUpdate =
+          this.autoUpdateEnabled && (result.status === "expired" || result.status === "no_data")
+
+        if (shouldAutoUpdate) {
+          await this.UpdateWeather({auto: true, showLoading: true})
+        } else {
+          let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+
+          if (result.status === "expired") {
+            toastMessage = MESSAGES.WAITING_FOR_UPDATE
+          } else if (result.status === "no_data") {
+            toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+          }
+
+          showToast({
+            message: toastMessage,
+            duration: TOAST_DURATION.LONG
+          })
+        }
+      }
+      this.isFirstLoad = false
+    }
 
     if (result.success) {
       await this.maybeAutoUpdate(result.weatherData)
@@ -1279,7 +1331,7 @@ export default {
       }
 
       // 更新界面
-      this.applyWeatherData(weatherData, todayData)
+      this.syncRectWeather(weatherData, todayData, timeAgo)
 
       // 保存数据到本地
       await DataService.saveWeatherData(data.data)
@@ -1330,6 +1382,7 @@ export default {
 <style>
 /* 引入公共样式 */
 @import "../../../common/css/page-bg-styles.css";
+@import "../../../common/css/loading-styles.css";
 
 .page {
   width: 100%;

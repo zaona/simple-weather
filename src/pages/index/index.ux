@@ -3,7 +3,6 @@
     <div class="loading-container">
       <div class="loading-bg"></div>
       <image class="loading-icon" src="/common/loading.png" />
-      <text class="text-subtitle" style="margin-top: 12px">{{ loadingMessage }}</text>
       <div class="loading-actions" if="{{ showDebugEntry }}">
         <div class="btn-secondary" onclick="About()">
           <text class="text-button">关于</text>
@@ -15,13 +14,8 @@
 
 <script>
 import router from "@system.router"
-
-import DataService from "../../services/data-service.js"
-import DebugService from "../../services/debug-service.js"
 import DeviceService from "../../services/device-service.js"
-import RefreshController from "../../services/refresh-controller.js"
-import SettingsService from "../../services/settings-service.js"
-import {ADVANCED_FEATURE_PRODUCTS, MESSAGES} from "../../services/config.js"
+import DebugService from "../../services/debug-service.js"
 
 const RECT_SCREEN_PRODUCTS = ["redmi watch 5", "redmi watch 6", "o65m", "emulator-vela"]
 const CIRCLE_SCREEN_PRODUCTS = [
@@ -37,7 +31,7 @@ const CIRCLE_SCREEN_PRODUCTS = [
 export default {
   private: {
     showDebugEntry: false,
-    loadingMessage: "加载中"
+    hasRouted: false
   },
 
   About() {
@@ -64,77 +58,8 @@ export default {
     return CIRCLE_SCREEN_PRODUCTS.includes(normalized)
   },
 
-  async preloadData() {
-    const supportsAdvanced = await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
-    let autoUpdateEnabled = false
-    let hourlyForecastEnabled = false
-
-    if (supportsAdvanced) {
-      try {
-        const settings = await SettingsService.getSettings()
-        autoUpdateEnabled = !!settings.autoUpdateEnabled
-        hourlyForecastEnabled = !!settings.hourlyForecastEnabled
-      } catch (error) {
-        console.error("读取设置失败:", error)
-      }
-    }
-
-    const result = await DataService.getTodayData(true)
-    if (result && result.status === "success") {
-      return {ready: true, weatherData: result.weatherData, todayData: result.todayData}
-    }
-
-    const shouldAutoUpdate =
-      autoUpdateEnabled && (result?.status === "expired" || result?.status === "no_data")
-
-    if (!shouldAutoUpdate) {
-      const message =
-        result?.status === "expired" ? MESSAGES.WAITING_FOR_UPDATE : MESSAGES.WAITING_FOR_FIRST_DATA
-      return {ready: false, message}
-    }
-
-    try {
-      await RefreshController.refreshDailyData()
-
-      if (hourlyForecastEnabled) {
-        try {
-          await RefreshController.refreshHourlyData()
-        } catch (error) {
-          console.error("获取逐小时天气失败:", error)
-        }
-      }
-      const refreshedResult = await DataService.getTodayData(true)
-      if (refreshedResult && refreshedResult.status === "success") {
-        return {
-          ready: true,
-          weatherData: refreshedResult.weatherData,
-          todayData: refreshedResult.todayData
-        }
-      }
-      return {ready: true}
-    } catch (error) {
-      console.error("加载天气失败:", error)
-      return {ready: false, message: MESSAGES.FETCH_WEATHER_ERROR}
-    }
-  },
-
   async onInit() {
     this.showDebugEntry = DebugService.isDebugMode()
-
-    const preloadResult = await this.preloadData()
-    if (!preloadResult || !preloadResult.ready) {
-      this.loadingMessage = preloadResult?.message || MESSAGES.WAITING_FOR_FIRST_DATA
-      return
-    }
-
-    if (preloadResult.weatherData && preloadResult.todayData) {
-      if (typeof globalThis !== "undefined") {
-        globalThis.__preloadedWeatherData = {
-          weatherData: preloadResult.weatherData,
-          todayData: preloadResult.todayData
-        }
-      }
-    }
 
     let product = ""
     try {
@@ -142,6 +67,15 @@ export default {
     } catch (error) {
       console.error("获取设备信息失败:", error)
     }
+
+    this.routeToTarget(product)
+  },
+
+  routeToTarget(product) {
+    if (this.hasRouted) {
+      return
+    }
+    this.hasRouted = true
 
     let target = "/pages/index/default"
     if (this.isScreenRect(product)) {
