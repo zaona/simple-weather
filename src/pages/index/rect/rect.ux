@@ -2,8 +2,13 @@
   <div class="page">
     <image class="page-bg" src="/common/weather-bgs/rect/{{ backgroundImage }}.png" />
 
-    <swiper class="swiper" vertical="true" loop="false">
-        <div class="section">
+    <scroll
+      class="section-scroll"
+      scroll-y="true"
+      bounces="true"
+      style="scroll-snap-type: y mandatory; scroll-snap-stop: always;"
+    >
+        <div class="section section--snap">
           <div class="title">
             <text class="title__location">{{ current.location }}</text>
             <text class="title__time">{{ current.relativeTime }}</text>
@@ -27,7 +32,7 @@
           </div>
         </div>
 
-        <div class="section" if="{{ supportsAdvancedFeatures && hourlyForecastEnabled }}">
+        <div class="section section--snap" if="{{ supportsAdvancedFeatures && hourlyForecastEnabled }}">
           <div class="title-bar">
             <text class="title-bar__text">天气预测</text>
             <text class="title-bar__time">{{ current.time }}</text>
@@ -59,7 +64,7 @@
           </div>
         </div>
 
-        <div class="section">
+        <div class="section section--snap">
           <div class="title-bar">
             <text class="title-bar__text">未来天气</text>
             <text class="title-bar__time">{{ current.time }}</text>
@@ -78,7 +83,7 @@
           </div>
         </div>
 
-        <div class="section">
+        <div class="section section--snap">
           <div class="title-bar">
             <text class="title-bar__text">天气指数</text>
             <text class="title-bar__time">{{ current.time }}</text>
@@ -255,7 +260,7 @@
             </div>
           </scroll>
         </div>
-    </swiper>
+    </scroll>
   </div>
 </template>
 
@@ -1333,19 +1338,20 @@ export default {
   flex-direction: column;
 }
 
-.swiper {
+.section-scroll {
   height: 100%;
   width: 100%;
-  indicator-right: 4px;
-  indicator-size: 14px;
-  indicator-color: rgba(255, 255, 255, 0.25);
-  indicator-selected-color: rgba(255, 255, 255);
+  flex-direction: column;
 }
 
 .section {
   width: 100%;
-  height: 100%;
   flex-direction: column;
+}
+
+.section--snap {
+  height: 514px;
+  scroll-snap-align: start;
 }
 
 .title {
