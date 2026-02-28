@@ -4,7 +4,7 @@
       <div class="loading-bg"></div>
       <image class="loading-icon" src="/common/loading.png" />
       <div class="loading-actions" if="{{ showDebugEntry }}">
-        <div class="btn-secondary" onclick="About()">
+        <div class="btn-primary" onclick="About()">
           <text class="text-button">关于</text>
         </div>
       </div>

@@ -83,7 +83,7 @@
           </div>
 
           <div class="forecast-daily">
-            <div class="forecast-daily__item" for="{{ item in forecastDaily.slice(0, 7) }}">
+            <div class="forecast-daily__item" for="{{ item in forecastDaily.slice(0, 7) }}" @click="DetailInfo(item)">
               <div class="forecast-daily__left">
                 <image class="forecast-daily__icon" src="{{ item.icon }}" />
                 <text class="forecast-daily__time">{{ item.time }}</text>
@@ -636,6 +636,7 @@ export default {
         ? `/common/weather-icons/${item.iconCode}.png`
         : "/common/weather-icons/cloudy.png"
       return {
+        fxDate: item.fxDate,
         time: item.name || "--",
         temperature: temp,
         icon
@@ -1584,7 +1585,7 @@ export default {
 
 .forecast-daily__item {
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   flex-direction: row;
   justify-content: space-between;
 }
