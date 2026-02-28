@@ -91,7 +91,7 @@
                 <text class="indices__value">{{ indices[0].value }}</text>
               </div>
               <div class="indices__icon">
-                <image src="/common/uv/uv1.png" />
+                <image src="{{ indices[0].icon }}" />
                 <text
                   style="
                     position: absolute;
@@ -172,7 +172,7 @@
               </div>
               <div class="indices__icon">
                 <image src="/common/wind/wind1.png" />
-                <image style="position: absolute; top: 0; left: 0" src="/common/wind/wind3.png" />
+                <image class="wind-arrow {{ indices[2].rotationClass }}" src="/common/wind/wind3.png" />
                 <image style="position: absolute; top: 0; left: 0" src="/common/wind/wind2.png" />
               </div>
             </div>
@@ -183,7 +183,7 @@
                 <text class="indices__value">{{ indices[3].value }}</text>
               </div>
               <div class="indices__icon">
-                <image src="/common/air/Air13.png" />
+                <image src="{{ indices[3].icon }}" />
                 <div
                   style="
                     position: absolute;
@@ -195,7 +195,7 @@
                     justify-content: center;
                   "
                 >
-                  <image src="/common/uv/uv14.png" />
+                  <image src="{{ indices[3].arrow }}" />
                 </div>
                 <text
                   style="
@@ -220,7 +220,7 @@
                 <text class="indices__value">{{ indices[4].value }}</text>
               </div>
               <div class="indices__icon">
-                <image style="margin:-8px" src="/common/sunset/sunset20.png" />
+                <image style="margin:-8px" src="{{ indices[4].icon }}" />
                 <text
                   style="
                     position: absolute;
@@ -324,11 +324,56 @@ export default {
     forecastHourly: [],
     forecastDaily: [],
     indices: [
-      {type: "__", value: "__", desc: "__", percent: 0},
-      {type: "__", value: "__", desc: "__", percent: 0},
-      {type: "__", value: "__", desc: "__", percent: 0},
-      {type: "__", value: "__", desc: "__", percent: 0},
-      {type: "__", value: "__", desc: "__", percent: 0}
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "/common/uv/uv1.png",
+        arrow: "/common/uv/uv15.png",
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      },
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "",
+        arrow: "",
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      },
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "",
+        arrow: "",
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      },
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "/common/air/Air13.png",
+        arrow: "/common/uv/uv15.png",
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      },
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "/common/sunset/sunset20.png",
+        arrow: "",
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      }
     ],
     hourlyScrollContentWidth: 0,
     hourlyScrollViewWidth: 216,
@@ -438,6 +483,112 @@ export default {
     return "极强"
   },
 
+  getPercentByRange(value, min, max) {
+    const numeric = Number(value)
+    if (Number.isNaN(numeric)) {
+      return 0
+    }
+    const clamped = Math.min(Math.max(numeric, min), max)
+    return Math.round(((clamped - min) / (max - min)) * 100)
+  },
+
+  getImageByPercent(basePath, maxIndex, percent, fallbackPath) {
+    const normalized = Math.min(Math.max(Math.round(percent), 0), 100)
+    const index = 1 + Math.round((normalized / 100) * (maxIndex - 1))
+    if (!basePath) {
+      return fallbackPath || ""
+    }
+    return `${basePath}${index}.png`
+  },
+
+  getPressureArrow(pressure) {
+    const numeric = Number(pressure)
+    if (Number.isNaN(numeric)) {
+      return "/common/uv/uv15.png"
+    }
+    if (numeric > 1008) {
+      return "/common/uv/uv14.png"
+    }
+    if (numeric < 1008) {
+      return "/common/uv/uv13.png"
+    }
+    return "/common/uv/uv15.png"
+  },
+
+  getWindRotation(degValue) {
+    const numeric = Number(degValue)
+    if (Number.isNaN(numeric)) {
+      return 0
+    }
+    if (numeric < 0) {
+      return 0
+    }
+    const normalized = (numeric + 180) % 360
+    return Math.round(normalized)
+  },
+
+  getWindRotationClass(degValue) {
+    const rotation = this.getWindRotation(degValue)
+    const steps = [0, 22, 45, 67, 90, 112, 135, 157, 180, 202, 225, 247, 270, 292, 315, 337]
+    const stepSize = 360 / steps.length
+    const index = Math.round(rotation / stepSize) % steps.length
+    return `wind-rotate-${steps[index]}`
+  },
+
+  getSunPercent(sunriseText, sunsetText) {
+    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
+      return 0
+    }
+    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
+      return 0
+    }
+    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
+      return 0
+    }
+    const [srH, srM] = sunriseText.split(":").map((value) => Number(value))
+    const [ssH, ssM] = sunsetText.split(":").map((value) => Number(value))
+    if ([srH, srM, ssH, ssM].some((value) => Number.isNaN(value))) {
+      return 0
+    }
+    const sunriseMinutes = srH * 60 + srM
+    const sunsetMinutes = ssH * 60 + ssM
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    if (sunsetMinutes <= sunriseMinutes) {
+      return 0
+    }
+    const progress = Math.min(Math.max(nowMinutes - sunriseMinutes, 0), sunsetMinutes - sunriseMinutes)
+    return Math.round((progress / (sunsetMinutes - sunriseMinutes)) * 100)
+  },
+
+  getSunDisplayTime(sunriseText, sunsetText) {
+    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
+      return sunriseText || "--"
+    }
+    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
+      return sunriseText || "--"
+    }
+    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
+      return sunriseText || "--"
+    }
+    const [srH, srM] = sunriseText.split(":").map((value) => Number(value))
+    const [ssH, ssM] = sunsetText.split(":").map((value) => Number(value))
+    if ([srH, srM, ssH, ssM].some((value) => Number.isNaN(value))) {
+      return sunriseText || "--"
+    }
+    const sunriseMinutes = srH * 60 + srM
+    const sunsetMinutes = ssH * 60 + ssM
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    if (nowMinutes >= sunsetMinutes) {
+      return sunriseText
+    }
+    if (nowMinutes >= sunriseMinutes) {
+      return sunsetText
+    }
+    return sunriseText
+  },
+
   buildForecastHourly(hourlyList = []) {
     if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
       return []
@@ -475,11 +626,56 @@ export default {
   buildIndices(todayData) {
     if (!todayData) {
       return [
-        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0},
-        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0},
-        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0},
-        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0},
-        {type: "__", value: "__", desc: "__", percent: 0, icon: "", arrow: "", rotation: 0}
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "/common/uv/uv1.png",
+          arrow: "/common/uv/uv15.png",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        },
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "",
+          arrow: "",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        },
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "",
+          arrow: "",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        },
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "/common/air/Air13.png",
+          arrow: "/common/uv/uv15.png",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        },
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "/common/sunset/sunset20.png",
+          arrow: "",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        }
       ]
     }
 
@@ -495,15 +691,82 @@ export default {
     const pressureValue = todayData.pressure ? `${todayData.pressure}` : "__"
     const sunriseValue = todayData.sunrise || "--"
     const sunsetValue = todayData.sunset || "--"
-
+    const uvNumber = Number(uvValue)
+    const uvPercent = Number.isNaN(uvNumber)
+      ? 0
+      : Math.min(Math.max(Math.round((uvNumber / 11) * 100), 0), 100)
+    const uvIcon = this.getImageByPercent("/common/uv/uv", 15, uvPercent, "/common/uv/uv1.png")
+    const pressurePercent = this.getPercentByRange(pressureValue, 980, 1040)
+    const airIcon = this.getImageByPercent(
+      "/common/air/Air",
+      21,
+      pressurePercent,
+      "/common/air/Air13.png"
+    )
+    const pressureArrow = this.getPressureArrow(pressureValue)
+    const sunPercent = this.getSunPercent(sunriseValue, sunsetValue)
+    const sunIcon = this.getImageByPercent(
+      "/common/sunset/sunset",
+      21,
+      sunPercent,
+      "/common/sunset/sunset20.png"
+    )
+    const sunDisplay = this.getSunDisplayTime(sunriseValue, sunsetValue)
+    const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
+    const windRotationClass = this.getWindRotationClass(todayData.wind360Day || todayData.wind360)
     const uvDesc = this.getUvDesc(uvValue)
 
     return [
-      {type: "紫外线", value: uvDesc, desc: uvValue, percent: 0},
-      {type: "湿度", value: humidityValue, desc: humidityDesc, percent: humidityPercent},
-      {type: windType, value: windValue, desc: "", percent: 0},
-      {type: "气压", value: pressureValue, desc: "", percent: 0},
-      {type: "日出", value: sunriseValue, desc: sunsetValue, percent: 0}
+      {
+        type: "紫外线",
+        value: uvDesc,
+        desc: uvValue,
+        percent: uvPercent,
+        icon: uvIcon,
+        arrow: "/common/uv/uv15.png",
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      },
+      {
+        type: "湿度",
+        value: humidityValue,
+        desc: humidityDesc,
+        percent: humidityPercent,
+        icon: "",
+        arrow: "",
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      },
+      {
+        type: windType,
+        value: windValue,
+        desc: "",
+        percent: 0,
+        icon: "",
+        arrow: "",
+        rotation: windRotation,
+        rotationClass: windRotationClass
+      },
+      {
+        type: "气压",
+        value: pressureValue,
+        desc: "",
+        percent: pressurePercent,
+        icon: airIcon,
+        arrow: pressureArrow,
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      },
+      {
+        type: "日出",
+        value: sunDisplay,
+        desc: sunsetValue,
+        percent: sunPercent,
+        icon: sunIcon,
+        arrow: "",
+        rotation: 0,
+        rotationClass: "wind-rotate-0"
+      }
     ]
   },
 
@@ -1332,6 +1595,77 @@ export default {
   layer-color: rgba(255, 255, 255, 0.6);
   color: white;
   stroke-width: 10px;
+}
+
+.wind-arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 64px 64px;
+}
+
+.wind-rotate-0 {
+  transform: rotate(0deg);
+}
+
+.wind-rotate-22 {
+  transform: rotate(22deg);
+}
+
+.wind-rotate-45 {
+  transform: rotate(45deg);
+}
+
+.wind-rotate-67 {
+  transform: rotate(67deg);
+}
+
+.wind-rotate-90 {
+  transform: rotate(90deg);
+}
+
+.wind-rotate-112 {
+  transform: rotate(112deg);
+}
+
+.wind-rotate-135 {
+  transform: rotate(135deg);
+}
+
+.wind-rotate-157 {
+  transform: rotate(157deg);
+}
+
+.wind-rotate-180 {
+  transform: rotate(180deg);
+}
+
+.wind-rotate-202 {
+  transform: rotate(202deg);
+}
+
+.wind-rotate-225 {
+  transform: rotate(225deg);
+}
+
+.wind-rotate-247 {
+  transform: rotate(247deg);
+}
+
+.wind-rotate-270 {
+  transform: rotate(270deg);
+}
+
+.wind-rotate-292 {
+  transform: rotate(292deg);
+}
+
+.wind-rotate-315 {
+  transform: rotate(315deg);
+}
+
+.wind-rotate-337 {
+  transform: rotate(337deg);
 }
 
 /* 复用原 style.css 中用到的按钮与间距样式 */
