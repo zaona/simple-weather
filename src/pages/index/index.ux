@@ -1,599 +1,162 @@
 <template>
-  <!-- 页面容器 -->
   <div class="page-container">
-    <!-- 背景图片 -->
-    <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
-
-    <!-- 加载动画容器 -->
-    <div class="loading-container" if="{{ isLoading }}">
+    <div class="loading-container">
       <div class="loading-bg"></div>
       <image class="loading-icon" src="/common/loading.png" />
+      <text class="text-subtitle" style="margin-top: 12px">{{ loadingMessage }}</text>
       <div class="loading-actions" if="{{ showDebugEntry }}">
-        <div class="btn-primary" onclick="About()">
+        <div class="btn-secondary" onclick="About()">
           <text class="text-button">关于</text>
         </div>
       </div>
     </div>
-
-    <scroll
-      class="main-content scroll-container"
-      scroll-y="true"
-      bounces="true"
-      if="{{ !isLoading }}"
-    >
-      <!-- 头部信息：地点和更新时间 -->
-      <div class="page-header">
-        <text class="text-location">{{ location }}</text>
-        <text class="text-subtitle">{{ updateTime }}</text>
-      </div>
-
-      <!-- 当前天气概览 -->
-      <div class="content-hero card-margin">
-        <image class="icon-weather-main" src="/common/weather-icons/{{ iconCode }}.png" />
-        <text class="text-weather">{{ textDay }}</text>
-        <text class="text-temp-range">{{ tempMinMax }}</text>
-      </div>
-
-      <!-- 逐小时天气预报 -->
-      <div class="card card-single" if="{{ showHourlyForecastCard }}">
-        <scroll class="mt-negative-sm" style="margin: -4px" scroll-x="true" bounces="true">
-          <div class="item-hourly" for="{{ item in figureHourly }}">
-            <text class="text-hourly">
-              {{ item.name }}
-            </text>
-            <image class="icon-weather-small" src="/common/weather-icons/{{ item.iconCode }}.png" />
-            <text class="text-hourly-temp" style="">
-              {{ item.temp }}
-            </text>
-          </div>
-        </scroll>
-      </div>
-
-      <!-- 天气指标面板 -->
-      <div class="card card-double">
-        <div class="item-data" for="{{ item in figure }}">
-          <text class="text-data-value">{{ item.value }}{{ item.unit }}</text>
-          <text class="text-data-label">{{ item.name }}</text>
-        </div>
-      </div>
-
-      <!-- 未来几天天气预报 -->
-      <div class="card card-single">
-        <div class="flex-col mt-negative-sm">
-          <div class="item-forecast" for="{{ item in dayWeather }}" @click="DetailInfo(item)">
-            <text class="text-daily">{{ item.name }}</text>
-            <div class="justify-between">
-              <text class="text-daily-temp">{{ item.tempMinMax }}</text>
-              <image
-                class="icon-weather-small"
-                src="/common/weather-icons/{{ item.iconCode }}.png"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="content-hero mt-lg">
-        <div class="btn-primary" onclick="About()">
-          <text class="text-button">关于</text>
-        </div>
-      </div>
-    </scroll>
   </div>
 </template>
 
 <script>
-// 导入系统模块
 import router from "@system.router"
-import {showToast} from "@system.prompt"
 
-// 导入服务层
 import DataService from "../../services/data-service.js"
-import ConnectionService from "../../services/connection-service.js"
 import DebugService from "../../services/debug-service.js"
-import SettingsService from "../../services/settings-service.js"
-import HourlyDataService from "../../services/hourly-data-service.js"
 import DeviceService from "../../services/device-service.js"
-import {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
 import RefreshController from "../../services/refresh-controller.js"
-import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../services/config.js"
+import SettingsService from "../../services/settings-service.js"
+import {ADVANCED_FEATURE_PRODUCTS, MESSAGES} from "../../services/config.js"
 
-// 导入工具类
-import {DateUtils, WeatherDataUtils} from "../../common/weather-utils.js"
+const RECT_SCREEN_PRODUCTS = ["redmi watch 5", "redmi watch 6", "o65m"]
+const CIRCLE_SCREEN_PRODUCTS = [
+  "xiaomi watch s3",
+  "xiaomi watch s3 esim",
+  "xiaomi watch s4",
+  "xiaomi watch s4 esim",
+  "xiaomi watch s4 sport",
+  "marconi_o62m_watch",
+  "xiaomi watch s4 41mm"
+]
 
 export default {
-  // 页面私有数据
   private: {
-    isLoading: true, // 加载状态
-    isFirstLoad: true, // 是否是首次加载
-    autoUpdateEnabled: false, // 自动更新是否开启
-    hourlyForecastEnabled: false, // 逐小时天气是否开启
-    showHourlyForecastCard: false, // 是否显示逐小时卡片
-    supportsAdvancedFeatures: false, // 设备是否支持高级功能
-    showDebugEntry: false, // 加载态调试入口
-    hasHourlyData: false, // 是否有可用的逐小时数据
-    autoUpdateInProgress: false, // 自动更新中标记
-    location: "__", // 地点
-    updateTime: "__", // 更新时间
-    iconCode: "__", // 天气图标代码
-    textDay: "__", // 白天天气描述
-    tempMinMax: "__°/__°", // 最高/最低温度
-    backgroundImage: "", // 背景图片
-
-    // 天气指标数据
-    figure: [
-      {name: "紫外线指数", value: "__", uniqueId: 1},
-      {name: "相对湿度", value: "__", uniqueId: 2},
-      {name: "__", value: "__", uniqueId: 3},
-      {name: "气压", value: "__", uniqueId: 4}
-    ],
-
-    // 逐小时天气预报数据
-    figureHourly: [],
-
-    // 未来几天天气预报数据
-    dayWeather: [{name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1}]
+    showDebugEntry: false,
+    loadingMessage: "加载中"
   },
 
-  /**
-   * 跳转到详情页
-   * @param {Object} selectedItem - 选中的天气项
-   */
-  DetailInfo(selectedItem) {
-    if (selectedItem && selectedItem.fxDate) {
-      router.push({
-        uri: "/pages/detail",
-        params: {
-          selectedDate: selectedItem.fxDate
-        }
-      })
-    } else {
-      showToast({
-        message: MESSAGES.NAVIGATION_ERROR,
-        duration: TOAST_DURATION.NORMAL
-      })
-    }
-  },
-
-  /**
-   * 跳转到关于页
-   */
   About() {
     router.push({
       uri: "/pages/about"
     })
   },
 
-  /**
-   * 更新天气数据
-   * @param {Object|boolean} options - 配置项或是否自动触发
-   * @returns {Promise<boolean>}
-   */
-  async UpdateWeather(options = {}) {
-    let config = {auto: false, silent: false, showLoading: null}
-
-    if (typeof options === "boolean") {
-      config.auto = options
-    } else {
-      config = {...config, ...options}
-    }
-
-    const shouldShowLoading = config.showLoading !== null ? config.showLoading : !config.auto
-
-    if (this.isLoading && shouldShowLoading) {
+  isScreenRect(product) {
+    const normalized = (product || "").toLowerCase()
+    if (!normalized) {
       return false
     }
 
-    if (shouldShowLoading) {
-      this.isLoading = true
+    return RECT_SCREEN_PRODUCTS.includes(normalized)
+  },
+
+  isScreenCircle(product) {
+    const normalized = (product || "").toLowerCase()
+    if (!normalized) {
+      return false
+    }
+
+    return CIRCLE_SCREEN_PRODUCTS.includes(normalized)
+  },
+
+  async preloadData() {
+    const supportsAdvanced = await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+    let autoUpdateEnabled = false
+    let hourlyForecastEnabled = false
+
+    if (supportsAdvanced) {
+      try {
+        const settings = await SettingsService.getSettings()
+        autoUpdateEnabled = !!settings.autoUpdateEnabled
+        hourlyForecastEnabled = !!settings.hourlyForecastEnabled
+      } catch (error) {
+        console.error("读取设置失败:", error)
+      }
+    }
+
+    const result = await DataService.getTodayData(true)
+    if (result && result.status === "success") {
+      return {ready: true, weatherData: result.weatherData, todayData: result.todayData}
+    }
+
+    const shouldAutoUpdate =
+      autoUpdateEnabled && (result?.status === "expired" || result?.status === "no_data")
+
+    if (!shouldAutoUpdate) {
+      const message =
+        result?.status === "expired" ? MESSAGES.WAITING_FOR_UPDATE : MESSAGES.WAITING_FOR_FIRST_DATA
+      return {ready: false, message}
     }
 
     try {
       await RefreshController.refreshDailyData()
 
-      const result = await this.loadWeatherData(true, {
-        hourly: {
-          forceRefresh: true,
-          silent: config.silent
+      if (hourlyForecastEnabled) {
+        try {
+          await RefreshController.refreshHourlyData()
+        } catch (error) {
+          console.error("获取逐小时天气失败:", error)
         }
-      })
-
-      if (!result || !result.success) {
-        if (!config.silent) {
-          showToast({
-            message: MESSAGES.DATA_PARSE_ERROR,
-            duration: TOAST_DURATION.NORMAL
-          })
+      }
+      const refreshedResult = await DataService.getTodayData(true)
+      if (refreshedResult && refreshedResult.status === "success") {
+        return {
+          ready: true,
+          weatherData: refreshedResult.weatherData,
+          todayData: refreshedResult.todayData
         }
-        return false
       }
-
-      if (!config.silent) {
-        showToast({
-          message: MESSAGES.DATA_UPDATED,
-          duration: TOAST_DURATION.SHORT
-        })
-      }
-
-      return true
+      return {ready: true}
     } catch (error) {
-      console.error("获取天气失败:", error)
-      let toastMessage = null
-
-      if (error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING) {
-        toastMessage = MESSAGES.LOCATION_INFO_MISSING
-      } else if (error?.code !== "DATA_SAVE_FAILED") {
-        toastMessage = MESSAGES.FETCH_WEATHER_ERROR
-      }
-
-      if (!config.silent && toastMessage) {
-        showToast({
-          message: toastMessage,
-          duration: TOAST_DURATION.NORMAL
-        })
-      }
-
-      return false
-    } finally {
-      if (shouldShowLoading) {
-        this.isLoading = false
-      }
+      console.error("加载天气失败:", error)
+      return {ready: false, message: MESSAGES.FETCH_WEATHER_ERROR}
     }
   },
 
-  /**
-   * 加载并显示天气数据
-   * @param {boolean} silent - 静默模式，不显示错误Toast
-   * @returns {Object} 返回 { success: boolean, status: string, weatherData?: Object }
-   */
-  async loadWeatherData(silent = false, options = {}) {
-    const result = await DataService.getTodayData(silent)
-
-    // 检查加载状态
-    if (!result || result.status !== "success") {
-      return {
-        success: false,
-        status: result?.status || "unknown",
-        weatherData: null
-      }
-    }
-
-    const {weatherData, todayData} = result
-    RefreshController.recordDailyUpdate(weatherData)
-
-    // 计算更新时间
-    const updateTime = new Date(weatherData.updateTime)
-    const timeAgo = DateUtils.formatTimeAgo(updateTime)
-
-    // 更新界面数据
-    WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
-    this.location = weatherData.location || "未知地点"
-    this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
-    this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
-    const hourlyOptions = options.hourly || {}
-    const mergedHourlyOptions = {
-      silent: hourlyOptions.silent !== undefined ? hourlyOptions.silent : silent,
-      ...hourlyOptions
-    }
-    await this.loadHourlyForecastData(mergedHourlyOptions)
-
-    return {success: true, status: "success", weatherData}
-  },
-
-  /**
-   * 同步高级功能配置
-   */
-  async syncFeatureSettings(forceReload = false) {
-    try {
-      if (forceReload && SettingsService.clearCache) {
-        SettingsService.clearCache()
-      }
-
-      if (!this.supportsAdvancedFeatures) {
-        this.autoUpdateEnabled = false
-        this.hourlyForecastEnabled = false
-        this.hasHourlyData = false
-        this.updateHourlyCardVisibility()
-        return
-      }
-
-      const settings = await SettingsService.getSettings()
-      this.autoUpdateEnabled = !!settings.autoUpdateEnabled
-      this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
-    } catch (error) {
-      console.error("同步设置失败:", error)
-    } finally {
-      this.updateHourlyCardVisibility()
-    }
-  },
-
-  /**
-   * 更新逐小时卡片的可见性
-   */
-  updateHourlyCardVisibility() {
-    const canShowFeature = this.supportsAdvancedFeatures && this.hourlyForecastEnabled
-    const shouldShow = canShowFeature && this.hasHourlyData
-    this.showHourlyForecastCard = shouldShow
-    if (!shouldShow) {
-      this.figureHourly = []
-    }
-  },
-
-  /**
-   * 检测设备是否支持高级功能
-   */
-  async detectAdvancedFeatureSupport() {
-    try {
-      this.supportsAdvancedFeatures =
-        await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
-    } catch (error) {
-      console.error("检测设备能力失败:", error)
-      this.supportsAdvancedFeatures = false
-    } finally {
-      this.updateHourlyCardVisibility()
-    }
-  },
-
-  /**
-   * 读取或拉取逐小时天气数据
-   * @param {Object} options
-   */
-  async loadHourlyForecastData(options = {}) {
-    if (!this.supportsAdvancedFeatures || !this.hourlyForecastEnabled) {
-      this.hasHourlyData = false
-      this.updateHourlyCardVisibility()
-      return
-    }
-
-    const {silent = true, forceRefresh = false} = options
-
-    try {
-      const result = await RefreshController.ensureHourlyData({forceRefresh})
-      const hourlyData = result?.hourlyData
-
-      if (hourlyData && Array.isArray(hourlyData.hourly)) {
-        this.applyHourlyForecastList(hourlyData.hourly)
-
-        if (result.error && !silent && result.error?.code !== "DATA_SAVE_FAILED") {
-          const toastMessage =
-            result.error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
-              ? MESSAGES.LOCATION_INFO_MISSING
-              : MESSAGES.FETCH_WEATHER_ERROR
-
-          showToast({
-            message: toastMessage,
-            duration: TOAST_DURATION.NORMAL
-          })
-        }
-
-        return
-      }
-    } catch (error) {
-      console.error("获取逐小时天气失败:", error)
-      if (!silent && error?.code !== "DATA_SAVE_FAILED") {
-        const toastMessage =
-          error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
-            ? MESSAGES.LOCATION_INFO_MISSING
-            : MESSAGES.FETCH_WEATHER_ERROR
-
-        showToast({
-          message: toastMessage,
-          duration: TOAST_DURATION.NORMAL
-        })
-      }
-    }
-
-    this.hasHourlyData = false
-    this.updateHourlyCardVisibility()
-  },
-
-  /**
-   * 应用逐小时天气数据
-   * @param {Array} hourlyList
-   */
-  applyHourlyForecastList(hourlyList = []) {
-    const processed = WeatherDataUtils.processHourlyForecast(hourlyList)
-    this.figureHourly = processed
-    this.hasHourlyData = processed.length > 0
-    this.updateHourlyCardVisibility()
-  },
-
-  /**
-   * 根据设置尝试自动更新天气
-   * @param {Object|null} weatherData
-   * @param {Object} options
-   */
-  async maybeAutoUpdate(weatherData, options = {}) {
-    if (!this.autoUpdateEnabled || this.autoUpdateInProgress) {
-      return
-    }
-
-    const {silent = true, showLoading = false} = options
-    const data = weatherData || (await DataService.readWeatherData(true))
-
-    if (!data || !RefreshController.isDailyExpired(data)) {
-      return
-    }
-
-    this.autoUpdateInProgress = true
-
-    try {
-      await this.UpdateWeather({
-        auto: true,
-        silent,
-        showLoading
-      })
-    } finally {
-      this.autoUpdateInProgress = false
-    }
-  },
-
-  /**
-   * 页面初始化
-   */
   async onInit() {
     this.showDebugEntry = DebugService.isDebugMode()
 
-    await this.detectAdvancedFeatureSupport()
-    await this.syncFeatureSettings()
+    const preloadResult = await this.preloadData()
+    if (!preloadResult || !preloadResult.ready) {
+      this.loadingMessage = preloadResult?.message || MESSAGES.WAITING_FOR_FIRST_DATA
+      return
+    }
 
-    // 加载本地数据（静默模式）
-    const result = await this.loadWeatherData(true)
-
-    // 首次加载完成
-    if (this.isFirstLoad) {
-      if (result.success) {
-        // 有数据，关闭加载动画
-        this.isLoading = false
-      } else {
-        const shouldAutoUpdate =
-          this.autoUpdateEnabled && (result.status === "expired" || result.status === "no_data")
-
-        if (shouldAutoUpdate) {
-          await this.UpdateWeather({auto: true, showLoading: true})
-        } else {
-          let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
-
-          if (result.status === "expired") {
-            toastMessage = MESSAGES.WAITING_FOR_UPDATE
-          } else if (result.status === "no_data") {
-            toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
-          }
-
-          showToast({
-            message: toastMessage,
-            duration: TOAST_DURATION.LONG
-          })
+    if (preloadResult.weatherData && preloadResult.todayData) {
+      if (typeof globalThis !== "undefined") {
+        globalThis.__preloadedWeatherData = {
+          weatherData: preloadResult.weatherData,
+          todayData: preloadResult.todayData
         }
       }
-      this.isFirstLoad = false
     }
 
-    if (result.success) {
-      await this.maybeAutoUpdate(result.weatherData)
-    }
-  },
-
-  /**
-   * 页面显示时初始化连接并刷新缓存
-   */
-  async onShow() {
-    await this.syncFeatureSettings()
-    await this.syncFeatureSettings(true)
-
-    // 清除缓存，确保重新从本地文件读取
-    DataService.clearCache()
-    HourlyDataService.clearCache()
-
-    // 重新加载一次，以便反映其他页面的修改
-    const result = await this.loadWeatherData(true)
-
-    if (result.success) {
-      await this.maybeAutoUpdate(result.weatherData, {silent: true})
-    } else if (this.autoUpdateEnabled) {
-      const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
-      if (shouldAutoUpdate) {
-        await this.UpdateWeather({auto: true, silent: true, showLoading: false})
-      }
+    let product = ""
+    try {
+      product = await DeviceService.getProduct()
+    } catch (error) {
+      console.error("获取设备信息失败:", error)
     }
 
-    // 初始化连接并注册消息处理
-    ConnectionService.init((data) => {
-      this.handleWeatherData(data)
+    let target = "/pages/index/default"
+    if (this.isScreenRect(product)) {
+      target = "/pages/index/rect"
+    } else if (this.isScreenCircle(product)) {
+      target = "/pages/index/circle"
+    }
+    router.replace({
+      uri: target
     })
-  },
-
-  /**
-   * 处理接收到的天气数据
-   * @param {Object} data - 接收到的数据
-   */
-  async handleWeatherData(data) {
-    try {
-      // 解析数据
-      const weatherData = JSON.parse(data.data)
-
-      // 验证数据格式
-      if (!DataService.validateWeatherData(weatherData)) {
-        showToast({
-          message: MESSAGES.DATA_FORMAT_ERROR,
-          duration: TOAST_DURATION.NORMAL
-        })
-        this.isLoading = false
-        return
-      }
-
-      // 计算更新时间
-      const updateTime = new Date(weatherData.updateTime)
-      const timeAgo = DateUtils.formatTimeAgo(updateTime)
-      const todayStr = DateUtils.getTodayString()
-
-      // 查找今天的数据
-      const todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
-
-      if (!todayData) {
-        showToast({
-          message: MESSAGES.DATA_MISSING,
-          duration: TOAST_DURATION.NORMAL
-        })
-        return
-      }
-
-      // 更新界面
-      WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
-      this.location = weatherData.location || "未知地点"
-      this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
-      this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
-      RefreshController.recordDailyUpdate(weatherData)
-
-      // 保存数据到本地
-      await DataService.saveWeatherData(data.data)
-
-      // 与每日数据同时刷新逐小时数据
-      await this.loadHourlyForecastData({silent: true, forceRefresh: true})
-
-      showToast({
-        message: MESSAGES.DATA_UPDATED,
-        duration: TOAST_DURATION.SHORT
-      })
-    } catch (e) {
-      showToast({
-        message: MESSAGES.DATA_PARSE_ERROR,
-        duration: TOAST_DURATION.NORMAL
-      })
-      console.error("数据解析失败:", e)
-    } finally {
-      this.isLoading = false
-      ConnectionService.resetConnectionState()
-    }
-  },
-
-  /**
-   * 页面隐藏时关闭连接
-   */
-  onHide() {
-    try {
-      ConnectionService.close()
-    } catch (error) {
-      console.error("关闭连接失败:", error)
-    }
-  },
-
-  /**
-   * 页面销毁时关闭连接
-   */
-  onDestroy() {
-    try {
-      ConnectionService.close()
-    } catch (error) {
-      console.error("关闭连接失败:", error)
-    }
   }
 }
 </script>
 
 <style>
-/* 引入公共样式 */
 @import "../../common/css/style.css";
 @import "../../common/css/loading-styles.css";
-@import "../../common/css/page-bg-styles.css";
 </style>

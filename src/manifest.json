@@ -41,6 +41,15 @@
       "pages/index": {
         "component": "index"
       },
+      "pages/index/default": {
+        "component": "default"
+      },
+      "pages/index/rect": {
+        "component": "rect"
+      },
+      "pages/index/circle": {
+        "component": "circle"
+      },
       "pages/detail": {
         "component": "detail"
       },
