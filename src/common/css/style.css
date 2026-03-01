@@ -172,6 +172,14 @@
   border-radius: 50%;
 }
 
+.btn-secondary-square {
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 8px;
+}
+
 /* 卡片组件 */
 .card {
   width: 94%;
@@ -276,6 +284,10 @@
     padding: 20px 0px;
   }
 
+  .btn-secondary-square {
+    border-radius: 16px;
+  }
+
   .text-location {
     font-size: 36px;
     font-weight: normal;
@@ -327,6 +339,10 @@
   .icon-weather-small {
     width: 56px;
     height: 56px;
+  }
+
+  .card {
+    border-radius: 32px;
   }
 
   .card-single {
@@ -397,6 +413,10 @@
     padding: 20px 0px;
   }
 
+  .btn-secondary-square {
+    border-radius: 16px;
+  }
+
   .text-location {
     font-size: 36px;
     font-weight: normal;
@@ -449,6 +469,10 @@
   .icon-weather-small {
     width: 56px;
     height: 56px;
+  }
+
+  .card {
+    border-radius: 32px;
   }
 
   .card-single {

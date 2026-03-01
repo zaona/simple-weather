@@ -9,7 +9,7 @@
           <image class="icon-app" src="/common/logo.png" />
           <div class="container-app-text">
             <text class="text-app-name">简明天气</text>
-            <text class="text-app-version">v2.0.6</text>
+            <text class="text-app-version">v2.0.7</text>
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@
             />
           </div>
 
-          <div class="btn-secondary mt-lg" style="border-radius: 8px" @click="handleUpdateWeather">
+          <div class="btn-secondary-square mt-lg" @click="handleUpdateWeather">
             <text class="text-button">{{ isUpdating ? "更新中..." : "更新天气" }}</text>
           </div>
         </div>
@@ -63,11 +63,13 @@
 
       <!-- 调试面板（仅在调试模式下显示） -->
       <div class="card card-single mt-sm" if="{{ showDebugPanel }}">
-        <div class="btn-primary" @click="handleInjectMockData">
-          <text class="text-button">模拟数据</text>
-        </div>
-        <div class="btn-primary mt-sm" @click="handleClearData">
-          <text class="text-button">清除数据</text>
+        <div style="margin: 12px; display: flex; flex-direction: column">
+          <div class="btn-secondary-square" @click="handleInjectMockData">
+            <text class="text-button">模拟数据</text>
+          </div>
+          <div class="btn-secondary-square mt-sm" @click="handleClearData">
+            <text class="text-button">清除数据</text>
+          </div>
         </div>
       </div>
     </scroll>
