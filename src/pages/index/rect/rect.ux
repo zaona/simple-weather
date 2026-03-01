@@ -1585,7 +1585,7 @@ export default {
 
 .forecast-daily__item {
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   flex-direction: row;
   justify-content: space-between;
 }
@@ -1593,6 +1593,11 @@ export default {
 .forecast-daily__left {
   flex-direction: row;
   align-items: center;
+}
+
+.forecast-daily__icon{
+  width: 48px;
+  height: 48px;
 }
 
 .forecast-daily__time {
