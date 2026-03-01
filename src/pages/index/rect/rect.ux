@@ -1505,7 +1505,7 @@ export default {
 .title-bar {
   flex-shrink: 0;
   width: 100%;
-  padding: 15px 48px 24px 43px;
+  padding: 20px 48px 20px 43px;
   flex-direction: row;
   justify-content: space-between;
 }
