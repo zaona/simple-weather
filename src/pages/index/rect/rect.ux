@@ -68,10 +68,7 @@
 
           <div class="progress-bar" if="{{ hourlyIndicatorReady }}">
             <div class="progress-bar__bg">
-              <div
-                class="progress-bar__fill"
-                style="left: {{ hourlyIndicatorOffset }}px; width: {{ hourlyIndicatorWidth }}px;"
-              ></div>
+              <div class="progress-bar__fill" style="{{ hourlyIndicatorStyle }}"></div>
             </div>
           </div>
         </div>
@@ -189,7 +186,7 @@
               </div>
               <div class="indices__icon">
                 <image style="width: 128px;height: 128px;" src="/common/wind/wind1.png" />
-                <image class="wind-arrow {{ indices[2].rotationClass }}" src="/common/wind/wind3.png" />
+                <image class="wind-arrow" style="{{ indices[2].rotationStyle }}" src="/common/wind/wind3.png" />
                 <image style="position: absolute; top: 0; left: 0;width: 128px;height: 128px;" src="/common/wind/wind2.png" />
               </div>
             </div>
@@ -352,7 +349,9 @@ export default {
         icon: "/common/uv/uv1.png",
         arrow: "/common/uv/uv15.png",
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       },
       {
         type: "__",
@@ -362,7 +361,9 @@ export default {
         icon: "",
         arrow: "",
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       },
       {
         type: "__",
@@ -372,7 +373,9 @@ export default {
         icon: "",
         arrow: "",
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       },
       {
         type: "__",
@@ -382,7 +385,9 @@ export default {
         icon: "/common/air/Air13.png",
         arrow: "/common/uv/uv15.png",
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       },
       {
         type: "__",
@@ -393,7 +398,9 @@ export default {
         icon: "/common/sunset/sunset20.png",
         arrow: "",
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       }
     ],
     hourlyScrollContentWidth: 0,
@@ -401,6 +408,14 @@ export default {
     hourlyIndicatorTrackWidth: 100,
     hourlyIndicatorWidth: 40,
     hourlyIndicatorOffset: 0,
+    hourlyIndicatorStyle: {
+      width: "40px",
+      transform: JSON.stringify({
+        translateX: "0px"
+      })
+    },
+    hourlyLastIndicatorTs: 0,
+    hourlyScrollDebounceTimer: null,
     hourlyLastScrollX: 0,
     hourlyIndicatorReady: false,
     hourlyMetricRetryPending: false,
@@ -548,13 +563,6 @@ export default {
     return Math.round(normalized)
   },
 
-  getWindRotationClass(degValue) {
-    const rotation = this.getWindRotation(degValue)
-    const steps = [0, 22, 45, 67, 90, 112, 135, 157, 180, 202, 225, 247, 270, 292, 315, 337]
-    const stepSize = 360 / steps.length
-    const index = Math.round(rotation / stepSize) % steps.length
-    return `wind-rotate-${steps[index]}`
-  },
 
   getSunPercent(sunriseText, sunsetText) {
     if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
@@ -735,7 +743,9 @@ export default {
     )
     const sunInfo = this.getSunDisplayInfo(sunriseValue, sunsetValue)
     const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
-    const windRotationClass = this.getWindRotationClass(todayData.wind360Day || todayData.wind360)
+    const windRotationStyle = {
+      transform: JSON.stringify({rotate: `${windRotation}deg`})
+    }
     const uvDesc = this.getUvDesc(uvValue)
 
     return [
@@ -747,7 +757,9 @@ export default {
         icon: uvIcon,
         arrow: "/common/uv/uv15.png",
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       },
       {
         type: "湿度",
@@ -757,7 +769,9 @@ export default {
         icon: "",
         arrow: "",
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       },
       {
         type: windType,
@@ -767,7 +781,7 @@ export default {
         icon: "",
         arrow: "",
         rotation: windRotation,
-        rotationClass: windRotationClass
+        rotationStyle: windRotationStyle
       },
       {
         type: "气压",
@@ -777,7 +791,9 @@ export default {
         icon: airIcon,
         arrow: pressureArrow,
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       },
       {
         type: sunInfo.label,
@@ -788,7 +804,9 @@ export default {
         icon: sunIcon,
         arrow: "",
         rotation: 0,
-        rotationClass: "wind-rotate-0"
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
       }
     ]
   },
@@ -879,13 +897,31 @@ export default {
     }
     const maxScroll = Math.max(0, contentWidth - viewWidth)
     const trackWidth = this.hourlyIndicatorTrackWidth
-    const widthRatio = contentWidth > 0 ? Math.min(viewWidth / contentWidth, 1) : 1
-    const indicatorWidth = Math.max(24, Math.round(trackWidth * widthRatio))
+    const indicatorWidth = this.hourlyIndicatorWidth
     const maxOffset = Math.max(0, trackWidth - indicatorWidth)
     const progress = maxScroll > 0 ? Math.min(Math.max(scrollX / maxScroll, 0), 1) : 0
-    this.hourlyIndicatorWidth = indicatorWidth
-    this.hourlyIndicatorOffset = Math.round(progress * maxOffset)
-    this.hourlyIndicatorReady = contentWidth > viewWidth
+    const indicatorOffset = maxOffset * progress
+    const ready = contentWidth > viewWidth
+
+    if (
+      this.hourlyLastIndicatorWidth === indicatorWidth &&
+      this.hourlyLastIndicatorOffset === indicatorOffset &&
+      this.hourlyIndicatorReady === ready
+    ) {
+      return
+    }
+
+    const offsetText = Number.isFinite(indicatorOffset) ? indicatorOffset.toFixed(2) : "0"
+    this.hourlyIndicatorStyle = {
+      width: `${indicatorWidth}px`,
+      transform: JSON.stringify({
+        translateX: `${offsetText}px`
+      })
+    }
+    this.hourlyIndicatorOffset = indicatorOffset
+    this.hourlyIndicatorReady = ready
+    this.hourlyLastIndicatorWidth = indicatorWidth
+    this.hourlyLastIndicatorOffset = indicatorOffset
   },
 
   handleHourlyScroll(event = {}) {
@@ -903,7 +939,13 @@ export default {
     if (typeof clientWidth === "number" && clientWidth > 0) {
       this.hourlyScrollViewWidth = clientWidth
     }
-    this.updateHourlyIndicator(scrollX)
+    if (this.hourlyScrollDebounceTimer) {
+      return
+    }
+    this.hourlyScrollDebounceTimer = setTimeout(() => {
+      this.hourlyScrollDebounceTimer = null
+      this.updateHourlyIndicator(this.hourlyLastScrollX)
+    }, 120)
   },
 
   formatTime(dateValue) {
@@ -1674,69 +1716,6 @@ export default {
   height: 128px;
 }
 
-.wind-rotate-0 {
-  transform: rotate(0deg);
-}
-
-.wind-rotate-22 {
-  transform: rotate(22deg);
-}
-
-.wind-rotate-45 {
-  transform: rotate(45deg);
-}
-
-.wind-rotate-67 {
-  transform: rotate(67deg);
-}
-
-.wind-rotate-90 {
-  transform: rotate(90deg);
-}
-
-.wind-rotate-112 {
-  transform: rotate(112deg);
-}
-
-.wind-rotate-135 {
-  transform: rotate(135deg);
-}
-
-.wind-rotate-157 {
-  transform: rotate(157deg);
-}
-
-.wind-rotate-180 {
-  transform: rotate(180deg);
-}
-
-.wind-rotate-202 {
-  transform: rotate(202deg);
-}
-
-.wind-rotate-225 {
-  transform: rotate(225deg);
-}
-
-.wind-rotate-247 {
-  transform: rotate(247deg);
-}
-
-.wind-rotate-270 {
-  transform: rotate(270deg);
-}
-
-.wind-rotate-292 {
-  transform: rotate(292deg);
-}
-
-.wind-rotate-315 {
-  transform: rotate(315deg);
-}
-
-.wind-rotate-337 {
-  transform: rotate(337deg);
-}
 
 /* 复用原 style.css 中用到的按钮与间距样式 */
 .text-button {
