@@ -248,7 +248,7 @@
                     color: rgba(255, 255, 255, 0.75);
                   "
                 >
-                {{ indices[4].value }}
+                {{ indices[4].sunrise }}
                 </text>
                 <text
                   style="
@@ -260,7 +260,7 @@
                     color: rgba(255, 255, 255, 0.75);
                   "
                 >
-                {{ indices[4].desc }}
+                {{ indices[4].sunset }}
                 </text>
               </div>
             </div>
@@ -387,7 +387,8 @@ export default {
       {
         type: "__",
         value: "__",
-        desc: "__",
+        sunrise: "__",
+        sunset: "__",
         percent: 0,
         icon: "/common/sunset/sunset20.png",
         arrow: "",
@@ -581,32 +582,32 @@ export default {
     return Math.round((progress / (sunsetMinutes - sunriseMinutes)) * 100)
   },
 
-  getSunDisplayTime(sunriseText, sunsetText) {
+  getSunDisplayInfo(sunriseText, sunsetText) {
     if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
-      return sunriseText || "--"
+      return {label: "日出", time: sunriseText || "--"}
     }
     if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
-      return sunriseText || "--"
+      return {label: "日出", time: sunriseText || "--"}
     }
     if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
-      return sunriseText || "--"
+      return {label: "日出", time: sunriseText || "--"}
     }
     const [srH, srM] = sunriseText.split(":").map((value) => Number(value))
     const [ssH, ssM] = sunsetText.split(":").map((value) => Number(value))
     if ([srH, srM, ssH, ssM].some((value) => Number.isNaN(value))) {
-      return sunriseText || "--"
+      return {label: "日出", time: sunriseText || "--"}
     }
     const sunriseMinutes = srH * 60 + srM
     const sunsetMinutes = ssH * 60 + ssM
     const now = new Date()
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
-    if (nowMinutes >= sunsetMinutes) {
-      return sunriseText
+    
+    // 如果现在已经过了日落，或者还没到日出，显示日出
+    if (nowMinutes >= sunsetMinutes || nowMinutes < sunriseMinutes) {
+      return {label: "日出", time: sunriseText}
     }
-    if (nowMinutes >= sunriseMinutes) {
-      return sunsetText
-    }
-    return sunriseText
+    // 否则显示日落
+    return {label: "日落", time: sunsetText}
   },
 
   buildForecastHourly(hourlyList = []) {
@@ -732,7 +733,7 @@ export default {
       sunPercent,
       "/common/sunset/sunset20.png"
     )
-    const sunDisplay = this.getSunDisplayTime(sunriseValue, sunsetValue)
+    const sunInfo = this.getSunDisplayInfo(sunriseValue, sunsetValue)
     const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
     const windRotationClass = this.getWindRotationClass(todayData.wind360Day || todayData.wind360)
     const uvDesc = this.getUvDesc(uvValue)
@@ -779,9 +780,10 @@ export default {
         rotationClass: "wind-rotate-0"
       },
       {
-        type: "日出",
-        value: sunDisplay,
-        desc: sunsetValue,
+        type: sunInfo.label,
+        value: sunInfo.time,
+        sunrise: sunriseValue,
+        sunset: sunsetValue,
         percent: sunPercent,
         icon: sunIcon,
         arrow: "",

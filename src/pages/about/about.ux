@@ -9,7 +9,7 @@
           <image class="icon-app" src="/common/logo.png" />
           <div class="container-app-text">
             <text class="text-app-name">简明天气</text>
-            <text class="text-app-version">v2.0.3</text>
+            <text class="text-app-version">v2.0.4</text>
           </div>
         </div>
       </div>
