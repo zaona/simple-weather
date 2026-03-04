@@ -54,10 +54,10 @@ export const WEATHER_API = {
 
 // 支持高级功能的设备 product 名称列表
 export const ADVANCED_FEATURE_PRODUCTS = [
-  "Emulator-Vela",
-  "Xiaomi Watch S3 eSIM",
-  "Xiaomi Watch S4 eSIM",
-  "Xiaomi Watch S4 Sport",
+  "emulator-vela",
+  "xiaomi watch s3 esim",
+  "xiaomi watch s4 esim",
+  "xiaomi watch s4 sport",
   "o65m",
   "marconi_o62m_watch"
 ]

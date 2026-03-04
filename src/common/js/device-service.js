@@ -10,6 +10,10 @@ class DeviceService {
     this.fetchingPromise = null
   }
 
+  normalizeProduct(product) {
+    return (product || "").toLowerCase()
+  }
+
   /**
    * 获取当前设备的 product 字段
    * @returns {Promise<string>}
@@ -46,18 +50,28 @@ class DeviceService {
     return this.fetchingPromise
   }
 
+  async isProductInList(productList = []) {
+    if (!Array.isArray(productList) || productList.length === 0) {
+      return false
+    }
+
+    const product = await this.getProduct()
+    const normalized = this.normalizeProduct(product)
+    if (!normalized) {
+      return false
+    }
+
+    const normalizedList = productList.map((item) => this.normalizeProduct(item))
+    return normalizedList.includes(normalized)
+  }
+
   /**
    * 判断当前设备是否在白名单中
    * @param {string[]} whitelist
    * @returns {Promise<boolean>}
    */
   async isProductSupported(whitelist = []) {
-    if (!Array.isArray(whitelist) || whitelist.length === 0) {
-      return false
-    }
-
-    const product = await this.getProduct()
-    return !!product && whitelist.includes(product)
+    return this.isProductInList(whitelist)
   }
 
   /**

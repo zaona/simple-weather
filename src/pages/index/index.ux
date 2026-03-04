@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="loading-container">
       <div class="loading-bg"></div>
-      <image class="loading-icon" src="/common/images/loading.png" />
+      <!-- <image class="loading-icon" src="/common/images/loading.png" /> -->
       <div class="loading-actions" if="{{ showDebugEntry }}">
         <div class="btn-primary" onclick="About()">
           <text class="text-button">关于</text>
@@ -40,47 +40,28 @@ export default {
     })
   },
 
-  isScreenRect(product) {
-    const normalized = (product || "").toLowerCase()
-    if (!normalized) {
-      return false
-    }
-
-    return RECT_SCREEN_PRODUCTS.includes(normalized)
-  },
-
-  isScreenCircle(product) {
-    const normalized = (product || "").toLowerCase()
-    if (!normalized) {
-      return false
-    }
-
-    return CIRCLE_SCREEN_PRODUCTS.includes(normalized)
-  },
-
   async onInit() {
     this.showDebugEntry = DebugService.isDebugMode()
 
-    let product = ""
     try {
-      product = await DeviceService.getProduct()
+      await DeviceService.getProduct()
     } catch (error) {
       console.error("获取设备信息失败:", error)
     }
 
-    this.routeToTarget(product)
+    await this.routeToTarget()
   },
 
-  routeToTarget(product) {
+  async routeToTarget() {
     if (this.hasRouted) {
       return
     }
     this.hasRouted = true
 
     let target = "/pages/index/default"
-    if (this.isScreenRect(product)) {
+    if (await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)) {
       target = "/pages/index/rect"
-    } else if (this.isScreenCircle(product)) {
+    } else if (await DeviceService.isProductInList(CIRCLE_SCREEN_PRODUCTS)) {
       target = "/pages/index/circle"
     }
     router.replace({
