@@ -46,11 +46,11 @@ import router from "@system.router"
 import {showToast} from "@system.prompt"
 
 // 导入服务层
-import DataService from "../../services/data-service.js"
-import {MESSAGES, TOAST_DURATION} from "../../services/config.js"
+import DataService from "../../common/js/data-service.js"
+import {MESSAGES, TOAST_DURATION} from "../../common/js/config.js"
 
 // 导入工具类
-import {WeatherDataUtils} from "../../common/weather-utils.js"
+import {WeatherDataUtils} from "../../common/js/weather-utils.js"
 
 export default {
   // 接收来自 index 页面的 selectedDate 参数
@@ -228,5 +228,6 @@ export default {
 @import "../../common/css/loading-styles.css";
 @import "../../common/css/page-bg-styles.css";
 </style>
+
 
 

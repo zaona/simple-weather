@@ -79,12 +79,12 @@
 <script>
 import router from "@system.router"
 import {showToast} from "@system.prompt"
-import DebugService from "../../services/debug-service.js"
-import SettingsService from "../../services/settings-service.js"
-import DeviceService from "../../services/device-service.js"
-import RefreshController from "../../services/refresh-controller.js"
-import {WEATHER_API_ERRORS} from "../../services/weather-api-service.js"
-import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../services/config.js"
+import DebugService from "../../common/js/debug-service.js"
+import SettingsService from "../../common/js/settings-service.js"
+import DeviceService from "../../common/js/device-service.js"
+import RefreshController from "../../common/js/refresh-controller.js"
+import {WEATHER_API_ERRORS} from "../../common/js/weather-api-service.js"
+import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../common/js/config.js"
 
 export default {
   // 页面私有数据
@@ -250,3 +250,4 @@ export default {
 /* 引入公共样式 */
 @import "../../common/css/style.css";
 </style>
+

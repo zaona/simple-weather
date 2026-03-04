@@ -279,18 +279,18 @@ import router from "@system.router"
 import {showToast} from "@system.prompt"
 
 // 导入服务层
-import DataService from "../../../services/data-service.js"
-import ConnectionService from "../../../services/connection-service.js"
-import SettingsService from "../../../services/settings-service.js"
-import HourlyDataService from "../../../services/hourly-data-service.js"
-import DeviceService from "../../../services/device-service.js"
-import DebugService from "../../../services/debug-service.js"
-import {WEATHER_API_ERRORS} from "../../../services/weather-api-service.js"
-import RefreshController from "../../../services/refresh-controller.js"
-import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../../services/config.js"
+import DataService from "../../../common/js/data-service.js"
+import ConnectionService from "../../../common/js/connection-service.js"
+import SettingsService from "../../../common/js/settings-service.js"
+import HourlyDataService from "../../../common/js/hourly-data-service.js"
+import DeviceService from "../../../common/js/device-service.js"
+import DebugService from "../../../common/js/debug-service.js"
+import {WEATHER_API_ERRORS} from "../../../common/js/weather-api-service.js"
+import RefreshController from "../../../common/js/refresh-controller.js"
+import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../../common/js/config.js"
 
 // 导入工具类
-import {DateUtils, WeatherDataUtils} from "../../../common/weather-utils.js"
+import {DateUtils, WeatherDataUtils} from "../../../common/js/weather-utils.js"
 
 export default {
   // 页面私有数据
@@ -1835,4 +1835,5 @@ export default {
   margin-top: 12px;
 }
 </style>
+
 

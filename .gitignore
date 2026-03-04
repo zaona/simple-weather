@@ -6,6 +6,6 @@
 /build
 /docs
 .husky/
-src/services/weather-api-config.js
+src/common/js/weather-api-config.js
 
 /VelaDocs
