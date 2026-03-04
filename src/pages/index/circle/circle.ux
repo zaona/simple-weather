@@ -596,7 +596,7 @@ export default {
           this.autoUpdateEnabled && (result.status === "expired" || result.status === "no_data")
 
         if (shouldAutoUpdate) {
-          await this.UpdateWeather({auto: true, showLoading: true})
+          await this.UpdateWeather({auto: true, silent: true, showLoading: false})
         } else {
           let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
 
