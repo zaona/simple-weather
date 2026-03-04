@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="loading-container">
       <div class="loading-bg"></div>
-      <image class="loading-icon" src="/common/loading.png" />
+      <image class="loading-icon" src="/common/images/loading.png" />
       <div class="loading-actions" if="{{ showDebugEntry }}">
         <div class="btn-primary" onclick="About()">
           <text class="text-button">关于</text>
@@ -94,3 +94,4 @@ export default {
 @import "../../common/css/style.css";
 @import "../../common/css/loading-styles.css";
 </style>
+

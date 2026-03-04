@@ -1,11 +1,11 @@
 <template>
   <div class="page">
-    <image class="page-bg" src="/common/weather-bgs/rect/{{ backgroundImage }}.png" />
+    <image class="page-bg" src="/common/images/weather-bgs/rect/{{ backgroundImage }}.png" />
 
     <!-- 加载动画容器 -->
     <div class="loading-container" if="{{ isLoading }}">
       <div class="loading-bg"></div>
-      <image class="loading-icon" src="/common/loading.png" />
+      <image class="loading-icon" src="/common/images/loading.png" />
       <div class="loading-actions" if="{{ showDebugEntry }}">
         <div class="btn-primary" onclick="About()">
           <text class="text-button">关于</text>
@@ -160,7 +160,7 @@
                     justify-content: center;
                   "
                 >
-                  <image src="/common/hum/hum_wight.png" />
+                  <image src="/common/images/hum/hum_wight.png" />
                 </div>
                 <text
                   style="
@@ -185,9 +185,9 @@
                 <text class="indices__value">{{ indices[2].value }}</text>
               </div>
               <div class="indices__icon">
-                <image style="width: 128px;height: 128px;" src="/common/wind/wind1.png" />
-                <image class="wind-arrow" style="{{ indices[2].rotationStyle }}" src="/common/wind/wind3.png" />
-                <image style="position: absolute; top: 0; left: 0;width: 128px;height: 128px;" src="/common/wind/wind2.png" />
+                <image style="width: 128px;height: 128px;" src="/common/images/wind/wind1.png" />
+                <image class="wind-arrow" style="{{ indices[2].rotationStyle }}" src="/common/images/wind/wind3.png" />
+                <image style="position: absolute; top: 0; left: 0;width: 128px;height: 128px;" src="/common/images/wind/wind2.png" />
               </div>
             </div>
 
@@ -336,7 +336,7 @@ export default {
         from: "__",
         to: "__"
       },
-      icon: "/common/weather-icons/cloudy.png"
+      icon: "/common/images/weather-icons/cloudy.png"
     },
     forecastHourly: [],
     forecastDaily: [],
@@ -346,8 +346,8 @@ export default {
         value: "__",
         desc: "__",
         percent: 0,
-        icon: "/common/uv/uv1.png",
-        arrow: "/common/uv/uv15.png",
+        icon: "/common/images/uv/uv1.png",
+        arrow: "/common/images/uv/uv15.png",
         rotation: 0,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
@@ -382,8 +382,8 @@ export default {
         value: "__",
         desc: "__",
         percent: 0,
-        icon: "/common/air/Air13.png",
-        arrow: "/common/uv/uv15.png",
+        icon: "/common/images/air/Air13.png",
+        arrow: "/common/images/uv/uv15.png",
         rotation: 0,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
@@ -395,7 +395,7 @@ export default {
         sunrise: "__",
         sunset: "__",
         percent: 0,
-        icon: "/common/sunset/sunset20.png",
+        icon: "/common/images/sunset/sunset20.png",
         arrow: "",
         rotation: 0,
         rotationStyle: {
@@ -540,15 +540,15 @@ export default {
   getPressureArrow(pressure) {
     const numeric = Number(pressure)
     if (Number.isNaN(numeric)) {
-      return "/common/uv/uv15.png"
+      return "/common/images/uv/uv15.png"
     }
     if (numeric > 1008) {
-      return "/common/uv/uv14.png"
+      return "/common/images/uv/uv14.png"
     }
     if (numeric < 1008) {
-      return "/common/uv/uv13.png"
+      return "/common/images/uv/uv13.png"
     }
-    return "/common/uv/uv15.png"
+    return "/common/images/uv/uv15.png"
   },
 
   getWindRotation(degValue) {
@@ -625,8 +625,8 @@ export default {
     return hourlyList.slice(0, 12).map((item, index) => {
       const temperature = (item.temp || "").replace("°", "")
       const icon = item.iconCode
-        ? `/common/weather-icons/${item.iconCode}.png`
-        : "/common/weather-icons/cloudy.png"
+        ? `/common/images/weather-icons/${item.iconCode}.png`
+        : "/common/images/weather-icons/cloudy.png"
       return {
         time: index === 0 ? "现在" : item.name || "--:--",
         temperature: temperature || "__",
@@ -642,8 +642,8 @@ export default {
     return dayWeather.map((item) => {
       const temp = this.normalizeTempRange(item.tempMinMax)
       const icon = item.iconCode
-        ? `/common/weather-icons/${item.iconCode}.png`
-        : "/common/weather-icons/cloudy.png"
+        ? `/common/images/weather-icons/${item.iconCode}.png`
+        : "/common/images/weather-icons/cloudy.png"
       return {
         fxDate: item.fxDate,
         time: item.name || "--",
@@ -661,8 +661,8 @@ export default {
           value: "__",
           desc: "__",
           percent: 0,
-          icon: "/common/uv/uv1.png",
-          arrow: "/common/uv/uv15.png",
+          icon: "/common/images/uv/uv1.png",
+          arrow: "/common/images/uv/uv15.png",
           rotation: 0,
           rotationClass: "wind-rotate-0"
         },
@@ -691,8 +691,8 @@ export default {
           value: "__",
           desc: "__",
           percent: 0,
-          icon: "/common/air/Air13.png",
-          arrow: "/common/uv/uv15.png",
+          icon: "/common/images/air/Air13.png",
+          arrow: "/common/images/uv/uv15.png",
           rotation: 0,
           rotationClass: "wind-rotate-0"
         },
@@ -701,7 +701,7 @@ export default {
           value: "__",
           desc: "__",
           percent: 0,
-          icon: "/common/sunset/sunset20.png",
+          icon: "/common/images/sunset/sunset20.png",
           arrow: "",
           rotation: 0,
           rotationClass: "wind-rotate-0"
@@ -725,21 +725,21 @@ export default {
     const uvPercent = Number.isNaN(uvNumber)
       ? 0
       : Math.min(Math.max(Math.round((uvNumber / 11) * 100), 0), 100)
-    const uvIcon = this.getImageByPercent("/common/uv/uv", 15, uvPercent, "/common/uv/uv1.png")
+    const uvIcon = this.getImageByPercent("/common/images/uv/uv", 15, uvPercent, "/common/images/uv/uv1.png")
     const pressurePercent = this.getPercentByRange(pressureValue, 980, 1040)
     const airIcon = this.getImageByPercent(
-      "/common/air/Air",
+      "/common/images/air/Air",
       21,
       pressurePercent,
-      "/common/air/Air13.png"
+      "/common/images/air/Air13.png"
     )
     const pressureArrow = this.getPressureArrow(pressureValue)
     const sunPercent = this.getSunPercent(sunriseValue, sunsetValue)
     const sunIcon = this.getImageByPercent(
-      "/common/sunset/sunset",
+      "/common/images/sunset/sunset",
       21,
       sunPercent,
-      "/common/sunset/sunset20.png"
+      "/common/images/sunset/sunset20.png"
     )
     const sunInfo = this.getSunDisplayInfo(sunriseValue, sunsetValue)
     const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
@@ -755,7 +755,7 @@ export default {
         desc: uvValue,
         percent: uvPercent,
         icon: uvIcon,
-        arrow: "/common/uv/uv15.png",
+        arrow: "/common/images/uv/uv15.png",
         rotation: 0,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
@@ -831,7 +831,7 @@ export default {
         from: todayData.tempMin || "__",
         to: todayData.tempMax || "__"
       },
-      icon: this.iconCode ? `/common/weather-icons/${this.iconCode}.png` : "/common/weather-icons/cloudy.png"
+      icon: this.iconCode ? `/common/images/weather-icons/${this.iconCode}.png` : "/common/images/weather-icons/cloudy.png"
     }
     this.forecastDaily = this.buildForecastDaily(this.dayWeather)
     this.indices = this.buildIndices(todayData)
@@ -1740,3 +1740,4 @@ export default {
   margin-top: 12px;
 }
 </style>
+

@@ -2,12 +2,12 @@
   <!-- 页面容器 -->
   <div class="page-container">
     <!-- 背景图片 -->
-    <image class="page-bg" src="/common/weather-bgs/{{ backgroundImage }}.png" />
+    <image class="page-bg" src="/common/images/weather-bgs/default/{{ backgroundImage }}.png" />
 
     <!-- 加载动画容器 -->
     <div class="loading-container" if="{{ isLoading }}">
       <div class="loading-bg"></div>
-      <image class="loading-icon" src="/common/loading.png" />
+      <image class="loading-icon" src="/common/images/loading.png" />
       <div class="loading-actions" if="{{ showDebugEntry }}">
         <div class="btn-primary" onclick="About()">
           <text class="text-button">关于</text>
@@ -29,7 +29,7 @@
 
       <!-- 当前天气概览 -->
       <div class="content-hero card-margin">
-        <image class="icon-weather-main" src="/common/weather-icons/{{ iconCode }}.png" />
+        <image class="icon-weather-main" src="/common/images/weather-icons/{{ iconCode }}.png" />
         <text class="text-weather">{{ textDay }}</text>
         <text class="text-temp-range">{{ tempMinMax }}</text>
       </div>
@@ -41,7 +41,7 @@
             <text class="text-hourly">
               {{ item.name }}
             </text>
-            <image class="icon-weather-small" src="/common/weather-icons/{{ item.iconCode }}.png" />
+            <image class="icon-weather-small" src="/common/images/weather-icons/{{ item.iconCode }}.png" />
             <text class="text-hourly-temp" style="">
               {{ item.temp }}
             </text>
@@ -66,7 +66,7 @@
               <text class="text-daily-temp">{{ item.tempMinMax }}</text>
               <image
                 class="icon-weather-small"
-                src="/common/weather-icons/{{ item.iconCode }}.png"
+                src="/common/images/weather-icons/{{ item.iconCode }}.png"
               />
             </div>
           </div>
@@ -619,3 +619,5 @@ export default {
 @import "../../../common/css/loading-styles.css";
 @import "../../../common/css/page-bg-styles.css";
 </style>
+
+
