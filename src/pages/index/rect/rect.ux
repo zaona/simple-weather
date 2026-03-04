@@ -311,20 +311,6 @@ export default {
     tempMinMax: "__°/__°", // 最高/最低温度
     backgroundImage: "", // 背景图片
 
-    // 原有天气指标数据
-    figure: [
-      {name: "紫外线指数", value: "__", uniqueId: 1},
-      {name: "相对湿度", value: "__", uniqueId: 2},
-      {name: "__", value: "__", uniqueId: 3},
-      {name: "气压", value: "__", uniqueId: 4}
-    ],
-
-    // 逐小时天气预报数据
-    figureHourly: [],
-
-    // 未来几天天气预报数据
-    dayWeather: [{name: "__", tempMinMax: "__", iconCode: "__", uniqueId: 1}],
-
     // 新版界面数据
     current: {
       location: "__",
@@ -442,6 +428,10 @@ export default {
       from: parts[0].replace("°", "") || "__",
       to: parts[1].replace("°", "") || "__"
     }
+  },
+
+  formatTempRange(tempMin, tempMax) {
+    return `${tempMin}°/${tempMax}°`
   },
 
   normalizeTemperatureValue(value) {
@@ -618,37 +608,140 @@ export default {
     return {label: "日落", time: sunsetText}
   },
 
-  buildForecastHourly(hourlyList = []) {
-    if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
+  buildForecastHourly(hourlyList = [], limit = 12) {
+    const processed = this.processHourlyList(hourlyList, limit)
+    if (processed.length === 0) {
       return []
     }
-    return hourlyList.slice(0, 12).map((item, index) => {
-      const temperature = (item.temp || "").replace("°", "")
-      const icon = item.iconCode
-        ? `/common/images/weather-icons/${item.iconCode}.png`
+
+    return processed.map((entry, index) => {
+      const tempText = entry.temp !== undefined && entry.temp !== null ? String(entry.temp) : ""
+      const temperature = tempText ? tempText.replace("°", "") : "__"
+      const icon = entry.iconCode
+        ? `/common/images/weather-icons/${entry.iconCode}.png`
         : "/common/images/weather-icons/cloudy.png"
+
       return {
-        time: index === 0 ? "现在" : item.name || "--:--",
-        temperature: temperature || "__",
+        time: index === 0 ? "现在" : entry.name || "--:--",
+        temperature,
         icon
       }
     })
   },
 
-  buildForecastDaily(dayWeather = []) {
-    if (!Array.isArray(dayWeather) || dayWeather.length === 0) {
+  buildForecastDaily(dailyList = []) {
+    if (!Array.isArray(dailyList) || dailyList.length === 0) {
       return []
     }
-    return dayWeather.map((item) => {
+
+    const baseList = this.buildForecastBase({daily: dailyList})
+    return baseList.map((item) => {
       const temp = this.normalizeTempRange(item.tempMinMax)
       const icon = item.iconCode
         ? `/common/images/weather-icons/${item.iconCode}.png`
         : "/common/images/weather-icons/cloudy.png"
+
       return {
         fxDate: item.fxDate,
-        time: item.name || "--",
+        time: item.name,
         temperature: temp,
         icon
+      }
+    })
+  },
+
+  buildBaseWeather(todayData, timeAgo) {
+    const isNight = WeatherDataUtils.isNightTime(todayData.sunrise, todayData.sunset)
+    return {
+      updateTime: timeAgo,
+      iconCode: WeatherDataUtils.getMappedIconCode(todayData.iconDay, isNight),
+      textDay: todayData.textDay,
+      tempMinMax: this.formatTempRange(todayData.tempMin, todayData.tempMax),
+      backgroundImage: WeatherDataUtils.getMappedBackgroundImage(todayData.iconDay, isNight),
+      isNight
+    }
+  },
+
+  buildForecastBase(weatherData) {
+    const todayStr = DateUtils.getTodayString()
+    const todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
+    const todaySunrise = todayData ? todayData.sunrise : null
+    const todaySunset = todayData ? todayData.sunset : null
+
+    return weatherData.daily
+      .filter((day) => {
+        const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
+        return dayDiff >= -1
+      })
+      .map((day) => {
+        const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
+        const displayName = DateUtils.getDisplayName(day.fxDate, dayDiff)
+        const isNight = WeatherDataUtils.isNightTime(todaySunrise, todaySunset)
+
+        return {
+          fxDate: day.fxDate,
+          name: displayName,
+          tempMinMax: this.formatTempRange(day.tempMin, day.tempMax),
+          iconCode: WeatherDataUtils.getMappedIconCode(day.iconDay, isNight),
+          uniqueId: dayDiff + 1
+        }
+      })
+  },
+
+  processHourlyList(hourlyList = [], limit = 12) {
+    if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
+      return []
+    }
+
+    const now = Date.now()
+    const threshold = now - 60 * 60 * 1000
+
+    const filtered = hourlyList
+      .map((item) => {
+        const fxTime = item.fxTime || item.time || ""
+        const timestamp = fxTime ? Date.parse(fxTime) : NaN
+        return {
+          raw: item,
+          fxTime,
+          timestamp
+        }
+      })
+      .filter((entry) => {
+        if (Number.isNaN(entry.timestamp)) {
+          return false
+        }
+        return entry.timestamp >= threshold
+      })
+
+    if (filtered.length === 0) {
+      return []
+    }
+
+    return filtered.slice(0, limit).map((entry, index) => {
+      const {raw, fxTime, timestamp} = entry
+      let displayHour = "--:--"
+      let isNight = false
+
+      if (!Number.isNaN(timestamp)) {
+        const parsed = new Date(timestamp)
+        const hours = parsed.getHours()
+        const minutes = parsed.getMinutes()
+        displayHour = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+        isNight = hours >= 18 || hours < 6
+      }
+
+      const tempValue = raw.temp !== undefined ? `${raw.temp}°` : "__°"
+      const iconCodeRaw = Number(raw.icon)
+      const mappedIcon = WeatherDataUtils.getMappedIconCode(
+        Number.isNaN(iconCodeRaw) ? raw.icon : iconCodeRaw,
+        isNight
+      )
+
+      return {
+        name: displayHour,
+        temp: tempValue,
+        iconCode: mappedIcon,
+        uniqueId: fxTime ? `${fxTime}-${index}` : `hour-${index}`
       }
     })
   },
@@ -813,14 +906,17 @@ export default {
 
   syncRectWeather(weatherData, todayData, timeAgo) {
     RefreshController.recordDailyUpdate(weatherData)
-    WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
+    const baseWeather = this.buildBaseWeather(todayData, timeAgo)
+    this.updateTime = baseWeather.updateTime
+    this.iconCode = baseWeather.iconCode
+    this.textDay = baseWeather.textDay
+    this.tempMinMax = baseWeather.tempMinMax
+    this.backgroundImage = baseWeather.backgroundImage
     this.location = weatherData.location || "未知地点"
-    this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
-    this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
 
     const updateTime = new Date(weatherData.updateTime)
     const timeText = this.formatTime(updateTime)
-    const currentTemperature = this.getCurrentTemperature(todayData, this.figureHourly)
+    const currentTemperature = this.getCurrentTemperature(todayData, this.forecastHourly)
     this.current = {
       location: this.location,
       time: timeText,
@@ -833,7 +929,7 @@ export default {
       },
       icon: this.iconCode ? `/common/images/weather-icons/${this.iconCode}.png` : "/common/images/weather-icons/cloudy.png"
     }
-    this.forecastDaily = this.buildForecastDaily(this.dayWeather)
+    this.forecastDaily = this.buildForecastDaily(weatherData.daily || [])
     this.indices = this.buildIndices(todayData)
   },
 
@@ -1129,7 +1225,7 @@ export default {
     const shouldShow = canShowFeature && this.hasHourlyData
     this.showHourlyForecastCard = shouldShow
     if (!shouldShow) {
-      this.figureHourly = []
+      this.forecastHourly = []
     }
   },
 
@@ -1206,16 +1302,15 @@ export default {
    * @param {Array} hourlyList
    */
   applyHourlyForecastList(hourlyList = []) {
-    const processed = WeatherDataUtils.processHourlyForecast(hourlyList)
-    this.figureHourly = processed
-    this.forecastHourly = this.buildForecastHourly(processed)
-    if (processed.length > 0) {
+    const forecastHourly = this.buildForecastHourly(hourlyList)
+    this.forecastHourly = forecastHourly
+    if (forecastHourly.length > 0) {
       this.current = {
         ...this.current,
-        temperature: this.getCurrentTemperature(null, processed)
+        temperature: this.getCurrentTemperature(null, forecastHourly)
       }
     }
-    this.hasHourlyData = processed.length > 0
+    this.hasHourlyData = forecastHourly.length > 0
     this.updateHourlyCardVisibility()
     this.hourlyMetricRetryCount = 0
     this.updateHourlyScrollMetrics()

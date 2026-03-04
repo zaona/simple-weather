@@ -144,12 +144,131 @@ export default {
     const updateTime = new Date(weatherData.updateTime)
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
 
-    WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
+    const baseWeather = this.buildBaseWeather(todayData, timeAgo)
+    this.updateTime = baseWeather.updateTime
+    this.iconCode = baseWeather.iconCode
+    this.textDay = baseWeather.textDay
+    this.tempMinMax = baseWeather.tempMinMax
+    this.backgroundImage = baseWeather.backgroundImage
     this.location = weatherData.location || "未知地点"
-    this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
-    this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
+    this.figure = this.getBasicWeatherFigures(todayData)
+    this.dayWeather = this.buildForecastBase(weatherData)
     RefreshController.recordDailyUpdate(weatherData)
     return true
+  },
+
+  buildBaseWeather(todayData, timeAgo) {
+    const isNight = WeatherDataUtils.isNightTime(todayData.sunrise, todayData.sunset)
+    return {
+      updateTime: timeAgo,
+      iconCode: WeatherDataUtils.getMappedIconCode(todayData.iconDay, isNight),
+      textDay: todayData.textDay,
+      tempMinMax: this.formatTempRange(todayData.tempMin, todayData.tempMax),
+      backgroundImage: WeatherDataUtils.getMappedBackgroundImage(todayData.iconDay, isNight),
+      isNight
+    }
+  },
+
+  formatTempRange(tempMin, tempMax) {
+    return `${tempMin}°/${tempMax}°`
+  },
+
+  getBasicWeatherFigures(todayData) {
+    return [
+      {name: "紫外线指数", value: todayData.uvIndex || "__", unit: "", uniqueId: 1},
+      {name: "相对湿度", value: todayData.humidity || "__", unit: "%", uniqueId: 2},
+      {
+        name: todayData.windDirDay || "风向",
+        value: todayData.windScaleDay || "__",
+        unit: "级",
+        uniqueId: 3
+      },
+      {name: "气压", value: todayData.pressure || "__", unit: "hPa", uniqueId: 4}
+    ]
+  },
+
+  buildForecastBase(weatherData) {
+    const todayStr = DateUtils.getTodayString()
+    const todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
+    const todaySunrise = todayData ? todayData.sunrise : null
+    const todaySunset = todayData ? todayData.sunset : null
+
+    return weatherData.daily
+      .filter((day) => {
+        const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
+        return dayDiff >= -1
+      })
+      .map((day) => {
+        const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
+        const displayName = DateUtils.getDisplayName(day.fxDate, dayDiff)
+        const isNight = WeatherDataUtils.isNightTime(todaySunrise, todaySunset)
+
+        return {
+          fxDate: day.fxDate,
+          name: displayName,
+          tempMinMax: this.formatTempRange(day.tempMin, day.tempMax),
+          iconCode: WeatherDataUtils.getMappedIconCode(day.iconDay, isNight),
+          uniqueId: dayDiff + 1
+        }
+      })
+  },
+
+  processHourlyList(hourlyList = [], limit = 12) {
+    if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
+      return []
+    }
+
+    const now = Date.now()
+    const threshold = now - 60 * 60 * 1000
+
+    const filtered = hourlyList
+      .map((item) => {
+        const fxTime = item.fxTime || item.time || ""
+        const timestamp = fxTime ? Date.parse(fxTime) : NaN
+        return {
+          raw: item,
+          fxTime,
+          timestamp
+        }
+      })
+      .filter((entry) => {
+        if (Number.isNaN(entry.timestamp)) {
+          return false
+        }
+        return entry.timestamp >= threshold
+      })
+
+    if (filtered.length === 0) {
+      return []
+    }
+
+    return filtered.slice(0, limit).map((entry, index) => {
+      const {raw, fxTime, timestamp} = entry
+      let displayHour = "--:--"
+      let isNight = false
+
+      if (!Number.isNaN(timestamp)) {
+        const parsed = new Date(timestamp)
+        const hours = parsed.getHours()
+        const minutes = parsed.getMinutes()
+        displayHour = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+        isNight = hours >= 18 || hours < 6
+      }
+
+      const tempValue = raw.temp !== undefined ? `${raw.temp}°` : "__°"
+      const iconCodeRaw = Number(raw.icon)
+      const mappedIcon = WeatherDataUtils.getMappedIconCode(
+        Number.isNaN(iconCodeRaw) ? raw.icon : iconCodeRaw,
+        isNight
+      )
+
+      return {
+        name: displayHour,
+        temp: tempValue,
+        iconCode: mappedIcon,
+        uniqueId: fxTime ? `${fxTime}-${index}` : `hour-${index}`
+      }
+    })
   },
 
   /**
@@ -283,10 +402,15 @@ export default {
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
 
     // 更新界面数据
-    WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
+    const baseWeather = this.buildBaseWeather(todayData, timeAgo)
+    this.updateTime = baseWeather.updateTime
+    this.iconCode = baseWeather.iconCode
+    this.textDay = baseWeather.textDay
+    this.tempMinMax = baseWeather.tempMinMax
+    this.backgroundImage = baseWeather.backgroundImage
     this.location = weatherData.location || "未知地点"
-    this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
-    this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
+    this.figure = this.getBasicWeatherFigures(todayData)
+    this.dayWeather = this.buildForecastBase(weatherData)
     const hourlyOptions = options.hourly || {}
     const mergedHourlyOptions = {
       silent: hourlyOptions.silent !== undefined ? hourlyOptions.silent : silent,
@@ -409,7 +533,7 @@ export default {
    * @param {Array} hourlyList
    */
   applyHourlyForecastList(hourlyList = []) {
-    const processed = WeatherDataUtils.processHourlyForecast(hourlyList)
+    const processed = this.processHourlyList(hourlyList)
     this.figureHourly = processed
     this.hasHourlyData = processed.length > 0
     this.updateHourlyCardVisibility()
@@ -561,10 +685,15 @@ export default {
       }
 
       // 更新界面
-      WeatherDataUtils.updateCurrentWeather(this, weatherData, todayData, timeAgo)
+      const baseWeather = this.buildBaseWeather(todayData, timeAgo)
+      this.updateTime = baseWeather.updateTime
+      this.iconCode = baseWeather.iconCode
+      this.textDay = baseWeather.textDay
+      this.tempMinMax = baseWeather.tempMinMax
+      this.backgroundImage = baseWeather.backgroundImage
       this.location = weatherData.location || "未知地点"
-      this.figure = WeatherDataUtils.getBasicWeatherFigures(todayData)
-      this.dayWeather = WeatherDataUtils.processForecastData(weatherData)
+      this.figure = this.getBasicWeatherFigures(todayData)
+      this.dayWeather = this.buildForecastBase(weatherData)
       RefreshController.recordDailyUpdate(weatherData)
 
       // 保存数据到本地

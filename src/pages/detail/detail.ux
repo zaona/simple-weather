@@ -131,7 +131,7 @@ export default {
    * @param {Object} selectedData - 选中日期的天气数据
    */
   updateWeatherFigures(selectedData) {
-    const valueMap = WeatherDataUtils.getDetailedWeatherFigures(selectedData)
+    const valueMap = this.getDetailedWeatherFigures(selectedData)
 
     // 遍历并更新各项数值
     this.weatherCategories = this.weatherCategories.map((category) => ({
@@ -169,13 +169,55 @@ export default {
     }
 
     // 更新顶部天气概览
-    WeatherDataUtils.updateDetailCurrentWeather(this, selectedData)
+    this.updateDetailCurrentWeather(selectedData)
 
     // 更新天气指标面板
     this.updateWeatherFigures(selectedData)
 
     // 数据加载完成
     this.isLoading = false
+  },
+
+  updateDetailCurrentWeather(selectedData) {
+    this.updateTime = this.selectedDate || ""
+
+    const isNight = WeatherDataUtils.isNightTime(selectedData.sunrise, selectedData.sunset)
+    this.iconCode = WeatherDataUtils.getMappedIconCode(selectedData.iconDay, isNight)
+    this.textDay = selectedData.textDay
+    this.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
+    this.backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay, isNight)
+  },
+
+  formatTempRange(tempMin, tempMax) {
+    return `${tempMin}°/${tempMax}°`
+  },
+
+  getDetailedWeatherFigures(selectedData) {
+    return {
+      1: selectedData.uvIndex || "__",
+      2: selectedData.humidity || "__",
+      3: selectedData.windDirDay || "__",
+      4: selectedData.windScaleDay || "__",
+      5: selectedData.pressure || "__",
+      6: selectedData.precip || "__",
+      7: selectedData.vis || "__",
+      8: selectedData.cloud || "__",
+      9: selectedData.sunrise || "__",
+      10: selectedData.sunset || "__",
+      11: selectedData.tempMax || "__",
+      12: selectedData.tempMin || "__",
+      13: selectedData.textDay || "__",
+      14: selectedData.textNight || "__",
+      15: selectedData.windDirNight || "__",
+      16: selectedData.windScaleNight || "__",
+      17: selectedData.windSpeedDay || "__",
+      18: selectedData.windSpeedNight || "__",
+      19: selectedData.wind360Day || "__",
+      20: selectedData.wind360Night || "__",
+      21: selectedData.moonrise || "__",
+      22: selectedData.moonset || "__",
+      23: selectedData.moonPhase || "__"
+    }
   }
 }
 </script>
