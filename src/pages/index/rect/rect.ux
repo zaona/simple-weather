@@ -17,13 +17,21 @@
       class="section-scroll"
       scroll-y="true"
       bounces="true"
+      @scroll="handlePullScroll"
       style="scroll-snap-type: y mandatory; scroll-snap-stop: always;"
       if="{{ !isLoading }}"
     >
         <div class="section section--snap">
           <div class="title">
             <text class="title__location">{{ current.location }}</text>
-            <text class="title__time">{{ current.relativeTime }}</text>
+            <div class="title__time">
+              <image
+                class="title__time__loading"
+                if="{{ isPullRefreshing }}"
+                src="/common/images/loading.png"
+              />
+              <text class="title__time__text" if="{{ !isPullRefreshing }}">{{ current.relativeTime }}</text>
+            </div>
           </div>
 
           <div class="current">
@@ -304,6 +312,7 @@ export default {
     showDebugEntry: false, // 加载态调试入口
     hasHourlyData: false, // 是否有可用的逐小时数据
     autoUpdateInProgress: false, // 自动更新中标记
+    isPullRefreshing: false, // 下拉刷新中
     location: "__", // 地点
     updateTime: "__", // 更新时间
     iconCode: "__", // 天气图标代码
@@ -1054,6 +1063,39 @@ export default {
   },
 
   /**
+   * 下拉到顶部刷新
+   */
+  async handlePullScroll(event = {}) {
+    if (!this.supportsAdvancedFeatures) {
+      return
+    }
+    const detail = event.detail || event || {}
+    const scrollY = typeof detail.scrollY === "number" ? detail.scrollY : 0
+    if (scrollY > -30) {
+      return
+    }
+    if (this.isPullRefreshing || this.isLoading) {
+      return
+    }
+
+    const remainingTime = await RefreshController.getManualRefreshRemainingTime()
+    if (remainingTime > 0) {
+      this.isPullRefreshing = true
+      setTimeout(() => {
+        this.isPullRefreshing = false
+      }, 1000)
+      return
+    }
+
+    this.isPullRefreshing = true
+    try {
+      await this.UpdateWeather({auto: false, silent: true, showLoading: false})
+    } finally {
+      this.isPullRefreshing = false
+    }
+  },
+
+  /**
    * 跳转到详情页
    * @param {Object} selectedItem - 选中的天气项
    */
@@ -1571,6 +1613,36 @@ export default {
   font-weight: bold;
   color: rgba(255, 255, 255, 0.75);
   text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.title__time__text {
+  line-height: 24px;
+  width: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.title__time__loading {
+  width: 24px;
+  height: 24px;
+  animation-name: title-loading-rotate;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  transform-origin: 12px 12px;
+}
+
+@keyframes title-loading-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .current {
