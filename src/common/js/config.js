@@ -62,6 +62,20 @@ export const ADVANCED_FEATURE_PRODUCTS = [
   "marconi_o62m_watch"
 ]
 
+// 矩形屏设备 product 名称列表
+export const RECT_SCREEN_PRODUCTS = ["redmi watch 5", "redmi watch 6", "o65m", "emulator-vela"]
+
+// 圆形屏设备 product 名称列表
+export const CIRCLE_SCREEN_PRODUCTS = [
+  "xiaomi watch s3",
+  "xiaomi watch s3 esim",
+  "xiaomi watch s4",
+  "xiaomi watch s4 esim",
+  "xiaomi watch s4 sport",
+  "marconi_o62m_watch",
+  "xiaomi watch s4 41mm"
+]
+
 // 用户提示消息
 export const MESSAGES = {
   // 成功消息

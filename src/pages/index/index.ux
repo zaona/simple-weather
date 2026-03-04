@@ -15,18 +15,8 @@
 <script>
 import router from "@system.router"
 import DeviceService from "../../common/js/device-service.js"
+import {RECT_SCREEN_PRODUCTS, CIRCLE_SCREEN_PRODUCTS} from "../../common/js/config.js"
 import DebugService from "../../common/js/debug-service.js"
-
-const RECT_SCREEN_PRODUCTS = ["redmi watch 5", "redmi watch 6", "o65m", "emulator-vela"]
-const CIRCLE_SCREEN_PRODUCTS = [
-  "xiaomi watch s3",
-  "xiaomi watch s3 esim",
-  "xiaomi watch s4",
-  "xiaomi watch s4 esim",
-  "xiaomi watch s4 sport",
-  "marconi_o62m_watch",
-  "xiaomi watch s4 41mm"
-]
 
 export default {
   private: {

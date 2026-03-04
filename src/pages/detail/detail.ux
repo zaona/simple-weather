@@ -2,7 +2,7 @@
   <!-- 页面容器，支持右滑返回 -->
   <div class="page-container" @swipe="toHomePageSwipe">
     <!-- 背景图片 -->
-    <image class="page-bg" src="/common/images/weather-bgs/default/{{ backgroundImage }}.png" />
+    <image class="page-bg" src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png" />
 
     <!-- 加载动画容器 -->
     <div class="loading-container" if="{{ isLoading }}">
@@ -51,6 +51,8 @@ import {MESSAGES, TOAST_DURATION} from "../../common/js/config.js"
 
 // 导入工具类
 import {WeatherDataUtils} from "../../common/js/weather-utils.js"
+import DeviceService from "../../common/js/device-service.js"
+import {RECT_SCREEN_PRODUCTS} from "../../common/js/config.js"
 
 export default {
   // 接收来自 index 页面的 selectedDate 参数
@@ -67,6 +69,7 @@ export default {
     textDay: "__", // 白天天气描述
     tempMinMax: "__°/__°", // 最高/最低温度
     backgroundImage: "", // 背景图片
+    backgroundFolder: "default", // 背景图片目录
 
     // 按类别组织的天气指标数据
     weatherCategories: [
@@ -168,8 +171,15 @@ export default {
       return
     }
 
+    let product = ""
+    try {
+      product = await DeviceService.getProduct()
+    } catch (error) {
+      console.error("获取设备信息失败:", error)
+    }
+
     // 更新顶部天气概览
-    this.updateDetailCurrentWeather(selectedData)
+    this.updateDetailCurrentWeather(selectedData, product)
 
     // 更新天气指标面板
     this.updateWeatherFigures(selectedData)
@@ -178,14 +188,19 @@ export default {
     this.isLoading = false
   },
 
-  updateDetailCurrentWeather(selectedData) {
+  updateDetailCurrentWeather(selectedData, product) {
     this.updateTime = this.selectedDate || ""
 
     const isNight = WeatherDataUtils.isNightTime(selectedData.sunrise, selectedData.sunset)
     this.iconCode = WeatherDataUtils.getMappedIconCode(selectedData.iconDay, isNight)
     this.textDay = selectedData.textDay
     this.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
-    this.backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay, isNight)
+    const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay, isNight)
+    const useRect =
+      typeof product === "string" &&
+      RECT_SCREEN_PRODUCTS.includes((product || "").toLowerCase())
+    this.backgroundImage = backgroundImage
+    this.backgroundFolder = useRect ? "rect" : "default"
   },
 
   formatTempRange(tempMin, tempMax) {
