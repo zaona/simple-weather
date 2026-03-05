@@ -20,7 +20,7 @@ com.application.zaona.weather
 
 ## 数据传输调试
 
-在 `src/services/config.js` 中
+在 `src/common/js/config.js` 中
 
 ```javascript
 // 调试配置
@@ -34,7 +34,7 @@ export const DEBUG = {
 
 ## 手表请求调试
 
-在 `src/services/weather-api-config-example.js` 中
+在 `src/common/js/weather-api-config-example.js` 中
 
 复制一份文件，将文件名改为 `weather-api-config.js`
 

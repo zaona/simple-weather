@@ -52,7 +52,7 @@
           </div>
         </div>
 
-        <div class="section section--snap" if="{{ supportsAdvancedFeatures && hourlyForecastEnabled }}">
+        <div class="section section--snap" if="{{ showHourlyForecastCard }}">
           <div class="title-bar">
             <text class="title-bar__text">天气预测</text>
             <text class="title-bar__time">{{ current.time }}</text>
@@ -313,6 +313,7 @@ export default {
     hasHourlyData: false, // 是否有可用的逐小时数据
     autoUpdateInProgress: false, // 自动更新中标记
     isPullRefreshing: false, // 下拉刷新中
+    pullRefreshReady: true, // 下拉刷新触发开关
     location: "__", // 地点
     updateTime: "__", // 更新时间
     iconCode: "__", // 天气图标代码
@@ -1071,12 +1072,17 @@ export default {
     }
     const detail = event.detail || event || {}
     const scrollY = typeof detail.scrollY === "number" ? detail.scrollY : 0
-    if (scrollY > -30) {
+    if (scrollY >= 0) {
+      this.pullRefreshReady = true
+      return
+    }
+    if (scrollY > -30 || !this.pullRefreshReady) {
       return
     }
     if (this.isPullRefreshing || this.isLoading) {
       return
     }
+    this.pullRefreshReady = false
 
     const remainingTime = await RefreshController.getManualRefreshRemainingTime()
     if (remainingTime > 0) {
