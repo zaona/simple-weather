@@ -50,3 +50,10 @@
     height: 466px;
   }
 }
+
+@media (shape: circle) {
+  .page-bg {
+    width: 466px;
+    height: 466px;
+  }
+}
