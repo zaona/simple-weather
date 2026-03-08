@@ -55,7 +55,7 @@
         <div class="section section--snap" if="{{ showHourlyForecastCard }}">
           <div class="title-bar">
             <text class="title-bar__text">天气预测</text>
-            <text class="title-bar__time">{{ current.time }}</text>
+            <text class="title-bar__time">{{ systemTime }}</text>
           </div>
 
           <scroll
@@ -84,7 +84,7 @@
         <div class="section section--snap">
           <div class="title-bar">
             <text class="title-bar__text">未来天气</text>
-            <text class="title-bar__time">{{ current.time }}</text>
+            <text class="title-bar__time">{{ systemTime }}</text>
           </div>
 
           <div class="forecast-daily">
@@ -103,7 +103,7 @@
         <div class="section section--snap">
           <div class="title-bar">
             <text class="title-bar__text">天气指数</text>
-            <text class="title-bar__time">{{ current.time }}</text>
+            <text class="title-bar__time">{{ systemTime }}</text>
           </div>
 
           <scroll class="indices" scroll-y="true" bounces="true">
@@ -324,7 +324,6 @@ export default {
     // 新版界面数据
     current: {
       location: "__",
-      time: "__",
       relativeTime: "__",
       weather: "__",
       temperature: "__",
@@ -404,6 +403,7 @@ export default {
     hourlyIndicatorTrackWidth: 100,
     hourlyIndicatorWidth: 40,
     hourlyIndicatorOffset: 0,
+    systemTime: "__:__",
     hourlyIndicatorStyle: {
       width: "40px",
       transform: JSON.stringify({
@@ -924,12 +924,9 @@ export default {
     this.backgroundImage = baseWeather.backgroundImage
     this.location = weatherData.location || "未知地点"
 
-    const updateTime = new Date(weatherData.updateTime)
-    const timeText = this.formatTime(updateTime)
     const currentTemperature = this.getCurrentTemperature(todayData, this.forecastHourly)
     this.current = {
       location: this.location,
-      time: timeText,
       relativeTime: timeAgo,
       weather: todayData.textDay || "__",
       temperature: currentTemperature,
@@ -1454,6 +1451,7 @@ export default {
    * 页面显示时初始化连接并刷新缓存
    */
   async onShow() {
+    this.systemTime = this.formatTime(new Date())
     await this.syncFeatureSettings()
     await this.syncFeatureSettings(true)
 
