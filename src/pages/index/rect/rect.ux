@@ -58,23 +58,22 @@
             <text class="title-bar__time">{{ systemTime }}</text>
           </div>
 
-          <scroll
-            id="hourlyScroll"
+          <swiper
             class="forecast-hourly"
-            scroll-x="true"
-            bounces="true"
-            @scroll="handleHourlyScroll"
+            indicator="false"
+            loop="false"
+            @change="handleSwiperChange"
           >
-            <div id="hourlyContent" class="forecast-hourly__content">
-              <div class="forecast-hourly__item" for="{{ item in forecastHourly }}">
+            <div class="forecast-hourly__page" for="{{ page in forecastHourlyPages }}">
+              <div class="forecast-hourly__item" for="{{ item in page }}">
                 <text class="forecast-hourly__time">{{ item.time }}</text>
                 <text class="forecast-hourly__temperature">{{ item.temperature }}°</text>
                 <image class="forecast-hourly__icon" src="{{ item.icon }}" />
               </div>
             </div>
-          </scroll>
+          </swiper>
 
-          <div class="progress-bar" if="{{ hourlyIndicatorReady }}">
+          <div class="progress-bar" if="{{ forecastHourlyPages.length > 1 }}">
             <div class="progress-bar__bg">
               <div class="progress-bar__fill" style="{{ hourlyIndicatorStyle }}"></div>
             </div>
@@ -334,6 +333,7 @@ export default {
       icon: "/common/images/weather-icons/cloudy.png"
     },
     forecastHourly: [],
+    forecastHourlyPages: [],
     forecastDaily: [],
     indices: [
       {
@@ -398,11 +398,6 @@ export default {
         }
       }
     ],
-    hourlyScrollContentWidth: 0,
-    hourlyScrollViewWidth: 216,
-    hourlyIndicatorTrackWidth: 100,
-    hourlyIndicatorWidth: 40,
-    hourlyIndicatorOffset: 0,
     systemTime: "__:__",
     hourlyIndicatorStyle: {
       width: "40px",
@@ -410,12 +405,10 @@ export default {
         translateX: "0px"
       })
     },
-    hourlyLastIndicatorTs: 0,
-    hourlyScrollDebounceTimer: null,
-    hourlyLastScrollX: 0,
-    hourlyIndicatorReady: false,
-    hourlyMetricRetryPending: false,
-    hourlyMetricRetryCount: 0
+    timeDigit1: "_",
+    timeDigit2: "_",
+    timeDigit3: "_",
+    timeDigit4: "_"
   },
 
   applyPreloadedData(preloaded) {
@@ -946,111 +939,6 @@ export default {
     this.syncRectWeather(weatherData, todayData, timeAgo)
   },
 
-  updateHourlyScrollMetrics() {
-    const scrollEl = this.$element && this.$element("hourlyScroll")
-    if (!scrollEl) {
-      return
-    }
-
-    this.hourlyIndicatorReady = false
-
-    scrollEl.getScrollRect({
-      success: ({width}) => {
-        if (typeof width === "number" && width > 0) {
-          this.hourlyScrollContentWidth = width
-          this.updateHourlyIndicator(this.hourlyLastScrollX)
-        } else {
-          this.scheduleHourlyMetricRetry()
-        }
-      }
-    })
-
-    if (typeof scrollEl.getBoundingClientRect === "function") {
-      scrollEl.getBoundingClientRect({
-        success: ({width}) => {
-          if (typeof width === "number" && width > 0) {
-            this.hourlyScrollViewWidth = width
-            this.updateHourlyIndicator(this.hourlyLastScrollX)
-          } else {
-            this.scheduleHourlyMetricRetry()
-          }
-        }
-      })
-    }
-  },
-
-  scheduleHourlyMetricRetry() {
-    if (this.hourlyMetricRetryPending) {
-      return
-    }
-    this.hourlyMetricRetryPending = true
-    setTimeout(() => {
-      this.hourlyMetricRetryPending = false
-      this.hourlyMetricRetryCount = (this.hourlyMetricRetryCount || 0) + 1
-      this.updateHourlyScrollMetrics()
-    }, 60)
-  },
-
-  updateHourlyIndicator(scrollX = 0) {
-    const contentWidth = this.hourlyScrollContentWidth
-    const viewWidth = this.hourlyScrollViewWidth || 0
-    if (contentWidth <= 0 || viewWidth <= 0) {
-      this.hourlyIndicatorReady = false
-      return
-    }
-    const maxScroll = Math.max(0, contentWidth - viewWidth)
-    const trackWidth = this.hourlyIndicatorTrackWidth
-    const indicatorWidth = this.hourlyIndicatorWidth
-    const maxOffset = Math.max(0, trackWidth - indicatorWidth)
-    const progress = maxScroll > 0 ? Math.min(Math.max(scrollX / maxScroll, 0), 1) : 0
-    const indicatorOffset = maxOffset * progress
-    const ready = contentWidth > viewWidth
-
-    if (
-      this.hourlyLastIndicatorWidth === indicatorWidth &&
-      this.hourlyLastIndicatorOffset === indicatorOffset &&
-      this.hourlyIndicatorReady === ready
-    ) {
-      return
-    }
-
-    const offsetText = Number.isFinite(indicatorOffset) ? indicatorOffset.toFixed(2) : "0"
-    this.hourlyIndicatorStyle = {
-      width: `${indicatorWidth}px`,
-      transform: JSON.stringify({
-        translateX: `${offsetText}px`
-      })
-    }
-    this.hourlyIndicatorOffset = indicatorOffset
-    this.hourlyIndicatorReady = ready
-    this.hourlyLastIndicatorWidth = indicatorWidth
-    this.hourlyLastIndicatorOffset = indicatorOffset
-  },
-
-  handleHourlyScroll(event = {}) {
-    const detail = event.detail || event || {}
-    const scrollX = typeof detail.scrollX === "number" ? detail.scrollX : 0
-    const scrollWidth =
-      typeof detail.scrollWidth === "number" ? detail.scrollWidth : this.hourlyScrollContentWidth
-    const clientWidth =
-      typeof detail.clientWidth === "number" ? detail.clientWidth : this.hourlyScrollViewWidth
-
-    this.hourlyLastScrollX = scrollX
-    if (typeof scrollWidth === "number" && scrollWidth > 0) {
-      this.hourlyScrollContentWidth = scrollWidth
-    }
-    if (typeof clientWidth === "number" && clientWidth > 0) {
-      this.hourlyScrollViewWidth = clientWidth
-    }
-    if (this.hourlyScrollDebounceTimer) {
-      return
-    }
-    this.hourlyScrollDebounceTimer = setTimeout(() => {
-      this.hourlyScrollDebounceTimer = null
-      this.updateHourlyIndicator(this.hourlyLastScrollX)
-    }, 120)
-  },
-
   formatTime(dateValue) {
     if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) {
       return "__:__"
@@ -1271,6 +1159,7 @@ export default {
     this.showHourlyForecastCard = shouldShow
     if (!shouldShow) {
       this.forecastHourly = []
+      this.forecastHourlyPages = []
     }
   },
 
@@ -1349,6 +1238,14 @@ export default {
   applyHourlyForecastList(hourlyList = []) {
     const forecastHourly = this.buildForecastHourly(hourlyList)
     this.forecastHourly = forecastHourly
+    
+    // 每 4 个一组进行分组
+    const pages = []
+    for (let i = 0; i < forecastHourly.length; i += 4) {
+      pages.push(forecastHourly.slice(i, i + 4))
+    }
+    this.forecastHourlyPages = pages
+    
     if (forecastHourly.length > 0) {
       this.current = {
         ...this.current,
@@ -1357,9 +1254,38 @@ export default {
     }
     this.hasHourlyData = forecastHourly.length > 0
     this.updateHourlyCardVisibility()
-    this.hourlyMetricRetryCount = 0
-    this.updateHourlyScrollMetrics()
-    this.scheduleHourlyMetricRetry()
+    this.updateSwiperIndicator(0)
+  },
+
+  handleSwiperChange(event) {
+    const index = event.index || 0
+    this.updateSwiperIndicator(index)
+  },
+
+  updateSwiperIndicator(index) {
+    const pageCount = this.forecastHourlyPages.length
+    if (pageCount <= 1) return
+
+    const trackWidth = 100
+    const indicatorWidth = 40
+    const maxOffset = trackWidth - indicatorWidth
+    
+    // 计算位置逻辑：根据页数平均分配或固定 3 档
+    let indicatorOffset = 0
+    if (index === 0) {
+      indicatorOffset = 0
+    } else if (index === pageCount - 1) {
+      indicatorOffset = maxOffset
+    } else {
+      indicatorOffset = Math.round(maxOffset / 2)
+    }
+
+    this.hourlyIndicatorStyle = {
+      width: `${indicatorWidth}px`,
+      transform: JSON.stringify({
+        translateX: `${indicatorOffset}px`
+      })
+    }
   },
 
   /**
@@ -1441,10 +1367,6 @@ export default {
     if (result.success) {
       await this.maybeAutoUpdate(result.weatherData)
     }
-
-    this.hourlyMetricRetryCount = 0
-    this.updateHourlyScrollMetrics()
-    this.scheduleHourlyMetricRetry()
   },
 
   /**
@@ -1475,10 +1397,6 @@ export default {
     ConnectionService.init((data) => {
       this.handleWeatherData(data)
     })
-
-    this.hourlyMetricRetryCount = 0
-    this.updateHourlyScrollMetrics()
-    this.scheduleHourlyMetricRetry()
   },
 
   /**
@@ -1738,18 +1656,20 @@ export default {
 .forecast-hourly {
   margin-top: 64px;
   width: 100%;
+  height: 240px;
 }
 
-.forecast-hourly__content {
-  padding-right: 16px;
+.forecast-hourly__page {
+  width: 100%;
+  height: 100%;
   flex-direction: row;
+  justify-content: center;
 }
 
 .forecast-hourly__item {
   flex-direction: column;
   align-items: center;
-  margin-left: 16px;
-  flex-shrink: 0;
+  margin: 0 12px;
   width: 88px;
 }
 
@@ -1771,7 +1691,7 @@ export default {
 }
 
 .progress-bar {
-  margin-top: 116px;
+  margin-top: 100px;
   flex-direction: column;
   align-items: center;
 }
