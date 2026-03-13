@@ -52,7 +52,7 @@ import {MESSAGES, TOAST_DURATION} from "../../common/js/config.js"
 // 导入工具类
 import {WeatherDataUtils} from "../../common/js/weather-utils.js"
 import DeviceService from "../../common/js/device-service.js"
-import {RECT_SCREEN_PRODUCTS} from "../../common/js/config.js"
+import {RECT_SCREEN_PRODUCTS, CIRCLE_SCREEN_PRODUCTS} from "../../common/js/config.js"
 
 export default {
   // 接收来自 index 页面的 selectedDate 参数
@@ -196,11 +196,13 @@ export default {
     this.textDay = selectedData.textDay
     this.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
     const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay, isNight)
-    const useRect =
-      typeof product === "string" &&
-      RECT_SCREEN_PRODUCTS.includes((product || "").toLowerCase())
+    
+    const productLower = (product || "").toLowerCase()
+    const isRect = RECT_SCREEN_PRODUCTS.includes(productLower)
+    const isCircle = CIRCLE_SCREEN_PRODUCTS.includes(productLower)
+    
     this.backgroundImage = backgroundImage
-    this.backgroundFolder = useRect ? "rect" : "default"
+    this.backgroundFolder = (isRect || isCircle) ? "rect" : "default"
   },
 
   formatTempRange(tempMin, tempMax) {
