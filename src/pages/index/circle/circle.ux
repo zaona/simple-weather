@@ -1603,6 +1603,14 @@ export default {
   scroll-snap-align: start;
 }
 
+@media (shape: circle){
+  .section--snap {
+    height: 480px;
+    scroll-snap-align: start;
+}
+
+}
+
 .title {
   flex-shrink: 0;
   margin-top: 26px;

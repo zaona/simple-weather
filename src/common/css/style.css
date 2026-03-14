@@ -279,7 +279,7 @@
 /* ===== 响应式样式 ===== */
 
 /* 针对圆表 (分辨率: 466px*466px, 水平dp值: 233) */
-@media (width: 233) {
+@media (width: 233) or (width: 240) {
   .main-content {
     padding: 20px 0px;
   }

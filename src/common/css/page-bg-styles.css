@@ -43,7 +43,7 @@
   }
 }
 
-/* 针对圆表 (分辨率: 466px*466px, 水平dp值: 233) */
+/* 针对其余圆表 (分辨率: 466px*466px, 水平dp值: 233) */
 @media (width: 233) {
   .page-bg {
     width: 466px;
@@ -51,9 +51,18 @@
   }
 }
 
-@media (shape: circle) {
+/* 针对s4 41mm (分辨率: 466px*466px) */
+@media (shape: circle){
   .page-bg {
     width: 466px;
     height: 466px;
+  }
+}
+
+/* 针对s5 (分辨率: 480px*480px, 水平dp值: 240) */
+@media (width: 240) {
+  .page-bg {
+    width: 480px;
+    height: 480px;
   }
 }
