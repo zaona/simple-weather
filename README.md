@@ -1,4 +1,9 @@
+<img src="src/common/logo.png" alt="腕上漫画" width="64" style="margin-bottom: 4px;">
+
 # 简明天气
+
+<a href='https://github.com/zaona/simple-weather/stargazers'><img alt="GitHub stars" src="https://img.shields.io/github/stars/zaona/simple-weather?style=social"></a>
+<a href='https://github.com/zaona/simple-weather/forks'><img alt="GitHub forks" src="https://img.shields.io/github/forks/zaona/simple-weather?style=social"></a>
 
 > 🧩 simple-weather
 
