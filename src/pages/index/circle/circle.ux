@@ -18,342 +18,314 @@
       scroll-y="true"
       bounces="true"
       @scroll="handlePullScroll"
-      style="scroll-snap-type: y mandatory; scroll-snap-stop: always;"
+      style="scroll-snap-type: y mandatory; scroll-snap-stop: always"
       if="{{ !isLoading }}"
     >
-        <div class="section section--snap">
-          <div class="title">
-            <text class="title__location">{{ current.location }}</text>
-            <div class="title__time">
-              <image
-                class="title__time__loading"
-                if="{{ isPullRefreshing }}"
-                src="/common/images/loading.png"
-              />
-              <text class="title__time__text" if="{{ !isPullRefreshing }}">{{ current.relativeTime }}</text>
-            </div>
-          </div>
-
-          <div class="current">
-            <div style="margin-left: 16px">
-              <text class="current__temperature">{{ current.temperature }}</text>
-              <text class="current__temperature__unit">°</text>
-            </div>
-            <text class="current__weather">{{ current.weather }}</text>
-            <text class="current__daily">
-              {{ current.temperatureDaily.from }}°/{{ current.temperatureDaily.to }}°
+      <div class="section section--snap">
+        <div class="title">
+          <text class="title__location">{{ current.location }}</text>
+          <div class="title__time">
+            <image
+              class="title__time__loading"
+              if="{{ isPullRefreshing }}"
+              src="/common/images/loading.png"
+            />
+            <text class="title__time__text" if="{{ !isPullRefreshing }}">
+              {{ current.relativeTime }}
             </text>
-          </div>
-
-          <div class="alert">
-            <div class="alert__card">
-              <image class="alert__icon" src="{{ current.icon }}" />
-            </div>
           </div>
         </div>
 
-        <div class="section section--snap" if="{{ showHourlyForecastCard }}">
-          <div class="title-bar" style="align-items: center;">
-            <div
-            class="header"
-            style="width: 480px; position: relative; height: 60px"
-          >
-            <text
-              class="time"
-              style="left: 168px; top: 9px; transform: rotate(-18deg)"
-            >
+        <div class="current">
+          <div style="margin-left: 16px">
+            <text class="current__temperature">{{ current.temperature }}</text>
+            <text class="current__temperature__unit">°</text>
+          </div>
+          <text class="current__weather">{{ current.weather }}</text>
+          <text class="current__daily">
+            {{ current.temperatureDaily.from }}°/{{ current.temperatureDaily.to }}°
+          </text>
+        </div>
+
+        <div class="alert">
+          <div class="alert__card">
+            <image class="alert__icon" src="{{ current.icon }}" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section section--snap" if="{{ showHourlyForecastCard }}">
+        <div class="title-bar" style="align-items: center">
+          <div class="header" style="width: 480px; position: relative; height: 60px">
+            <text class="time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
               {{ timeDigit1 }}
             </text>
-            <text
-              class="time"
-              style="left: 192px; top: 4px; transform: rotate(-9deg)"
-            >
+            <text class="time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
               {{ timeDigit2 }}
             </text>
             <text class="time" style="left: 212px; top: 0px">{{ ":" }}</text>
             <text class="time" style="left: 233px; top: 4px; transform: rotate(9deg)">
               {{ timeDigit3 }}
             </text>
-            <text
-              class="time"
-              style="left: 257px; top: 9px; transform: rotate(18deg)"
-            >
+            <text class="time" style="left: 257px; top: 9px; transform: rotate(18deg)">
               {{ timeDigit4 }}
             </text>
           </div>
-            <text class="title-bar__text">天气预测</text>
-          </div>
-
-          <swiper
-            class="forecast-hourly"
-            indicator="false"
-            loop="false"
-            @change="handleSwiperChange"
-          >
-            <div class="forecast-hourly__page" for="{{ page in forecastHourlyPages }}">
-              <div class="forecast-hourly__item" for="{{ item in page }}">
-                <text class="forecast-hourly__time">{{ item.time }}</text>
-                <text class="forecast-hourly__temperature">{{ item.temperature }}°</text>
-                <image class="forecast-hourly__icon" src="{{ item.icon }}" />
-              </div>
-            </div>
-          </swiper>
-
-          <div class="progress-bar" if="{{ forecastHourlyPages.length > 1 }}">
-            <div class="progress-bar__bg">
-              <div class="progress-bar__fill" style="{{ hourlyIndicatorStyle }}"></div>
-            </div>
-          </div>
+          <text class="title-bar__text">天气预测</text>
         </div>
 
-        <div class="section section--snap">
-          <div class="title-bar" style="align-items: center;">
-            <div
-            class="header"
-            style="width: 480px; position: relative; height: 60px"
-          >
-            <text
-              class="time"
-              style="left: 168px; top: 9px; transform: rotate(-18deg)"
-            >
+        <swiper class="forecast-hourly" indicator="false" loop="false" @change="handleSwiperChange">
+          <div class="forecast-hourly__page" for="{{ page in forecastHourlyPages }}">
+            <div class="forecast-hourly__item" for="{{ item in page }}">
+              <text class="forecast-hourly__time">{{ item.time }}</text>
+              <text class="forecast-hourly__temperature">{{ item.temperature }}°</text>
+              <image class="forecast-hourly__icon" src="{{ item.icon }}" />
+            </div>
+          </div>
+        </swiper>
+
+        <div class="progress-bar" if="{{ forecastHourlyPages.length > 1 }}">
+          <div class="progress-bar__bg">
+            <div class="progress-bar__fill" style="{{ hourlyIndicatorStyle }}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section--snap">
+        <div class="title-bar" style="align-items: center">
+          <div class="header" style="width: 480px; position: relative; height: 60px">
+            <text class="time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
               {{ timeDigit1 }}
             </text>
-            <text
-              class="time"
-              style="left: 192px; top: 4px; transform: rotate(-9deg)"
-            >
+            <text class="time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
               {{ timeDigit2 }}
             </text>
             <text class="time" style="left: 212px; top: 0px">{{ ":" }}</text>
             <text class="time" style="left: 233px; top: 4px; transform: rotate(9deg)">
               {{ timeDigit3 }}
             </text>
-            <text
-              class="time"
-              style="left: 257px; top: 9px; transform: rotate(18deg)"
-            >
+            <text class="time" style="left: 257px; top: 9px; transform: rotate(18deg)">
               {{ timeDigit4 }}
             </text>
           </div>
-            <text class="title-bar__text">未来天气</text>
-          </div>
+          <text class="title-bar__text">未来天气</text>
+        </div>
 
-          <scroll class="forecast-daily" scroll-y="true" bounces="true">
-            <div class="forecast-daily__item" for="{{ item in forecastDaily.slice(0, 7) }}" @click="DetailInfo(item)">
-              <div class="forecast-daily__left">
-                <image class="forecast-daily__icon" src="{{ item.icon }}" />
-                <text class="forecast-daily__time">{{ item.time }}</text>
-              </div>
-              <text class="forecast-daily__temperature">
-                {{ item.temperature.from }}°/{{ item.temperature.to }}°
+        <scroll class="forecast-daily" scroll-y="true" bounces="true">
+          <div
+            class="forecast-daily__item"
+            for="{{ item in forecastDaily.slice(0, 7) }}"
+            @click="DetailInfo(item)"
+          >
+            <div class="forecast-daily__left">
+              <image class="forecast-daily__icon" src="{{ item.icon }}" />
+              <text class="forecast-daily__time">{{ item.time }}</text>
+            </div>
+            <text class="forecast-daily__temperature">
+              {{ item.temperature.from }}°/{{ item.temperature.to }}°
+            </text>
+          </div>
+        </scroll>
+      </div>
+
+      <div class="section section--snap">
+        <div class="title-bar" style="align-items: center">
+          <div class="header" style="width: 480px; position: relative; height: 60px">
+            <text class="time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
+              {{ timeDigit1 }}
+            </text>
+            <text class="time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
+              {{ timeDigit2 }}
+            </text>
+            <text class="time" style="left: 212px; top: 0px">{{ ":" }}</text>
+            <text class="time" style="left: 233px; top: 4px; transform: rotate(9deg)">
+              {{ timeDigit3 }}
+            </text>
+            <text class="time" style="left: 257px; top: 9px; transform: rotate(18deg)">
+              {{ timeDigit4 }}
+            </text>
+          </div>
+          <text class="title-bar__text">天气指数</text>
+        </div>
+
+        <scroll class="indices" scroll-y="true" bounces="true">
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[0].type }}</text>
+              <text class="indices__value">{{ indices[0].value }}</text>
+            </div>
+            <div class="indices__icon">
+              <image src="{{ indices[0].icon }}" />
+              <text
+                style="
+                  position: absolute;
+                  top: 43px;
+                  left: 0;
+                  width: 100%;
+                  text-align: center;
+                  line-height: 42px;
+                  font-size: 42px;
+                  font-weight: bold;
+                  color: white;
+                "
+              >
+                {{ indices[0].desc }}
+              </text>
+              <text
+                style="
+                  position: absolute;
+                  bottom: 4px;
+                  left: 0;
+                  width: 100%;
+                  text-align: center;
+                  line-height: 24px;
+                  font-size: 24px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
+                UV
               </text>
             </div>
-          </scroll>
-        </div>
-
-        <div class="section section--snap">
-          <div class="title-bar" style="align-items: center;">
-            <div
-            class="header"
-            style="width: 480px; position: relative; height: 60px"
-          >
-            <text
-              class="time"
-              style="left: 168px; top: 9px; transform: rotate(-18deg)"
-            >
-              {{ timeDigit1 }}
-            </text>
-            <text
-              class="time"
-              style="left: 192px; top: 4px; transform: rotate(-9deg)"
-            >
-              {{ timeDigit2 }}
-            </text>
-            <text class="time" style="left: 212px; top: 0px">{{ ":" }}</text>
-            <text class="time" style="left: 233px; top: 4px; transform: rotate(9deg)">
-              {{ timeDigit3 }}
-            </text>
-            <text
-              class="time"
-              style="left: 257px; top: 9px; transform: rotate(18deg)"
-            >
-              {{ timeDigit4 }}
-            </text>
-          </div>
-            <text class="title-bar__text">天气指数</text>
           </div>
 
-          <scroll class="indices" scroll-y="true" bounces="true">
-            <div class="indices__item">
-              <div class="indices__content">
-                <text class="indices__type">{{ indices[0].type }}</text>
-                <text class="indices__value">{{ indices[0].value }}</text>
-              </div>
-              <div class="indices__icon">
-                <image src="{{ indices[0].icon }}" />
-                <text
-                  style="
-                    position: absolute;
-                    top: 43px;
-                    left: 0;
-                    width: 100%;
-                    text-align: center;
-                    line-height: 42px;
-                    font-size: 42px;
-                    font-weight: bold;
-                    color: white;
-                  "
-                >
-                  {{ indices[0].desc }}
-                </text>
-                <text
-                  style="
-                    position: absolute;
-                    bottom: 4px;
-                    left: 0;
-                    width: 100%;
-                    text-align: center;
-                    line-height: 24px;
-                    font-size: 24px;
-                    color: rgba(255, 255, 255, 0.75);
-                  "
-                >
-                  UV
-                </text>
-              </div>
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[1].type }}</text>
+              <text class="indices__value">{{ indices[1].value }}%</text>
             </div>
-
-            <div class="indices__item">
-              <div class="indices__content">
-                <text class="indices__type">{{ indices[1].type }}</text>
-                <text class="indices__value">{{ indices[1].value }}%</text>
+            <div class="indices__icon">
+              <progress
+                class="indices__icon__humidity"
+                percent="{{ indices[1].percent }}"
+                type="arc"
+              ></progress>
+              <div
+                style="
+                  position: absolute;
+                  top: 0px;
+                  left: 0px;
+                  width: 100%;
+                  height: 100%;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <image src="/common/images/hum/hum_wight.png" />
               </div>
-              <div class="indices__icon">
-                <progress
-                  class="indices__icon__humidity"
-                  percent="{{ indices[1].percent }}"
-                  type="arc"
-                ></progress>
-                <div
-                  style="
-                    position: absolute;
-                    top: 0px;
-                    left: 0px;
-                    width: 100%;
-                    height: 100%;
-                    align-items: center;
-                    justify-content: center;
-                  "
-                >
-                  <image src="/common/images/hum/hum_wight.png" />
-                </div>
-                <text
-                  style="
-                    position: absolute;
-                    bottom: 6px;
-                    left: 0;
-                    width: 100%;
-                    text-align: center;
-                    line-height: 20px;
-                    font-size: 20px;
-                    color: rgba(255, 255, 255, 0.75);
-                  "
-                >
-                  {{ indices[1].desc }}
-                </text>
-              </div>
+              <text
+                style="
+                  position: absolute;
+                  bottom: 6px;
+                  left: 0;
+                  width: 100%;
+                  text-align: center;
+                  line-height: 20px;
+                  font-size: 20px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
+                {{ indices[1].desc }}
+              </text>
             </div>
+          </div>
 
-            <div class="indices__item">
-              <div class="indices__content">
-                <text class="indices__type">{{ indices[2].type }}</text>
-                <text class="indices__value">{{ indices[2].value }}</text>
-              </div>
-              <div class="indices__icon">
-                <image style="width: 128px;height: 128px;" src="/common/images/wind/wind1.png" />
-                <image class="wind-arrow" style="{{ indices[2].rotationStyle }}" src="/common/images/wind/wind3.png" />
-                <image style="position: absolute; top: 0; left: 0;width: 128px;height: 128px;" src="/common/images/wind/wind2.png" />
-              </div>
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[2].type }}</text>
+              <text class="indices__value">{{ indices[2].value }}</text>
             </div>
-
-            <div class="indices__item">
-              <div class="indices__content">
-                <text class="indices__type">{{ indices[3].type }}</text>
-                <text class="indices__value">{{ indices[3].value }}</text>
-              </div>
-              <div class="indices__icon">
-                <image src="{{ indices[3].icon }}" />
-                <div
-                  style="
-                    position: absolute;
-                    top: 0px;
-                    left: 0px;
-                    width: 100%;
-                    height: 100%;
-                    align-items: center;
-                    justify-content: center;
-                  "
-                >
-                  <image src="{{ indices[3].arrow }}" />
-                </div>
-                <text
-                  style="
-                    position: absolute;
-                    bottom: 6px;
-                    left: 0;
-                    width: 100%;
-                    text-align: center;
-                    line-height: 20px;
-                    font-size: 20px;
-                    color: rgba(255, 255, 255, 0.75);
-                  "
-                >
-                  hpa
-                </text>
-              </div>
+            <div class="indices__icon">
+              <image style="width: 128px; height: 128px" src="/common/images/wind/wind1.png" />
+              <image
+                class="wind-arrow"
+                style="{{ indices[2].rotationStyle }}"
+                src="/common/images/wind/wind3.png"
+              />
+              <image
+                style="position: absolute; top: 0; left: 0; width: 128px; height: 128px"
+                src="/common/images/wind/wind2.png"
+              />
             </div>
+          </div>
 
-            <div class="indices__item">
-              <div class="indices__content">
-                <text class="indices__type">{{ indices[4].type }}</text>
-                <text class="indices__value">{{ indices[4].value }}</text>
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[3].type }}</text>
+              <text class="indices__value">{{ indices[3].value }}</text>
+            </div>
+            <div class="indices__icon">
+              <image src="{{ indices[3].icon }}" />
+              <div
+                style="
+                  position: absolute;
+                  top: 0px;
+                  left: 0px;
+                  width: 100%;
+                  height: 100%;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <image src="{{ indices[3].arrow }}" />
               </div>
-              <div class="indices__icon">
-                <image style="margin:-8px" src="{{ indices[4].icon }}" />
-                <text
-                  style="
-                    position: absolute;
-                    bottom: 20px;
-                    left: 2px;
-                    line-height: 20px;
-                    font-size: 20px;
-                    color: rgba(255, 255, 255, 0.75);
-                  "
-                >
+              <text
+                style="
+                  position: absolute;
+                  bottom: 6px;
+                  left: 0;
+                  width: 100%;
+                  text-align: center;
+                  line-height: 20px;
+                  font-size: 20px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
+                hpa
+              </text>
+            </div>
+          </div>
+
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[4].type }}</text>
+              <text class="indices__value">{{ indices[4].value }}</text>
+            </div>
+            <div class="indices__icon">
+              <image style="margin: -8px" src="{{ indices[4].icon }}" />
+              <text
+                style="
+                  position: absolute;
+                  bottom: 20px;
+                  left: 2px;
+                  line-height: 20px;
+                  font-size: 20px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
                 {{ indices[4].sunrise }}
-                </text>
-                <text
-                  style="
-                    position: absolute;
-                    bottom: 20px;
-                    right: 2px;
-                    line-height: 20px;
-                    font-size: 20px;
-                    color: rgba(255, 255, 255, 0.75);
-                  "
-                >
+              </text>
+              <text
+                style="
+                  position: absolute;
+                  bottom: 20px;
+                  right: 2px;
+                  line-height: 20px;
+                  font-size: 20px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
                 {{ indices[4].sunset }}
-                </text>
-              </div>
+              </text>
             </div>
+          </div>
 
-            <div class="content-hero mt-lg">
-              <div class="btn-primary" onclick="About()">
-                <text class="text-button">关于</text>
-              </div>
+          <div class="content-hero mt-lg">
+            <div class="btn-primary" onclick="About()">
+              <text class="text-button">关于</text>
             </div>
-          </scroll>
-        </div>
+          </div>
+        </scroll>
+      </div>
     </scroll>
   </div>
 </template>
@@ -634,7 +606,6 @@ export default {
     return Math.round(normalized)
   },
 
-
   getSunPercent(sunriseText, sunsetText) {
     if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
       return 0
@@ -657,7 +628,10 @@ export default {
     if (sunsetMinutes <= sunriseMinutes) {
       return 0
     }
-    const progress = Math.min(Math.max(nowMinutes - sunriseMinutes, 0), sunsetMinutes - sunriseMinutes)
+    const progress = Math.min(
+      Math.max(nowMinutes - sunriseMinutes, 0),
+      sunsetMinutes - sunriseMinutes
+    )
     return Math.round((progress / (sunsetMinutes - sunriseMinutes)) * 100)
   },
 
@@ -680,7 +654,7 @@ export default {
     const sunsetMinutes = ssH * 60 + ssM
     const now = new Date()
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
-    
+
     // 如果现在已经过了日落，或者还没到日出，显示日出
     if (nowMinutes >= sunsetMinutes || nowMinutes < sunriseMinutes) {
       return {label: "日出", time: sunriseText}
@@ -899,7 +873,12 @@ export default {
     const uvPercent = Number.isNaN(uvNumber)
       ? 0
       : Math.min(Math.max(Math.round((uvNumber / 11) * 100), 0), 100)
-    const uvIcon = this.getImageByPercent("/common/images/uv/uv", 15, uvPercent, "/common/images/uv/uv1.png")
+    const uvIcon = this.getImageByPercent(
+      "/common/images/uv/uv",
+      15,
+      uvPercent,
+      "/common/images/uv/uv1.png"
+    )
     const pressurePercent = this.getPercentByRange(pressureValue, 980, 1040)
     const airIcon = this.getImageByPercent(
       "/common/images/air/Air",
@@ -1005,7 +984,9 @@ export default {
         from: todayData.tempMin || "__",
         to: todayData.tempMax || "__"
       },
-      icon: this.iconCode ? `/common/images/weather-icons/${this.iconCode}.png` : "/common/images/weather-icons/cloudy.png"
+      icon: this.iconCode
+        ? `/common/images/weather-icons/${this.iconCode}.png`
+        : "/common/images/weather-icons/cloudy.png"
     }
     this.forecastDaily = this.buildForecastDaily(weatherData.daily || [])
     this.indices = this.buildIndices(todayData)
@@ -1327,14 +1308,14 @@ export default {
   applyHourlyForecastList(hourlyList = []) {
     const forecastHourly = this.buildForecastHourly(hourlyList)
     this.forecastHourly = forecastHourly
-    
+
     // 每 4 个一组进行分组
     const pages = []
     for (let i = 0; i < forecastHourly.length; i += 4) {
       pages.push(forecastHourly.slice(i, i + 4))
     }
     this.forecastHourlyPages = pages
-    
+
     if (forecastHourly.length > 0) {
       this.current = {
         ...this.current,
@@ -1358,7 +1339,7 @@ export default {
     const trackWidth = 100
     const indicatorWidth = 40
     const maxOffset = trackWidth - indicatorWidth
-    
+
     // 计算位置逻辑：根据页数平均分配或固定 3 档
     // 为了极致流畅和符合之前的 3 档逻辑，我们根据 index 在总页数中的位置来定
     let indicatorOffset = 0
@@ -1603,12 +1584,11 @@ export default {
   scroll-snap-align: start;
 }
 
-@media (shape: circle){
+@media (shape: circle) {
   .section--snap {
     height: 480px;
     scroll-snap-align: start;
-}
-
+  }
 }
 
 .title {
@@ -1748,24 +1728,24 @@ export default {
 }
 
 .header {
-	width: 480px;
-	height: 160px;
-	flex-direction: column;
-	align-items: center;
+  width: 480px;
+  height: 160px;
+  flex-direction: column;
+  align-items: center;
 }
 
 .time {
-	position: absolute;
-	width: 55px;
-	height: 36px;
-	font-size: 30px;
-	font-weight: 600;
-	text-align: center;
-	display: flex;
-	align-items: flex-end;
-	color: rgba(255, 255, 255, 1);
-	transform-origin: 27.5px 18px;
-	font-weight: bold;
+  position: absolute;
+  width: 55px;
+  height: 36px;
+  font-size: 30px;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  align-items: flex-end;
+  color: rgba(255, 255, 255, 1);
+  transform-origin: 27.5px 18px;
+  font-weight: bold;
 }
 
 .forecast-hourly {
@@ -1848,7 +1828,7 @@ export default {
   align-items: center;
 }
 
-.forecast-daily__icon{
+.forecast-daily__icon {
   width: 48px;
   height: 48px;
 }
@@ -1927,7 +1907,6 @@ export default {
   height: 128px;
 }
 
-
 /* 复用原 style.css 中用到的按钮与间距样式 */
 .text-button {
   font-size: 29px;
@@ -1951,5 +1930,3 @@ export default {
   margin-top: 12px;
 }
 </style>
-
-

@@ -41,7 +41,10 @@
             <text class="text-hourly">
               {{ item.name }}
             </text>
-            <image class="icon-weather-small" src="/common/images/weather-icons/{{ item.iconCode }}.png" />
+            <image
+              class="icon-weather-small"
+              src="/common/images/weather-icons/{{ item.iconCode }}.png"
+            />
             <text class="text-hourly-temp" style="">
               {{ item.temp }}
             </text>
@@ -748,6 +751,3 @@ export default {
 @import "../../../common/css/loading-styles.css";
 @import "../../../common/css/page-bg-styles.css";
 </style>
-
-
-

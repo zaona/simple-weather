@@ -52,7 +52,7 @@
 }
 
 /* 针对s4 41mm (分辨率: 466px*466px) */
-@media (shape: circle){
+@media (shape: circle) {
   .page-bg {
     width: 466px;
     height: 466px;

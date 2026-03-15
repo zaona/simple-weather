@@ -193,7 +193,9 @@ class RefreshController {
 
     const localData = await HourlyDataService.readHourlyData(true)
     const hasValidLocalData =
-      localData && HourlyDataService.validateHourlyData(localData) && Array.isArray(localData.hourly)
+      localData &&
+      HourlyDataService.validateHourlyData(localData) &&
+      Array.isArray(localData.hourly)
 
     const isExpired = hasValidLocalData ? this.isHourlyExpired(localData) : true
 

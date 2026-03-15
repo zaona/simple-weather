@@ -357,6 +357,5 @@ export const WeatherDataUtils = {
     }
 
     return backgroundImage
-  },
-
+  }
 }

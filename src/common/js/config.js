@@ -73,7 +73,8 @@ export const CIRCLE_SCREEN_PRODUCTS = [
   "xiaomi watch s4 esim",
   "xiaomi watch s4 sport",
   "marconi_o62m_watch",
-  "xiaomi watch s4 41mm", "emulator-vela"
+  "xiaomi watch s4 41mm",
+  "emulator-vela"
 ]
 
 // 用户提示消息

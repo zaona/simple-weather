@@ -65,5 +65,3 @@ export default {
 @import "../../common/css/style.css";
 @import "../../common/css/loading-styles.css";
 </style>
-
-

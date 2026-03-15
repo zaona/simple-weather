@@ -2,7 +2,10 @@
   <!-- 页面容器，支持右滑返回 -->
   <div class="page-container" @swipe="toHomePageSwipe">
     <!-- 背景图片 -->
-    <image class="page-bg" src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png" />
+    <image
+      class="page-bg"
+      src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png"
+    />
 
     <!-- 加载动画容器 -->
     <div class="loading-container" if="{{ isLoading }}">
@@ -196,13 +199,13 @@ export default {
     this.textDay = selectedData.textDay
     this.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
     const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay, isNight)
-    
+
     const productLower = (product || "").toLowerCase()
     const isRect = RECT_SCREEN_PRODUCTS.includes(productLower)
     const isCircle = CIRCLE_SCREEN_PRODUCTS.includes(productLower)
-    
+
     this.backgroundImage = backgroundImage
-    this.backgroundFolder = (isRect || isCircle) ? "rect" : "default"
+    this.backgroundFolder = isRect || isCircle ? "rect" : "default"
   },
 
   formatTempRange(tempMin, tempMax) {
@@ -245,6 +248,3 @@ export default {
 @import "../../common/css/loading-styles.css";
 @import "../../common/css/page-bg-styles.css";
 </style>
-
-
-
