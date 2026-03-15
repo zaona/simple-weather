@@ -12,8 +12,8 @@
     "format": "prettier --write \"src/**/*.{ux,js,less,css}\""
   },
   "devDependencies": {
-    "@aiot-toolkit/jsc": "^1.0.3",
-    "aiot-toolkit": "^2.0.4",
+    "@aiot-toolkit/jsc": "^1.0.8",
+    "aiot-toolkit": "^2.0.5",
     "prettier": "^3.7.4"
   }
 }
