@@ -56,18 +56,18 @@
 
       <div class="section section--snap" if="{{ showHourlyForecastCard }}">
         <div class="title-bar" style="align-items: center">
-          <div class="header" style="width: 480px; position: relative; height: 60px">
-            <text class="time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
+          <div class="title-bar__header" style="width: 480px; position: relative; height: 60px">
+            <text class="title-bar__time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
               {{ timeDigit1 }}
             </text>
-            <text class="time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
+            <text class="title-bar__time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
               {{ timeDigit2 }}
             </text>
-            <text class="time" style="left: 212px; top: 0px">{{ ":" }}</text>
-            <text class="time" style="left: 233px; top: 4px; transform: rotate(9deg)">
+            <text class="title-bar__time" style="left: 212px; top: 0px">{{ ":" }}</text>
+            <text class="title-bar__time" style="left: 233px; top: 4px; transform: rotate(9deg)">
               {{ timeDigit3 }}
             </text>
-            <text class="time" style="left: 257px; top: 9px; transform: rotate(18deg)">
+            <text class="title-bar__time" style="left: 257px; top: 9px; transform: rotate(18deg)">
               {{ timeDigit4 }}
             </text>
           </div>
@@ -93,18 +93,18 @@
 
       <div class="section section--snap">
         <div class="title-bar" style="align-items: center">
-          <div class="header" style="width: 480px; position: relative; height: 60px">
-            <text class="time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
+          <div class="title-bar__header" style="width: 480px; position: relative; height: 60px">
+            <text class="title-bar__time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
               {{ timeDigit1 }}
             </text>
-            <text class="time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
+            <text class="title-bar__time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
               {{ timeDigit2 }}
             </text>
-            <text class="time" style="left: 212px; top: 0px">{{ ":" }}</text>
-            <text class="time" style="left: 233px; top: 4px; transform: rotate(9deg)">
+            <text class="title-bar__time" style="left: 212px; top: 0px">{{ ":" }}</text>
+            <text class="title-bar__time" style="left: 233px; top: 4px; transform: rotate(9deg)">
               {{ timeDigit3 }}
             </text>
-            <text class="time" style="left: 257px; top: 9px; transform: rotate(18deg)">
+            <text class="title-bar__time" style="left: 257px; top: 9px; transform: rotate(18deg)">
               {{ timeDigit4 }}
             </text>
           </div>
@@ -130,18 +130,18 @@
 
       <div class="section section--snap">
         <div class="title-bar" style="align-items: center">
-          <div class="header" style="width: 480px; position: relative; height: 60px">
-            <text class="time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
+          <div class="title-bar__header" style="width: 480px; position: relative; height: 60px">
+            <text class="title-bar__time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
               {{ timeDigit1 }}
             </text>
-            <text class="time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
+            <text class="title-bar__time" style="left: 192px; top: 4px; transform: rotate(-9deg)">
               {{ timeDigit2 }}
             </text>
-            <text class="time" style="left: 212px; top: 0px">{{ ":" }}</text>
-            <text class="time" style="left: 233px; top: 4px; transform: rotate(9deg)">
+            <text class="title-bar__time" style="left: 212px; top: 0px">{{ ":" }}</text>
+            <text class="title-bar__time" style="left: 233px; top: 4px; transform: rotate(9deg)">
               {{ timeDigit3 }}
             </text>
-            <text class="time" style="left: 257px; top: 9px; transform: rotate(18deg)">
+            <text class="title-bar__time" style="left: 257px; top: 9px; transform: rotate(18deg)">
               {{ timeDigit4 }}
             </text>
           </div>
@@ -1727,14 +1727,14 @@ export default {
   color: white;
 }
 
-.header {
+.title-bar__header {
   width: 480px;
   height: 160px;
   flex-direction: column;
   align-items: center;
 }
 
-.time {
+.title-bar__time {
   position: absolute;
   width: 55px;
   height: 36px;
