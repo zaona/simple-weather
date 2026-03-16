@@ -4,7 +4,7 @@
  */
 
 /* 加载动画容器 */
-.loading-container {
+.loading {
   position: fixed;
   top: 0;
   left: 0;
@@ -16,7 +16,7 @@
 }
 
 /* 加载动画背景遮罩 */
-.loading-bg {
+.loading__bg {
   position: absolute;
   top: 0;
   left: 0;
@@ -27,7 +27,7 @@
 }
 
 /* 加载动画图标 */
-.loading-icon {
+.loading__icon {
   width: 64px;
   height: 64px;
   animation-name: rotate;
@@ -38,7 +38,7 @@
   z-index: 1;
 }
 
-.loading-actions {
+.loading__actions {
   margin-top: 24px;
   z-index: 1;
 }

@@ -1,12 +1,12 @@
 <template>
   <div class="page">
-    <image class="page-bg" src="/common/images/weather-bgs/rect/{{ backgroundImage }}.png" />
+    <image class="page__bg" src="/common/images/weather-bgs/rect/{{ backgroundImage }}.png" />
 
     <!-- 加载动画容器 -->
-    <div class="loading-container" if="{{ isLoading }}">
-      <div class="loading-bg"></div>
-      <image class="loading-icon" src="/common/images/loading.png" />
-      <div class="loading-actions" if="{{ showDebugEntry }}">
+    <div class="loading" if="{{ isLoading }}">
+      <div class="loading__bg"></div>
+      <image class="loading__icon" src="/common/images/loading.png" />
+      <div class="loading__actions" if="{{ showDebugEntry }}">
         <div class="btn-primary" onclick="About()">
           <text class="text-button">关于</text>
         </div>
@@ -14,7 +14,7 @@
     </div>
 
     <scroll
-      class="section-scroll"
+      class="page__scroll"
       scroll-y="true"
       bounces="true"
       @scroll="handlePullScroll"
@@ -26,11 +26,11 @@
           <text class="title__location">{{ current.location }}</text>
           <div class="title__time">
             <image
-              class="title__time__loading"
+              class="title__time-loading"
               if="{{ isPullRefreshing }}"
               src="/common/images/loading.png"
             />
-            <text class="title__time__text" if="{{ !isPullRefreshing }}">
+            <text class="title__time-text" if="{{ !isPullRefreshing }}">
               {{ current.relativeTime }}
             </text>
           </div>
@@ -39,7 +39,7 @@
         <div class="current">
           <div style="margin-left: 16px">
             <text class="current__temperature">{{ current.temperature }}</text>
-            <text class="current__temperature__unit">°</text>
+            <text class="current__unit">°</text>
           </div>
           <text class="current__weather">{{ current.weather }}</text>
           <text class="current__daily">
@@ -153,7 +153,7 @@
             </div>
             <div class="indices__icon">
               <progress
-                class="indices__icon__humidity"
+                class="indices__humidity"
                 percent="{{ indices[1].percent }}"
                 type="arc"
               ></progress>
@@ -195,7 +195,7 @@
             <div class="indices__icon">
               <image style="width: 128px; height: 128px" src="/common/images/wind/wind1.png" />
               <image
-                class="wind-arrow"
+                class="indices__wind-arrow"
                 style="{{ indices[2].rotationStyle }}"
                 src="/common/images/wind/wind3.png"
               />
@@ -1512,7 +1512,7 @@ export default {
   flex-direction: column;
 }
 
-.section-scroll {
+.page__scroll {
   height: 100%;
   width: 100%;
   flex-direction: column;
@@ -1556,7 +1556,7 @@ export default {
   align-items: center;
 }
 
-.title__time__text {
+.title__time-text {
   line-height: 24px;
   width: 100%;
   font-size: 24px;
@@ -1565,17 +1565,17 @@ export default {
   text-align: center;
 }
 
-.title__time__loading {
+.title__time-loading {
   width: 24px;
   height: 24px;
-  animation-name: title-loading-rotate;
+  animation-name: title__loading-rotate;
   animation-duration: 1s;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
   transform-origin: 12px 12px;
 }
 
-@keyframes title-loading-rotate {
+@keyframes title__loading-rotate {
   0% {
     transform: rotate(0deg);
   }
@@ -1600,7 +1600,7 @@ export default {
   text-align: center;
 }
 
-.current__temperature__unit {
+.current__unit {
   height: 64px;
   margin-top: 4px;
   line-height: 64px;
@@ -1806,7 +1806,7 @@ export default {
   height: 128px;
 }
 
-.indices__icon__humidity {
+.indices__humidity {
   padding: 5px;
   width: 100%;
   height: 100%;
@@ -1815,7 +1815,7 @@ export default {
   stroke-width: 10px;
 }
 
-.wind-arrow {
+.indices__wind-arrow {
   position: absolute;
   top: 0;
   left: 0;

@@ -1,9 +1,9 @@
 <template>
   <div class="page-container">
-    <div class="loading-container">
-      <div class="loading-bg"></div>
-      <!-- <image class="loading-icon" src="/common/images/loading.png" /> -->
-      <div class="loading-actions" if="{{ showDebugEntry }}">
+    <div class="loading">
+      <div class="loading__bg"></div>
+      <!-- <image class="loading__icon" src="/common/images/loading.png" /> -->
+      <div class="loading__actions" if="{{ showDebugEntry }}">
         <div class="btn-primary" onclick="About()">
           <text class="text-button">关于</text>
         </div>

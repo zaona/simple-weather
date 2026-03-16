@@ -79,6 +79,32 @@ export const WEATHER_API_PRIVATE = {
 
 - `weather-api-config.js` 仅用于本地/私有环境，不要提交真实密钥。
 
+## 开发规范
+
+从2.x版本开始，CSS类名命名遵循 [BEM](https://en.bem.info/methodology/css/) 规范，部分陈旧代码会逐步改写
+
+BEM = Block（独立组件） + Element（组件内部元素） + Modifier（状态或变体）
+
+结构：
+
+```
+.block {}
+.block__element {}
+.block--modifier {}
+```
+
+示例：
+
+```
+.card {}
+.card__title {}
+.card__image {}
+.card__button {}
+
+.card--active {}
+.card--disabled {}
+```
+
 ## 构建与发布
 
 ### 安装依赖

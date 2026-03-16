@@ -3,14 +3,14 @@
   <div class="page-container" @swipe="toHomePageSwipe">
     <!-- 背景图片 -->
     <image
-      class="page-bg"
+      class="page__bg"
       src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png"
     />
 
     <!-- 加载动画容器 -->
-    <div class="loading-container" if="{{ isLoading }}">
-      <div class="loading-bg"></div>
-      <image class="loading-icon" src="/common/images/loading.png" />
+    <div class="loading" if="{{ isLoading }}">
+      <div class="loading__bg"></div>
+      <image class="loading__icon" src="/common/images/loading.png" />
     </div>
 
     <scroll
