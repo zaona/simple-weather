@@ -15,12 +15,7 @@
       </div>
     </div>
 
-    <scroll
-      class="main-content"
-      scroll-y="true"
-      bounces="true"
-      if="{{ !isLoading }}"
-    >
+    <scroll class="main-content" scroll-y="true" bounces="true" if="{{ !isLoading }}">
       <!-- 头部信息：地点和更新时间 -->
       <div class="page-header">
         <text class="text-location">{{ location }}</text>

@@ -54,7 +54,6 @@
               @change="handleHourlyForecastToggle"
             />
           </div>
-
         </div>
       </div>
 
