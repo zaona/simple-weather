@@ -45,8 +45,8 @@
             "
           >
             <div style="display: flex; flex-direction: column">
-              <text>逐小时天气预报</text>
-              <text class="text-subtitle">显示逐小时天气卡片</text>
+              <text>天气预测</text>
+              <text class="text-subtitle">逐小时天气预报</text>
             </div>
             <switch
               style="width: 80px; height: 40px"
@@ -55,9 +55,6 @@
             />
           </div>
 
-          <div class="btn-secondary-square mt-lg" @click="handleUpdateWeather">
-            <text class="text-button">{{ isUpdating ? "更新中..." : "更新天气" }}</text>
-          </div>
         </div>
       </div>
 
@@ -78,19 +75,15 @@
 
 <script>
 import router from "@system.router"
-import {showToast} from "@system.prompt"
 import DebugService from "../../common/js/debug-service.js"
 import SettingsService from "../../common/js/settings-service.js"
 import DeviceService from "../../common/js/device-service.js"
-import RefreshController from "../../common/js/refresh-controller.js"
-import {WEATHER_API_ERRORS} from "../../common/js/weather-api-service.js"
-import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../common/js/config.js"
+import {ADVANCED_FEATURE_PRODUCTS} from "../../common/js/config.js"
 
 export default {
   // 页面私有数据
   private: {
     showDebugPanel: false, // 是否显示调试面板
-    isUpdating: false, // 是否正在更新天气
     autoUpdateEnabled: false, // 自动更新开关
     hourlyForecastEnabled: false, // 逐小时天气开关
     showAutoUpdateCard: false
@@ -171,62 +164,6 @@ export default {
     const saved = await SettingsService.setHourlyForecastEnabled(nextValue)
     if (!saved) {
       this.hourlyForecastEnabled = previousValue
-    }
-  },
-
-  /**
-   * 通过 API 更新天气数据
-   */
-  async handleUpdateWeather() {
-    if (this.isUpdating) {
-      return
-    }
-
-    const remainingTime = await RefreshController.getManualRefreshRemainingTime()
-    if (remainingTime > 0) {
-      const minutesLeft = Math.max(1, Math.ceil(remainingTime / (60 * 1000)))
-      const message = (MESSAGES.MANUAL_UPDATE_TOO_SOON || "").replace("{minutes}", minutesLeft)
-      showToast({
-        message,
-        duration: TOAST_DURATION.NORMAL
-      })
-      return
-    }
-
-    this.isUpdating = true
-
-    try {
-      await RefreshController.refreshDailyData()
-
-      if (this.hourlyForecastEnabled) {
-        try {
-          await RefreshController.refreshHourlyData()
-        } catch (error) {
-          console.error("获取逐小时天气失败:", error)
-        }
-      }
-
-      showToast({
-        message: MESSAGES.DATA_UPDATED,
-        duration: TOAST_DURATION.SHORT
-      })
-    } catch (error) {
-      const isSaveError = error?.code === "DATA_SAVE_FAILED"
-      if (isSaveError) {
-        return
-      }
-
-      const toastMessage =
-        error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
-          ? MESSAGES.LOCATION_INFO_MISSING
-          : MESSAGES.FETCH_WEATHER_ERROR
-
-      showToast({
-        message: toastMessage,
-        duration: TOAST_DURATION.NORMAL
-      })
-    } finally {
-      this.isUpdating = false
     }
   },
 
