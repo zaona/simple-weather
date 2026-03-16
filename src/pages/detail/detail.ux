@@ -14,7 +14,7 @@
     </div>
 
     <scroll
-      class="main-content scroll-container"
+      class="main-content"
       scroll-y="true"
       bounces="true"
       if="{{ !isLoading }}"

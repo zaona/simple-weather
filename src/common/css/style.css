@@ -30,13 +30,6 @@
   align-items: center;
 }
 
-/* 滚动容器 */
-.scroll-container {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-}
-
 /* ===== 文本样式 ===== */
 
 /* 页面标题 */
@@ -48,7 +41,7 @@
 /* 页面副标题 */
 .text-subtitle {
   font-size: 22px;
-  margin-top: 6px;
+  margin-top: 3px;
   color: rgba(255, 255, 255, 0.6);
 }
 
@@ -288,11 +281,6 @@
     border-radius: 16px;
   }
 
-  .text-location {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
   .text-title {
     font-size: 36px;
     font-weight: normal;
@@ -300,7 +288,7 @@
 
   .text-subtitle {
     font-size: 24px;
-    margin-top: 8px;
+    margin-top: 4px;
   }
 
   .icon-weather-main {
@@ -316,14 +304,6 @@
     font-size: 42px;
   }
 
-  .text-daily {
-    font-size: 30px;
-  }
-
-  .text-daily-temp {
-    font-size: 36px;
-  }
-
   .text-data-value {
     font-size: 36px;
     font-weight: bold;
@@ -334,11 +314,6 @@
     font-size: 26px;
     margin-top: 2px;
     color: rgba(255, 255, 255, 0.6);
-  }
-
-  .icon-weather-small {
-    width: 56px;
-    height: 56px;
   }
 
   .card {
@@ -366,12 +341,6 @@
   .item-data {
     width: 49%;
     margin-right: 2px;
-  }
-
-  .item-hourly {
-    margin-right: 30px;
-    flex-direction: column;
-    align-items: center;
   }
 
   .container-app-info {
@@ -417,11 +386,6 @@
     border-radius: 16px;
   }
 
-  .text-location {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
   .text-title {
     font-size: 36px;
     font-weight: normal;
@@ -429,7 +393,7 @@
 
   .text-subtitle {
     font-size: 24px;
-    margin-top: 8px;
+    margin-top: 4px;
   }
 
   .icon-weather-main {
@@ -446,14 +410,6 @@
     font-size: 42px;
   }
 
-  .text-daily {
-    font-size: 30px;
-  }
-
-  .text-daily-temp {
-    font-size: 36px;
-  }
-
   .text-data-value {
     font-size: 36px;
     font-weight: bold;
@@ -464,11 +420,6 @@
     font-size: 26px;
     margin-top: 2px;
     color: rgba(255, 255, 255, 0.6);
-  }
-
-  .icon-weather-small {
-    width: 56px;
-    height: 56px;
   }
 
   .card {
