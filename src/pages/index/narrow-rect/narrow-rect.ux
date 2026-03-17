@@ -17,7 +17,6 @@
       class="page__scroll"
       scroll-y="true"
       bounces="true"
-      @scroll="handlePullScroll"
       style="scroll-snap-type: y mandatory; scroll-snap-stop: always"
       if="{{ !isLoading }}"
     >
