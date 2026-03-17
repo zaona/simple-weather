@@ -1,0 +1,1852 @@
+<template>
+  <div class="page">
+    <image class="page__bg" src="/common/images/weather-bgs/rect/{{ backgroundImage }}.png" />
+
+    <!-- 加载动画容器 -->
+    <div class="loading" if="{{ isLoading }}">
+      <div class="loading__bg"></div>
+      <image class="loading__icon" src="/common/images/loading.png" />
+      <div class="loading__actions" if="{{ showDebugEntry }}">
+        <div class="btn btn--primary" onclick="About()">
+          <text class="btn__text">关于</text>
+        </div>
+      </div>
+    </div>
+
+    <scroll
+      class="page__scroll"
+      scroll-y="true"
+      bounces="true"
+      @scroll="handlePullScroll"
+      style="scroll-snap-type: y mandatory; scroll-snap-stop: always"
+      if="{{ !isLoading }}"
+    >
+      <div class="section section--snap">
+        <div class="title">
+          <text class="title__location">{{ current.location }}</text>
+          <div class="title__time">
+            <image
+              class="title__time-loading"
+              if="{{ isPullRefreshing }}"
+              src="/common/images/loading.png"
+            />
+            <text class="title__time-text" if="{{ !isPullRefreshing }}">
+              {{ current.relativeTime }}
+            </text>
+          </div>
+        </div>
+
+        <div class="current">
+          <div style="margin-left: 16px">
+            <text class="current__temperature">{{ current.temperature }}</text>
+            <text class="current__unit">°</text>
+          </div>
+          <text class="current__weather">{{ current.weather }}</text>
+          <text class="current__daily">
+            {{ current.temperatureDaily.from }}°/{{ current.temperatureDaily.to }}°
+          </text>
+        </div>
+
+        <div class="alert">
+          <div class="alert__card">
+            <image class="alert__icon" src="{{ current.icon }}" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section section--snap" if="{{ showHourlyForecastCard }}">
+        <div class="title-bar">
+          <text class="title-bar__text">天气预测</text>
+          <text class="title-bar__time">{{ systemTime }}</text>
+        </div>
+
+        <swiper class="forecast-hourly" indicator="false" loop="false" @change="handleSwiperChange">
+          <div class="forecast-hourly__page" for="{{ page in forecastHourlyPages }}">
+            <div class="forecast-hourly__item" for="{{ item in page }}">
+              <text class="forecast-hourly__time">{{ item.time }}</text>
+              <text class="forecast-hourly__temperature">{{ item.temperature }}°</text>
+              <image class="forecast-hourly__icon" src="{{ item.icon }}" />
+            </div>
+          </div>
+        </swiper>
+
+        <div class="progress-bar" if="{{ forecastHourlyPages.length > 1 }}">
+          <div class="progress-bar__bg">
+            <div class="progress-bar__fill" style="{{ hourlyIndicatorStyle }}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section--snap">
+        <div class="title-bar">
+          <text class="title-bar__text">未来天气</text>
+          <text class="title-bar__time">{{ systemTime }}</text>
+        </div>
+
+        <div class="forecast-daily">
+          <div
+            class="forecast-daily__item"
+            for="{{ item in forecastDaily.slice(0, 7) }}"
+            @click="DetailInfo(item)"
+          >
+            <div class="forecast-daily__left">
+              <image class="forecast-daily__icon" src="{{ item.icon }}" />
+              <text class="forecast-daily__time">{{ item.time }}</text>
+            </div>
+            <text class="forecast-daily__temperature">
+              {{ item.temperature.from }}°/{{ item.temperature.to }}°
+            </text>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section--snap">
+        <div class="title-bar">
+          <text class="title-bar__text">天气指数</text>
+          <text class="title-bar__time">{{ systemTime }}</text>
+        </div>
+
+        <scroll class="indices" scroll-y="true" bounces="true">
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[0].type }}</text>
+              <text class="indices__value">{{ indices[0].value }}</text>
+            </div>
+            <div class="indices__icon">
+              <image src="{{ indices[0].icon }}" />
+              <text
+                style="
+                  position: absolute;
+                  top: 43px;
+                  left: 0;
+                  width: 100%;
+                  text-align: center;
+                  line-height: 42px;
+                  font-size: 42px;
+                  font-weight: bold;
+                  color: white;
+                "
+              >
+                {{ indices[0].desc }}
+              </text>
+              <text
+                style="
+                  position: absolute;
+                  bottom: 4px;
+                  left: 0;
+                  width: 100%;
+                  text-align: center;
+                  line-height: 24px;
+                  font-size: 24px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
+                UV
+              </text>
+            </div>
+          </div>
+
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[1].type }}</text>
+              <text class="indices__value">{{ indices[1].value }}%</text>
+            </div>
+            <div class="indices__icon">
+              <progress
+                class="indices__humidity"
+                percent="{{ indices[1].percent }}"
+                type="arc"
+              ></progress>
+              <div
+                style="
+                  position: absolute;
+                  top: 0px;
+                  left: 0px;
+                  width: 100%;
+                  height: 100%;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <image src="/common/images/hum/hum_wight.png" />
+              </div>
+              <text
+                style="
+                  position: absolute;
+                  bottom: 6px;
+                  left: 0;
+                  width: 100%;
+                  text-align: center;
+                  line-height: 20px;
+                  font-size: 20px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
+                {{ indices[1].desc }}
+              </text>
+            </div>
+          </div>
+
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[2].type }}</text>
+              <text class="indices__value">{{ indices[2].value }}</text>
+            </div>
+            <div class="indices__icon">
+              <image style="width: 128px; height: 128px" src="/common/images/wind/wind1.png" />
+              <image
+                class="indices__wind-arrow"
+                style="{{ indices[2].rotationStyle }}"
+                src="/common/images/wind/wind3.png"
+              />
+              <image
+                style="position: absolute; top: 0; left: 0; width: 128px; height: 128px"
+                src="/common/images/wind/wind2.png"
+              />
+            </div>
+          </div>
+
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[3].type }}</text>
+              <text class="indices__value">{{ indices[3].value }}</text>
+            </div>
+            <div class="indices__icon">
+              <image src="{{ indices[3].icon }}" />
+              <div
+                style="
+                  position: absolute;
+                  top: 0px;
+                  left: 0px;
+                  width: 100%;
+                  height: 100%;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <image src="{{ indices[3].arrow }}" />
+              </div>
+              <text
+                style="
+                  position: absolute;
+                  bottom: 6px;
+                  left: 0;
+                  width: 100%;
+                  text-align: center;
+                  line-height: 20px;
+                  font-size: 20px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
+                hpa
+              </text>
+            </div>
+          </div>
+
+          <div class="indices__item">
+            <div class="indices__content">
+              <text class="indices__type">{{ indices[4].type }}</text>
+              <text class="indices__value">{{ indices[4].value }}</text>
+            </div>
+            <div class="indices__icon">
+              <image style="margin: -8px" src="{{ indices[4].icon }}" />
+              <text
+                style="
+                  position: absolute;
+                  bottom: 20px;
+                  left: 2px;
+                  line-height: 20px;
+                  font-size: 20px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
+                {{ indices[4].sunrise }}
+              </text>
+              <text
+                style="
+                  position: absolute;
+                  bottom: 20px;
+                  right: 2px;
+                  line-height: 20px;
+                  font-size: 20px;
+                  color: rgba(255, 255, 255, 0.75);
+                "
+              >
+                {{ indices[4].sunset }}
+              </text>
+            </div>
+          </div>
+
+          <div class="hero mt-lg">
+            <div class="btn btn--primary" onclick="About()">
+              <text class="btn__text">关于</text>
+            </div>
+          </div>
+        </scroll>
+      </div>
+    </scroll>
+  </div>
+</template>
+
+<script>
+// 导入系统模块
+import router from "@system.router"
+import {showToast} from "@system.prompt"
+
+// 导入服务层
+import DataService from "../../../common/js/data-service.js"
+import ConnectionService from "../../../common/js/connection-service.js"
+import SettingsService from "../../../common/js/settings-service.js"
+import HourlyDataService from "../../../common/js/hourly-data-service.js"
+import DeviceService from "../../../common/js/device-service.js"
+import DebugService from "../../../common/js/debug-service.js"
+import {WEATHER_API_ERRORS} from "../../../common/js/weather-api-service.js"
+import RefreshController from "../../../common/js/refresh-controller.js"
+import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../../common/js/config.js"
+
+// 导入工具类
+import {DateUtils, WeatherDataUtils} from "../../../common/js/weather-utils.js"
+
+export default {
+  // 页面私有数据
+  private: {
+    isLoading: true, // 加载状态
+    isFirstLoad: true, // 是否是首次加载
+    autoUpdateEnabled: false, // 自动更新是否开启
+    hourlyForecastEnabled: false, // 逐小时天气是否开启
+    showHourlyForecastCard: false, // 是否显示逐小时卡片
+    supportsAdvancedFeatures: false, // 设备是否支持高级功能
+    showDebugEntry: false, // 加载态调试入口
+    hasHourlyData: false, // 是否有可用的逐小时数据
+    autoUpdateInProgress: false, // 自动更新中标记
+    isPullRefreshing: false, // 下拉刷新中
+    pullRefreshReady: true, // 下拉刷新触发开关
+    location: "__", // 地点
+    updateTime: "__", // 更新时间
+    iconCode: "__", // 天气图标代码
+    textDay: "__", // 白天天气描述
+    tempMinMax: "__°/__°", // 最高/最低温度
+    backgroundImage: "", // 背景图片
+
+    // 新版界面数据
+    current: {
+      location: "__",
+      relativeTime: "__",
+      weather: "__",
+      temperature: "__",
+      temperatureDaily: {
+        from: "__",
+        to: "__"
+      },
+      icon: "/common/images/weather-icons/cloudy.png"
+    },
+    forecastHourly: [],
+    forecastHourlyPages: [],
+    forecastDaily: [],
+    indices: [
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "/common/images/uv/uv1.png",
+        arrow: "/common/images/uv/uv15.png",
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      },
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "",
+        arrow: "",
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      },
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "",
+        arrow: "",
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      },
+      {
+        type: "__",
+        value: "__",
+        desc: "__",
+        percent: 0,
+        icon: "/common/images/air/Air13.png",
+        arrow: "/common/images/uv/uv15.png",
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      },
+      {
+        type: "__",
+        value: "__",
+        sunrise: "__",
+        sunset: "__",
+        percent: 0,
+        icon: "/common/images/sunset/sunset20.png",
+        arrow: "",
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      }
+    ],
+    systemTime: "__:__",
+    hourlyIndicatorStyle: {
+      width: "40px",
+      transform: JSON.stringify({
+        translateX: "0px"
+      })
+    },
+    timeDigit1: "_",
+    timeDigit2: "_",
+    timeDigit3: "_",
+    timeDigit4: "_"
+  },
+
+  applyPreloadedData(preloaded) {
+    if (!preloaded || !preloaded.weatherData || !preloaded.todayData) {
+      return false
+    }
+    this.applyWeatherData(preloaded.weatherData, preloaded.todayData)
+    return true
+  },
+
+  normalizeTempRange(rangeText) {
+    if (!rangeText || typeof rangeText !== "string") {
+      return {from: "__", to: "__"}
+    }
+    const parts = rangeText.replace("℃", "°").split("/")
+    if (parts.length !== 2) {
+      return {from: "__", to: "__"}
+    }
+    return {
+      from: parts[0].replace("°", "") || "__",
+      to: parts[1].replace("°", "") || "__"
+    }
+  },
+
+  formatTempRange(tempMin, tempMax) {
+    return `${tempMin}°/${tempMax}°`
+  },
+
+  normalizeTemperatureValue(value) {
+    if (value === null || value === undefined) {
+      return "__"
+    }
+    const numeric = Number(value)
+    if (Number.isNaN(numeric)) {
+      return String(value)
+    }
+    return String(Math.round(numeric))
+  },
+
+  calculateAverageTemperature(todayData) {
+    if (!todayData) {
+      return "__"
+    }
+    const min = Number(todayData.tempMin)
+    const max = Number(todayData.tempMax)
+    if (Number.isNaN(min) || Number.isNaN(max)) {
+      return "__"
+    }
+    return this.normalizeTemperatureValue((min + max) / 2)
+  },
+
+  getCurrentTemperature(todayData, hourlyList = []) {
+    if (Array.isArray(hourlyList) && hourlyList.length > 0) {
+      const tempText = hourlyList[0].temp || hourlyList[0].temperature
+      if (typeof tempText === "string") {
+        return tempText.replace("°", "")
+      }
+      if (tempText !== undefined && tempText !== null) {
+        return this.normalizeTemperatureValue(tempText)
+      }
+    }
+    return this.calculateAverageTemperature(todayData)
+  },
+
+  getHumidityDesc(percent) {
+    if (typeof percent !== "number" || Number.isNaN(percent)) {
+      return ""
+    }
+    if (percent < 30) {
+      return "干燥"
+    }
+    if (percent < 40) {
+      return "偏干"
+    }
+    if (percent < 60) {
+      return "舒适"
+    }
+    if (percent < 70) {
+      return "偏湿"
+    }
+    return "潮湿"
+  },
+
+  getUvDesc(indexValue) {
+    const numeric = Number(indexValue)
+    if (Number.isNaN(numeric)) {
+      return "__"
+    }
+    if (numeric <= 2) {
+      return "弱"
+    }
+    if (numeric <= 5) {
+      return "中等"
+    }
+    if (numeric <= 7) {
+      return "强"
+    }
+    if (numeric <= 10) {
+      return "很强"
+    }
+    return "极强"
+  },
+
+  getPercentByRange(value, min, max) {
+    const numeric = Number(value)
+    if (Number.isNaN(numeric)) {
+      return 0
+    }
+    const clamped = Math.min(Math.max(numeric, min), max)
+    return Math.round(((clamped - min) / (max - min)) * 100)
+  },
+
+  getImageByPercent(basePath, maxIndex, percent, fallbackPath) {
+    const normalized = Math.min(Math.max(Math.round(percent), 0), 100)
+    const index = 1 + Math.round((normalized / 100) * (maxIndex - 1))
+    if (!basePath) {
+      return fallbackPath || ""
+    }
+    return `${basePath}${index}.png`
+  },
+
+  getPressureArrow(pressure) {
+    const numeric = Number(pressure)
+    if (Number.isNaN(numeric)) {
+      return "/common/images/uv/uv15.png"
+    }
+    if (numeric > 1008) {
+      return "/common/images/uv/uv14.png"
+    }
+    if (numeric < 1008) {
+      return "/common/images/uv/uv13.png"
+    }
+    return "/common/images/uv/uv15.png"
+  },
+
+  getWindRotation(degValue) {
+    const numeric = Number(degValue)
+    if (Number.isNaN(numeric)) {
+      return 0
+    }
+    if (numeric < 0) {
+      return 0
+    }
+    const normalized = (numeric + 180) % 360
+    return Math.round(normalized)
+  },
+
+  getSunPercent(sunriseText, sunsetText) {
+    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
+      return 0
+    }
+    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
+      return 0
+    }
+    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
+      return 0
+    }
+    const [srH, srM] = sunriseText.split(":").map((value) => Number(value))
+    const [ssH, ssM] = sunsetText.split(":").map((value) => Number(value))
+    if ([srH, srM, ssH, ssM].some((value) => Number.isNaN(value))) {
+      return 0
+    }
+    const sunriseMinutes = srH * 60 + srM
+    const sunsetMinutes = ssH * 60 + ssM
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    if (sunsetMinutes <= sunriseMinutes) {
+      return 0
+    }
+    const progress = Math.min(
+      Math.max(nowMinutes - sunriseMinutes, 0),
+      sunsetMinutes - sunriseMinutes
+    )
+    return Math.round((progress / (sunsetMinutes - sunriseMinutes)) * 100)
+  },
+
+  getSunDisplayInfo(sunriseText, sunsetText) {
+    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
+      return {label: "日出", time: sunriseText || "--"}
+    }
+    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
+      return {label: "日出", time: sunriseText || "--"}
+    }
+    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
+      return {label: "日出", time: sunriseText || "--"}
+    }
+    const [srH, srM] = sunriseText.split(":").map((value) => Number(value))
+    const [ssH, ssM] = sunsetText.split(":").map((value) => Number(value))
+    if ([srH, srM, ssH, ssM].some((value) => Number.isNaN(value))) {
+      return {label: "日出", time: sunriseText || "--"}
+    }
+    const sunriseMinutes = srH * 60 + srM
+    const sunsetMinutes = ssH * 60 + ssM
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+
+    // 如果现在已经过了日落，或者还没到日出，显示日出
+    if (nowMinutes >= sunsetMinutes || nowMinutes < sunriseMinutes) {
+      return {label: "日出", time: sunriseText}
+    }
+    // 否则显示日落
+    return {label: "日落", time: sunsetText}
+  },
+
+  buildForecastHourly(hourlyList = [], limit = 12) {
+    const processed = this.processHourlyList(hourlyList, limit)
+    if (processed.length === 0) {
+      return []
+    }
+
+    return processed.map((entry, index) => {
+      const tempText = entry.temp !== undefined && entry.temp !== null ? String(entry.temp) : ""
+      const temperature = tempText ? tempText.replace("°", "") : "__"
+      const icon = entry.iconCode
+        ? `/common/images/weather-icons/${entry.iconCode}.png`
+        : "/common/images/weather-icons/cloudy.png"
+
+      return {
+        time: index === 0 ? "现在" : entry.name || "--:--",
+        temperature,
+        icon
+      }
+    })
+  },
+
+  buildForecastDaily(dailyList = []) {
+    if (!Array.isArray(dailyList) || dailyList.length === 0) {
+      return []
+    }
+
+    const baseList = this.buildForecastBase({daily: dailyList})
+    return baseList.map((item) => {
+      const temp = this.normalizeTempRange(item.tempMinMax)
+      const icon = item.iconCode
+        ? `/common/images/weather-icons/${item.iconCode}.png`
+        : "/common/images/weather-icons/cloudy.png"
+
+      return {
+        fxDate: item.fxDate,
+        time: item.name,
+        temperature: temp,
+        icon
+      }
+    })
+  },
+
+  buildBaseWeather(todayData, timeAgo) {
+    const isNight = WeatherDataUtils.isNightTime(todayData.sunrise, todayData.sunset)
+    return {
+      updateTime: timeAgo,
+      iconCode: WeatherDataUtils.getMappedIconCode(todayData.iconDay, isNight),
+      textDay: todayData.textDay,
+      tempMinMax: this.formatTempRange(todayData.tempMin, todayData.tempMax),
+      backgroundImage: WeatherDataUtils.getMappedBackgroundImage(todayData.iconDay, isNight),
+      isNight
+    }
+  },
+
+  buildForecastBase(weatherData) {
+    const todayStr = DateUtils.getTodayString()
+    const todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
+    const todaySunrise = todayData ? todayData.sunrise : null
+    const todaySunset = todayData ? todayData.sunset : null
+
+    return weatherData.daily
+      .filter((day) => {
+        const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
+        return dayDiff >= -1
+      })
+      .map((day) => {
+        const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
+        const displayName = DateUtils.getDisplayName(day.fxDate, dayDiff)
+        const isNight = WeatherDataUtils.isNightTime(todaySunrise, todaySunset)
+
+        return {
+          fxDate: day.fxDate,
+          name: displayName,
+          tempMinMax: this.formatTempRange(day.tempMin, day.tempMax),
+          iconCode: WeatherDataUtils.getMappedIconCode(day.iconDay, isNight),
+          uniqueId: dayDiff + 1
+        }
+      })
+  },
+
+  processHourlyList(hourlyList = [], limit = 12) {
+    if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
+      return []
+    }
+
+    const now = Date.now()
+    const threshold = now - 60 * 60 * 1000
+
+    const filtered = hourlyList
+      .map((item) => {
+        const fxTime = item.fxTime || item.time || ""
+        const timestamp = fxTime ? Date.parse(fxTime) : NaN
+        return {
+          raw: item,
+          fxTime,
+          timestamp
+        }
+      })
+      .filter((entry) => {
+        if (Number.isNaN(entry.timestamp)) {
+          return false
+        }
+        return entry.timestamp >= threshold
+      })
+
+    if (filtered.length === 0) {
+      return []
+    }
+
+    return filtered.slice(0, limit).map((entry, index) => {
+      const {raw, fxTime, timestamp} = entry
+      let displayHour = "--:--"
+      let isNight = false
+
+      if (!Number.isNaN(timestamp)) {
+        const parsed = new Date(timestamp)
+        const hours = parsed.getHours()
+        const minutes = parsed.getMinutes()
+        displayHour = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+        isNight = hours >= 18 || hours < 6
+      }
+
+      const tempValue = raw.temp !== undefined ? `${raw.temp}°` : "__°"
+      const iconCodeRaw = Number(raw.icon)
+      const mappedIcon = WeatherDataUtils.getMappedIconCode(
+        Number.isNaN(iconCodeRaw) ? raw.icon : iconCodeRaw,
+        isNight
+      )
+
+      return {
+        name: displayHour,
+        temp: tempValue,
+        iconCode: mappedIcon,
+        uniqueId: fxTime ? `${fxTime}-${index}` : `hour-${index}`
+      }
+    })
+  },
+
+  buildIndices(todayData) {
+    if (!todayData) {
+      return [
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "/common/images/uv/uv1.png",
+          arrow: "/common/images/uv/uv15.png",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        },
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "",
+          arrow: "",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        },
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "",
+          arrow: "",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        },
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "/common/images/air/Air13.png",
+          arrow: "/common/images/uv/uv15.png",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        },
+        {
+          type: "__",
+          value: "__",
+          desc: "__",
+          percent: 0,
+          icon: "/common/images/sunset/sunset20.png",
+          arrow: "",
+          rotation: 0,
+          rotationClass: "wind-rotate-0"
+        }
+      ]
+    }
+
+    const uvValue = todayData.uvIndex || "__"
+    const humidityValue = todayData.humidity || "__"
+    const humidityNumber = Number(humidityValue)
+    const humidityPercent = Number.isNaN(humidityNumber)
+      ? 0
+      : Math.min(Math.max(Math.round(humidityNumber), 0), 100)
+    const humidityDesc = this.getHumidityDesc(humidityPercent)
+    const windType = todayData.windDirDay || "风向"
+    const windValue = todayData.windScaleDay ? `${todayData.windScaleDay}级` : "__"
+    const pressureValue = todayData.pressure ? `${todayData.pressure}` : "__"
+    const sunriseValue = todayData.sunrise || "--"
+    const sunsetValue = todayData.sunset || "--"
+    const uvNumber = Number(uvValue)
+    const uvPercent = Number.isNaN(uvNumber)
+      ? 0
+      : Math.min(Math.max(Math.round((uvNumber / 11) * 100), 0), 100)
+    const uvIcon = this.getImageByPercent(
+      "/common/images/uv/uv",
+      15,
+      uvPercent,
+      "/common/images/uv/uv1.png"
+    )
+    const pressurePercent = this.getPercentByRange(pressureValue, 980, 1040)
+    const airIcon = this.getImageByPercent(
+      "/common/images/air/Air",
+      21,
+      pressurePercent,
+      "/common/images/air/Air13.png"
+    )
+    const pressureArrow = this.getPressureArrow(pressureValue)
+    const sunPercent = this.getSunPercent(sunriseValue, sunsetValue)
+    const sunIcon = this.getImageByPercent(
+      "/common/images/sunset/sunset",
+      21,
+      sunPercent,
+      "/common/images/sunset/sunset20.png"
+    )
+    const sunInfo = this.getSunDisplayInfo(sunriseValue, sunsetValue)
+    const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
+    const windRotationStyle = {
+      transform: JSON.stringify({rotate: `${windRotation}deg`})
+    }
+    const uvDesc = this.getUvDesc(uvValue)
+
+    return [
+      {
+        type: "紫外线",
+        value: uvDesc,
+        desc: uvValue,
+        percent: uvPercent,
+        icon: uvIcon,
+        arrow: "/common/images/uv/uv15.png",
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      },
+      {
+        type: "湿度",
+        value: humidityValue,
+        desc: humidityDesc,
+        percent: humidityPercent,
+        icon: "",
+        arrow: "",
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      },
+      {
+        type: windType,
+        value: windValue,
+        desc: "",
+        percent: 0,
+        icon: "",
+        arrow: "",
+        rotation: windRotation,
+        rotationStyle: windRotationStyle
+      },
+      {
+        type: "气压",
+        value: pressureValue,
+        desc: "",
+        percent: pressurePercent,
+        icon: airIcon,
+        arrow: pressureArrow,
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      },
+      {
+        type: sunInfo.label,
+        value: sunInfo.time,
+        sunrise: sunriseValue,
+        sunset: sunsetValue,
+        percent: sunPercent,
+        icon: sunIcon,
+        arrow: "",
+        rotation: 0,
+        rotationStyle: {
+          transform: JSON.stringify({rotate: "0deg"})
+        }
+      }
+    ]
+  },
+
+  syncRectWeather(weatherData, todayData, timeAgo) {
+    RefreshController.recordDailyUpdate(weatherData)
+    const baseWeather = this.buildBaseWeather(todayData, timeAgo)
+    this.updateTime = baseWeather.updateTime
+    this.iconCode = baseWeather.iconCode
+    this.textDay = baseWeather.textDay
+    this.tempMinMax = baseWeather.tempMinMax
+    this.backgroundImage = baseWeather.backgroundImage
+    this.location = weatherData.location || "未知地点"
+
+    const currentTemperature = this.getCurrentTemperature(todayData, this.forecastHourly)
+    this.current = {
+      location: this.location,
+      relativeTime: timeAgo,
+      weather: todayData.textDay || "__",
+      temperature: currentTemperature,
+      temperatureDaily: {
+        from: todayData.tempMin || "__",
+        to: todayData.tempMax || "__"
+      },
+      icon: this.iconCode
+        ? `/common/images/weather-icons/${this.iconCode}.png`
+        : "/common/images/weather-icons/cloudy.png"
+    }
+    this.forecastDaily = this.buildForecastDaily(weatherData.daily || [])
+    this.indices = this.buildIndices(todayData)
+  },
+
+  applyWeatherData(weatherData, todayData) {
+    const updateTime = new Date(weatherData.updateTime)
+    const timeAgo = DateUtils.formatTimeAgo(updateTime)
+    this.syncRectWeather(weatherData, todayData, timeAgo)
+  },
+
+  formatTime(dateValue) {
+    if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) {
+      return "__:__"
+    }
+    const hours = String(dateValue.getHours()).padStart(2, "0")
+    const minutes = String(dateValue.getMinutes()).padStart(2, "0")
+    return `${hours}:${minutes}`
+  },
+
+  /**
+   * 下拉到顶部刷新
+   */
+  async handlePullScroll(event = {}) {
+    if (!this.supportsAdvancedFeatures) {
+      return
+    }
+    const detail = event.detail || event || {}
+    const scrollY = typeof detail.scrollY === "number" ? detail.scrollY : 0
+    if (scrollY >= 0) {
+      this.pullRefreshReady = true
+      return
+    }
+    if (scrollY > -30 || !this.pullRefreshReady) {
+      return
+    }
+    if (this.isPullRefreshing || this.isLoading) {
+      return
+    }
+    this.pullRefreshReady = false
+
+    const remainingTime = await RefreshController.getManualRefreshRemainingTime()
+    if (remainingTime > 0) {
+      this.isPullRefreshing = true
+      setTimeout(() => {
+        this.isPullRefreshing = false
+      }, 1000)
+      return
+    }
+
+    this.isPullRefreshing = true
+    try {
+      await this.UpdateWeather({auto: false, silent: true, showLoading: false})
+    } finally {
+      this.isPullRefreshing = false
+    }
+  },
+
+  /**
+   * 跳转到详情页
+   * @param {Object} selectedItem - 选中的天气项
+   */
+  DetailInfo(selectedItem) {
+    if (selectedItem && selectedItem.fxDate) {
+      router.push({
+        uri: "/pages/detail",
+        params: {
+          selectedDate: selectedItem.fxDate
+        }
+      })
+    } else {
+      showToast({
+        message: MESSAGES.NAVIGATION_ERROR,
+        duration: TOAST_DURATION.NORMAL
+      })
+    }
+  },
+
+  /**
+   * 跳转到关于页
+   */
+  About() {
+    router.push({
+      uri: "/pages/about"
+    })
+  },
+
+  /**
+   * 更新天气数据
+   * @param {Object|boolean} options - 配置项或是否自动触发
+   * @returns {Promise<boolean>}
+   */
+  async UpdateWeather(options = {}) {
+    let config = {auto: false, silent: false, showLoading: null}
+
+    if (typeof options === "boolean") {
+      config.auto = options
+    } else {
+      config = {...config, ...options}
+    }
+
+    const shouldShowLoading = config.showLoading !== null ? config.showLoading : !config.auto
+
+    if (this.isLoading && shouldShowLoading) {
+      return false
+    }
+
+    if (shouldShowLoading) {
+      this.isLoading = true
+    }
+
+    try {
+      await RefreshController.refreshDailyData()
+
+      const result = await this.loadWeatherData(true, {
+        hourly: {
+          forceRefresh: true,
+          silent: config.silent
+        }
+      })
+
+      if (!result || !result.success) {
+        if (!config.silent) {
+          showToast({
+            message: MESSAGES.DATA_PARSE_ERROR,
+            duration: TOAST_DURATION.NORMAL
+          })
+        }
+        return false
+      }
+
+      if (!config.silent) {
+        showToast({
+          message: MESSAGES.DATA_UPDATED,
+          duration: TOAST_DURATION.SHORT
+        })
+      }
+
+      return true
+    } catch (error) {
+      console.error("获取天气失败:", error)
+      let toastMessage = null
+
+      if (error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING) {
+        toastMessage = MESSAGES.LOCATION_INFO_MISSING
+      } else if (error?.code !== "DATA_SAVE_FAILED") {
+        toastMessage = MESSAGES.FETCH_WEATHER_ERROR
+      }
+
+      if (!config.silent && toastMessage) {
+        showToast({
+          message: toastMessage,
+          duration: TOAST_DURATION.NORMAL
+        })
+      }
+
+      return false
+    } finally {
+      if (shouldShowLoading) {
+        this.isLoading = false
+      }
+    }
+  },
+
+  /**
+   * 加载并显示天气数据
+   * @param {boolean} silent - 静默模式，不显示错误Toast
+   * @returns {Object} 返回 { success: boolean, status: string, weatherData?: Object }
+   */
+  async loadWeatherData(silent = false, options = {}) {
+    const result = await DataService.getTodayData(silent)
+
+    // 检查加载状态
+    if (!result || result.status !== "success") {
+      return {
+        success: false,
+        status: result?.status || "unknown",
+        weatherData: null
+      }
+    }
+
+    const {weatherData, todayData} = result
+    const updateTime = new Date(weatherData.updateTime)
+    const timeAgo = DateUtils.formatTimeAgo(updateTime)
+    this.syncRectWeather(weatherData, todayData, timeAgo)
+    const hourlyOptions = options.hourly || {}
+    const mergedHourlyOptions = {
+      silent: hourlyOptions.silent !== undefined ? hourlyOptions.silent : silent,
+      ...hourlyOptions
+    }
+    await this.loadHourlyForecastData(mergedHourlyOptions)
+
+    return {success: true, status: "success", weatherData}
+  },
+
+  /**
+   * 同步高级功能配置
+   */
+  async syncFeatureSettings(forceReload = false) {
+    try {
+      if (forceReload && SettingsService.clearCache) {
+        SettingsService.clearCache()
+      }
+
+      if (!this.supportsAdvancedFeatures) {
+        this.autoUpdateEnabled = false
+        this.hourlyForecastEnabled = false
+        this.hasHourlyData = false
+        this.updateHourlyCardVisibility()
+        return
+      }
+
+      const settings = await SettingsService.getSettings()
+      this.autoUpdateEnabled = !!settings.autoUpdateEnabled
+      this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
+    } catch (error) {
+      console.error("同步设置失败:", error)
+    } finally {
+      this.updateHourlyCardVisibility()
+    }
+  },
+
+  /**
+   * 更新逐小时卡片的可见性
+   */
+  updateHourlyCardVisibility() {
+    const canShowFeature = this.supportsAdvancedFeatures && this.hourlyForecastEnabled
+    const shouldShow = canShowFeature && this.hasHourlyData
+    this.showHourlyForecastCard = shouldShow
+    if (!shouldShow) {
+      this.forecastHourly = []
+      this.forecastHourlyPages = []
+    }
+  },
+
+  /**
+   * 检测设备是否支持高级功能
+   */
+  async detectAdvancedFeatureSupport() {
+    try {
+      this.supportsAdvancedFeatures =
+        await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+    } catch (error) {
+      console.error("检测设备能力失败:", error)
+      this.supportsAdvancedFeatures = false
+    } finally {
+      this.updateHourlyCardVisibility()
+    }
+  },
+
+  /**
+   * 读取或拉取逐小时天气数据
+   * @param {Object} options
+   */
+  async loadHourlyForecastData(options = {}) {
+    if (!this.supportsAdvancedFeatures || !this.hourlyForecastEnabled) {
+      this.hasHourlyData = false
+      this.updateHourlyCardVisibility()
+      return
+    }
+
+    const {silent = true, forceRefresh = false} = options
+
+    try {
+      const result = await RefreshController.ensureHourlyData({forceRefresh})
+      const hourlyData = result?.hourlyData
+
+      if (hourlyData && Array.isArray(hourlyData.hourly)) {
+        this.applyHourlyForecastList(hourlyData.hourly)
+
+        if (result.error && !silent && result.error?.code !== "DATA_SAVE_FAILED") {
+          const toastMessage =
+            result.error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+              ? MESSAGES.LOCATION_INFO_MISSING
+              : MESSAGES.FETCH_WEATHER_ERROR
+
+          showToast({
+            message: toastMessage,
+            duration: TOAST_DURATION.NORMAL
+          })
+        }
+
+        return
+      }
+    } catch (error) {
+      console.error("获取逐小时天气失败:", error)
+      if (!silent && error?.code !== "DATA_SAVE_FAILED") {
+        const toastMessage =
+          error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+            ? MESSAGES.LOCATION_INFO_MISSING
+            : MESSAGES.FETCH_WEATHER_ERROR
+
+        showToast({
+          message: toastMessage,
+          duration: TOAST_DURATION.NORMAL
+        })
+      }
+    }
+
+    this.hasHourlyData = false
+    this.updateHourlyCardVisibility()
+  },
+
+  /**
+   * 应用逐小时天气数据
+   * @param {Array} hourlyList
+   */
+  applyHourlyForecastList(hourlyList = []) {
+    const forecastHourly = this.buildForecastHourly(hourlyList)
+    this.forecastHourly = forecastHourly
+
+    // 每 4 个一组进行分组
+    const pages = []
+    for (let i = 0; i < forecastHourly.length; i += 4) {
+      pages.push(forecastHourly.slice(i, i + 4))
+    }
+    this.forecastHourlyPages = pages
+
+    if (forecastHourly.length > 0) {
+      this.current = {
+        ...this.current,
+        temperature: this.getCurrentTemperature(null, forecastHourly)
+      }
+    }
+    this.hasHourlyData = forecastHourly.length > 0
+    this.updateHourlyCardVisibility()
+    this.updateSwiperIndicator(0)
+  },
+
+  handleSwiperChange(event) {
+    const index = event.index || 0
+    this.updateSwiperIndicator(index)
+  },
+
+  updateSwiperIndicator(index) {
+    const pageCount = this.forecastHourlyPages.length
+    if (pageCount <= 1) return
+
+    const trackWidth = 100
+    const indicatorWidth = 40
+    const maxOffset = trackWidth - indicatorWidth
+
+    // 计算位置逻辑：根据页数平均分配或固定 3 档
+    let indicatorOffset = 0
+    if (index === 0) {
+      indicatorOffset = 0
+    } else if (index === pageCount - 1) {
+      indicatorOffset = maxOffset
+    } else {
+      indicatorOffset = Math.round(maxOffset / 2)
+    }
+
+    this.hourlyIndicatorStyle = {
+      width: `${indicatorWidth}px`,
+      transform: JSON.stringify({
+        translateX: `${indicatorOffset}px`
+      })
+    }
+  },
+
+  /**
+   * 根据设置尝试自动更新天气
+   * @param {Object|null} weatherData
+   * @param {Object} options
+   */
+  async maybeAutoUpdate(weatherData, options = {}) {
+    if (!this.autoUpdateEnabled || this.autoUpdateInProgress) {
+      return
+    }
+
+    const {silent = true, showLoading = false} = options
+    const data = weatherData || (await DataService.readWeatherData(true))
+
+    if (!data || !RefreshController.isDailyExpired(data)) {
+      return
+    }
+
+    this.autoUpdateInProgress = true
+
+    try {
+      await this.UpdateWeather({
+        auto: true,
+        silent,
+        showLoading
+      })
+    } finally {
+      this.autoUpdateInProgress = false
+    }
+  },
+
+  /**
+   * 页面初始化
+   */
+  async onInit() {
+    this.showDebugEntry = DebugService.isDebugMode()
+
+    if (typeof globalThis !== "undefined" && globalThis.__preloadedWeatherData) {
+      this.applyPreloadedData(globalThis.__preloadedWeatherData)
+      globalThis.__preloadedWeatherData = null
+    }
+
+    await this.detectAdvancedFeatureSupport()
+    await this.syncFeatureSettings()
+
+    // 加载本地数据（静默模式）
+    const result = await this.loadWeatherData(true)
+
+    // 首次加载完成
+    if (this.isFirstLoad) {
+      if (result.success) {
+        // 有数据，关闭加载动画
+        this.isLoading = false
+      } else {
+        const shouldAutoUpdate =
+          this.autoUpdateEnabled && (result.status === "expired" || result.status === "no_data")
+
+        if (shouldAutoUpdate) {
+          await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+        } else {
+          let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+
+          if (result.status === "expired") {
+            toastMessage = MESSAGES.WAITING_FOR_UPDATE
+          } else if (result.status === "no_data") {
+            toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
+          }
+
+          showToast({
+            message: toastMessage,
+            duration: TOAST_DURATION.LONG
+          })
+        }
+      }
+      this.isFirstLoad = false
+    }
+
+    if (result.success) {
+      await this.maybeAutoUpdate(result.weatherData)
+    }
+  },
+
+  /**
+   * 页面显示时初始化连接并刷新缓存
+   */
+  async onShow() {
+    this.systemTime = this.formatTime(new Date())
+    await this.syncFeatureSettings()
+    await this.syncFeatureSettings(true)
+
+    // 清除缓存，确保重新从本地文件读取
+    DataService.clearCache()
+    HourlyDataService.clearCache()
+
+    // 重新加载一次，以便反映其他页面的修改
+    const result = await this.loadWeatherData(true)
+
+    if (result.success) {
+      await this.maybeAutoUpdate(result.weatherData, {silent: true})
+    } else if (this.autoUpdateEnabled) {
+      const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
+      if (shouldAutoUpdate) {
+        await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+      }
+    }
+
+    // 初始化连接并注册消息处理
+    ConnectionService.init((data) => {
+      this.handleWeatherData(data)
+    })
+  },
+
+  /**
+   * 处理接收到的天气数据
+   * @param {Object} data - 接收到的数据
+   */
+  async handleWeatherData(data) {
+    try {
+      // 解析数据
+      const weatherData = JSON.parse(data.data)
+
+      // 验证数据格式
+      if (!DataService.validateWeatherData(weatherData)) {
+        showToast({
+          message: MESSAGES.DATA_FORMAT_ERROR,
+          duration: TOAST_DURATION.NORMAL
+        })
+        this.isLoading = false
+        return
+      }
+
+      // 计算更新时间
+      const updateTime = new Date(weatherData.updateTime)
+      const timeAgo = DateUtils.formatTimeAgo(updateTime)
+      const todayStr = DateUtils.getTodayString()
+
+      // 查找今天的数据
+      const todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
+
+      if (!todayData) {
+        showToast({
+          message: MESSAGES.DATA_MISSING,
+          duration: TOAST_DURATION.NORMAL
+        })
+        return
+      }
+
+      // 更新界面
+      this.syncRectWeather(weatherData, todayData, timeAgo)
+
+      // 保存数据到本地
+      await DataService.saveWeatherData(data.data)
+
+      // 与每日数据同时刷新逐小时数据
+      await this.loadHourlyForecastData({silent: true, forceRefresh: true})
+
+      showToast({
+        message: MESSAGES.DATA_UPDATED,
+        duration: TOAST_DURATION.SHORT
+      })
+    } catch (e) {
+      showToast({
+        message: MESSAGES.DATA_PARSE_ERROR,
+        duration: TOAST_DURATION.NORMAL
+      })
+      console.error("数据解析失败:", e)
+    } finally {
+      this.isLoading = false
+      ConnectionService.resetConnectionState()
+    }
+  },
+
+  /**
+   * 页面隐藏时关闭连接
+   */
+  onHide() {
+    try {
+      ConnectionService.close()
+    } catch (error) {
+      console.error("关闭连接失败:", error)
+    }
+  },
+
+  /**
+   * 页面销毁时关闭连接
+   */
+  onDestroy() {
+    try {
+      ConnectionService.close()
+    } catch (error) {
+      console.error("关闭连接失败:", error)
+    }
+  }
+}
+</script>
+
+<style>
+/* 引入公共样式 */
+@import "../../../common/css/page-bg-styles.css";
+@import "../../../common/css/loading-styles.css";
+
+.page {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  flex-direction: column;
+}
+
+.page__scroll {
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+}
+
+.section {
+  width: 100%;
+  flex-direction: column;
+}
+
+.section--snap {
+  height: 480px;
+  scroll-snap-align: start;
+}
+
+.title {
+  flex-shrink: 0;
+  margin-top: 26px;
+  width: 100%;
+  flex-direction: column;
+}
+
+.title__location {
+  width: 100%;
+  line-height: 32px;
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+.title__time {
+  margin-top: 12px;
+  line-height: 24px;
+  width: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.title__time-text {
+  line-height: 24px;
+  width: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.title__time-loading {
+  width: 24px;
+  height: 24px;
+  animation-name: title__loading-rotate;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  transform-origin: 12px 12px;
+}
+
+@keyframes title__loading-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.current {
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.current__temperature {
+  line-height: 120px;
+  font-size: 120px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+.current__unit {
+  height: 64px;
+  margin-top: 4px;
+  line-height: 64px;
+  font-size: 64px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.current__weather {
+  margin-top: 16px;
+  line-height: 32px;
+  width: 100%;
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.current__daily {
+  margin-top: 14px;
+  margin-left: 3px;
+  line-height: 32px;
+  width: 100%;
+  font-size: 32px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.alert {
+  margin-bottom: 22px;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.alert__card {
+  padding: 8px 12px 8px 12px;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert__icon {
+  width: 32px;
+  height: 32px;
+}
+
+.title-bar {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 20px 48px 20px 43px;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.title-bar__text {
+  line-height: 32px;
+  font-size: 32px;
+  color: white;
+}
+
+.title-bar__time {
+  line-height: 33px;
+  font-size: 33px;
+  color: white;
+}
+
+.forecast-hourly {
+  margin-top: 64px;
+  width: 100%;
+  height: 240px;
+}
+
+.forecast-hourly__page {
+  width: 100%;
+  height: 100%;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.forecast-hourly__item {
+  flex-direction: column;
+  align-items: center;
+  margin: 0 12px;
+  width: 88px;
+}
+
+.forecast-hourly__time {
+  line-height: 28px;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.forecast-hourly__temperature {
+  margin-top: 62px;
+  line-height: 28px;
+  font-size: 28px;
+  color: white;
+}
+
+.forecast-hourly__icon {
+  margin-top: 58px;
+}
+
+.progress-bar {
+  margin-top: 100px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.progress-bar__bg {
+  width: 100px;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  position: relative;
+}
+
+.progress-bar__fill {
+  height: 8px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  left: 0;
+}
+
+.forecast-daily {
+  width: 100%;
+  padding: 0 32px;
+  flex-direction: column;
+}
+
+.forecast-daily__item {
+  align-items: center;
+  margin-bottom: 12px;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.forecast-daily__left {
+  flex-direction: row;
+  align-items: center;
+}
+
+.forecast-daily__icon {
+  width: 48px;
+  height: 48px;
+}
+
+.forecast-daily__time {
+  margin-left: 16px;
+  line-height: 32px;
+  font-size: 32px;
+  color: white;
+}
+
+.forecast-daily__temperature {
+  line-height: 30px;
+  font-size: 30px;
+  color: white;
+}
+
+.indices {
+  height: 100%;
+  margin-top: 6px;
+  padding: 0 8px 28px 8px;
+  flex-direction: column;
+}
+
+.indices__item {
+  padding: 16px 36px 16px 28px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 32px;
+  margin-bottom: 12px;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.indices__content {
+  flex-direction: column;
+  justify-content: center;
+}
+
+.indices__type {
+  line-height: 28px;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.indices__value {
+  margin-top: 14px;
+  line-height: 56px;
+  font-size: 56px;
+  color: white;
+  font-weight: bold;
+}
+
+.indices__icon {
+  position: relative;
+  width: 128px;
+  height: 128px;
+}
+
+.indices__humidity {
+  padding: 5px;
+  width: 100%;
+  height: 100%;
+  layer-color: rgba(255, 255, 255, 0.6);
+  color: white;
+  stroke-width: 10px;
+}
+
+.indices__wind-arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 64px 64px;
+  width: 128px;
+  height: 128px;
+}
+
+/* 复用原 style.css 中用到的按钮与间距样式 */
+.btn__text {
+  font-size: 29px;
+  color: #ffffff;
+}
+
+.btn {
+  flex-direction: column;
+  align-items: center;
+}
+
+.btn--primary {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 50%;
+}
+
+.hero {
+  flex-direction: column;
+  align-items: center;
+}
+
+.mt-lg {
+  margin-top: 12px;
+}
+</style>

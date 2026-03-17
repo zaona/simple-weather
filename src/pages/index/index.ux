@@ -14,7 +14,11 @@
 <script>
 import router from "@system.router"
 import DeviceService from "../../common/js/device-service.js"
-import {RECT_SCREEN_PRODUCTS, CIRCLE_SCREEN_PRODUCTS} from "../../common/js/config.js"
+import {
+  RECT_SCREEN_PRODUCTS,
+  CIRCLE_SCREEN_PRODUCTS,
+  NARROW_RECT_SCREEN_PRODUCTS
+} from "../../common/js/config.js"
 import DebugService from "../../common/js/debug-service.js"
 
 export default {
@@ -48,7 +52,9 @@ export default {
     this.hasRouted = true
 
     let target = "/pages/index/default"
-    if (await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)) {
+    if (await DeviceService.isProductInList(NARROW_RECT_SCREEN_PRODUCTS)) {
+      target = "/pages/index/narrow-rect"
+    } else if (await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)) {
       target = "/pages/index/rect"
     } else if (await DeviceService.isProductInList(CIRCLE_SCREEN_PRODUCTS)) {
       target = "/pages/index/circle"

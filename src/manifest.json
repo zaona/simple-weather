@@ -47,6 +47,9 @@
       "pages/index/rect": {
         "component": "rect"
       },
+      "pages/index/narrow-rect": {
+        "component": "narrow-rect"
+      },
       "pages/index/circle": {
         "component": "circle"
       },
