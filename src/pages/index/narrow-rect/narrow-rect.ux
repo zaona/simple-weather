@@ -1652,21 +1652,26 @@ export default {
 .title-bar {
   flex-shrink: 0;
   width: 100%;
-  padding: 20px 48px 20px 43px;
+  height: 56px;
+  padding: 7px 16px 0 16px;
   flex-direction: row;
+  align-items: center;
   justify-content: space-between;
 }
 
 .title-bar__text {
-  line-height: 32px;
   font-size: 32px;
+  font-weight: 600;
+  line-height: 32px;
   color: white;
 }
 
 .title-bar__time {
-  line-height: 33px;
-  font-size: 33px;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 32px;
   color: white;
+  text-align: right;
 }
 
 .forecast-hourly {
@@ -1730,7 +1735,7 @@ export default {
 
 .forecast-daily {
   width: 100%;
-  padding: 0 24px;
+  padding: 0 16px;
   flex-direction: column;
 }
 
