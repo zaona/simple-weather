@@ -1730,7 +1730,7 @@ export default {
 
 .forecast-daily {
   width: 100%;
-  padding: 0 32px;
+  padding: 0 24px;
   flex-direction: column;
 }
 
@@ -1772,7 +1772,7 @@ export default {
 }
 
 .indices__item {
-  padding: 16px 36px 16px 28px;
+  padding: 12px 12px 12px 21px;
   background-color: rgba(255, 255, 255, 0.15);
   border-radius: 32px;
   margin-bottom: 12px;
@@ -1793,8 +1793,8 @@ export default {
 
 .indices__value {
   margin-top: 14px;
-  line-height: 56px;
-  font-size: 56px;
+  line-height: 42px;
+  font-size: 42px;
   color: white;
   font-weight: bold;
 }
