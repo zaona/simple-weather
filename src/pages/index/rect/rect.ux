@@ -7,8 +7,8 @@
       <div class="loading__bg"></div>
       <image class="loading__icon" src="/common/images/loading.png" />
       <div class="loading__actions" if="{{ showDebugEntry }}">
-        <div class="button button--primary" onclick="About()">
-          <text class="button__text">关于</text>
+        <div class="btn btn--primary" onclick="About()">
+          <text class="btn__text">关于</text>
         </div>
       </div>
     </div>
@@ -278,8 +278,8 @@
           </div>
 
           <div class="hero mt-lg">
-            <div class="button button--primary" onclick="About()">
-              <text class="button__text">关于</text>
+            <div class="btn btn--primary" onclick="About()">
+              <text class="btn__text">关于</text>
             </div>
           </div>
         </scroll>
@@ -1825,19 +1825,17 @@ export default {
 }
 
 /* 复用原 style.css 中用到的按钮与间距样式 */
-.button__text {
+.btn__text {
   font-size: 29px;
   color: #ffffff;
 }
 
-.button {
+.btn {
   flex-direction: column;
   align-items: center;
 }
 
-.button--primary {
-  flex-direction: column;
-  align-items: center;
+.btn--primary {
   background-color: rgba(255, 255, 255, 0.2);
   padding: 18px 30px;
   border-radius: 50%;

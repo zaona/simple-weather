@@ -3,8 +3,8 @@
     <div class="loading">
       <div class="loading__bg"></div>
       <div class="loading__actions" if="{{ showDebugEntry }}">
-        <div class="btn-primary" onclick="About()">
-          <text class="text-button">关于</text>
+        <div class="btn btn--primary" onclick="About()">
+          <text class="btn__text">关于</text>
         </div>
       </div>
     </div>

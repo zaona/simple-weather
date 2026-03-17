@@ -112,12 +112,6 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* 按钮文本 */
-.text-button {
-  font-size: 29px;
-  color: #ffffff;
-}
-
 /* 应用名称文本 */
 .text-app-name {
   font-size: 30px;
@@ -149,25 +143,29 @@
 }
 
 /* 按钮组件 */
-.btn-primary {
+.btn {
   flex-direction: column;
   align-items: center;
+}
+
+.btn__text {
+  font-size: 29px;
+  color: #ffffff;
+}
+
+.btn--primary {
   background-color: rgba(255, 255, 255, 0.2);
   padding: 18px 30px;
   border-radius: 50%;
 }
 
-.btn-secondary {
-  flex-direction: column;
-  align-items: center;
+.btn--secondary {
   border: 2px solid rgba(255, 255, 255, 0.2);
   padding: 18px 30px;
   border-radius: 50%;
 }
 
-.btn-secondary-square {
-  flex-direction: column;
-  align-items: center;
+.btn--secondary-square {
   border: 2px solid rgba(255, 255, 255, 0.2);
   padding: 18px 30px;
   border-radius: 8px;
@@ -277,7 +275,7 @@
     padding: 20px 0px;
   }
 
-  .btn-secondary-square {
+  .btn--secondary-square {
     border-radius: 16px;
   }
 
@@ -382,7 +380,7 @@
     padding: 20px 0px;
   }
 
-  .btn-secondary-square {
+  .btn--secondary-square {
     border-radius: 16px;
   }
 

@@ -60,11 +60,11 @@
       <!-- 调试面板（仅在调试模式下显示） -->
       <div class="card card-single mt-sm" if="{{ showDebugPanel }}">
         <div style="margin: 12px; display: flex; flex-direction: column">
-          <div class="btn-secondary-square" @click="handleInjectMockData">
-            <text class="text-button">模拟数据</text>
+          <div class="btn btn--secondary-square" @click="handleInjectMockData">
+            <text class="btn__text">模拟数据</text>
           </div>
-          <div class="btn-secondary-square mt-sm" @click="handleClearData">
-            <text class="text-button">清除数据</text>
+          <div class="btn btn--secondary-square mt-sm" @click="handleClearData">
+            <text class="btn__text">清除数据</text>
           </div>
         </div>
       </div>
