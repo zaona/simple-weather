@@ -477,3 +477,92 @@
     margin-top: -16px;
   }
 }
+
+/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 160) {
+  .main-content {
+    padding: 20px 0px;
+  }
+
+  .btn--secondary-square {
+    border-radius: 16px;
+  }
+
+  .text-title {
+    font-size: 36px;
+    font-weight: normal;
+  }
+
+  .text-subtitle {
+    font-size: 24px;
+    margin-top: 4px;
+  }
+
+  .icon-weather-main {
+    margin-top: 56px;
+    width: 120px;
+    height: 120px;
+  }
+
+  .text-weather {
+    font-size: 50px;
+  }
+
+  .text-temp-range {
+    font-size: 42px;
+  }
+
+  .text-data-value {
+    font-size: 36px;
+    font-weight: bold;
+    margin-left: -1px;
+  }
+
+  .text-data-label {
+    font-size: 26px;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .card {
+    border-radius: 32px;
+  }
+
+  .card-single {
+    padding: 16px;
+    margin-top: 12px;
+  }
+
+  .card-double {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0 0px 16px 16px;
+  }
+
+  .card-margin {
+    margin-bottom: 48px;
+  }
+
+  .item-data {
+    width: 49%;
+    margin-right: 2px;
+  }
+
+  .icon-app {
+    width: 100px;
+    height: 100px;
+  }
+
+  .text-app-name {
+    font-size: 36px;
+  }
+
+  .text-app-version {
+    font-size: 30px;
+  }
+
+  .mt-negative-sm {
+    margin-top: -16px;
+  }
+}
