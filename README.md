@@ -16,6 +16,7 @@
 ## 感谢
 
 - [倒数日](https://github.com/sf-yuzifu/daymatter) 项目
+- [澄序课程表](https://github.com/waterflames-team/clartime-velaapp) 项目
 - [WaiJade](https://github.com/CheongSzesuen)
 - [xinghengCN](https://github.com/OnDriveLine)
 
@@ -29,7 +30,7 @@ com.application.zaona.weather
 - 逐小时天气：在支持的设备上可开启 24h 小时级天气卡片。
 - 自动更新：在支持的设备上可开启，数据超过 1 小时自动尝试刷新。
 - 手动更新：关于页可主动触发更新。
-- 多布局适配：根据设备 `product` 自动路由到 `default` / `circle` / `rect` 界面。
+- 多布局适配：根据设备 `product` 自动路由到 `default` / `circle` / `rect` / `narrow-rect` 界面。
 - 本地持久化：天气、逐小时天气、设置。
 
 ## 数据来源

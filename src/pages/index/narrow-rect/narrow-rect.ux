@@ -408,11 +408,11 @@ export default {
     ],
     systemTime: "__:__",
     hourlyIndicatorStyle: {
-      width: "40px",
-      transform: JSON.stringify({
-        translateX: "0px"
-      })
-    },
+        width: "25px",
+        transform: JSON.stringify({
+          translateX: "0px"
+        })
+      },
     timeDigit1: "_",
     timeDigit2: "_",
     timeDigit3: "_",
@@ -1259,8 +1259,8 @@ export default {
 
     // 每 4 个一组进行分组
     const pages = []
-    for (let i = 0; i < forecastHourly.length; i += 4) {
-      pages.push(forecastHourly.slice(i, i + 4))
+    for (let i = 0; i < forecastHourly.length; i += 3) {
+      pages.push(forecastHourly.slice(i, i + 3))
     }
     this.forecastHourlyPages = pages
 
@@ -1284,19 +1284,17 @@ export default {
     const pageCount = this.forecastHourlyPages.length
     if (pageCount <= 1) return
 
-    const trackWidth = 100
-    const indicatorWidth = 40
-    const maxOffset = trackWidth - indicatorWidth
+      const trackWidth = 100
+      const indicatorWidth = 25
+      const maxOffset = trackWidth - indicatorWidth
 
-    // 计算位置逻辑：根据页数平均分配或固定 3 档
-    let indicatorOffset = 0
-    if (index === 0) {
-      indicatorOffset = 0
-    } else if (index === pageCount - 1) {
-      indicatorOffset = maxOffset
-    } else {
-      indicatorOffset = Math.round(maxOffset / 2)
-    }
+      // 计算位置逻辑：根据页数平均分配到固定 4 档
+      let indicatorOffset = 0
+      const segmentCount = 4
+      const maxSegmentIndex = segmentCount - 1
+      const segmentIndex =
+        pageCount > 1 ? Math.round((index / (pageCount - 1)) * maxSegmentIndex) : 0
+      indicatorOffset = Math.round((maxOffset / maxSegmentIndex) * segmentIndex)
 
     this.hourlyIndicatorStyle = {
       width: `${indicatorWidth}px`,
