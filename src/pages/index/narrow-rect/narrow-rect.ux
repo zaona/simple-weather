@@ -104,184 +104,185 @@
           <text class="title-bar__text">天气指数</text>
           <text class="title-bar__time">{{ systemTime }}</text>
         </div>
-
-        <scroll class="indices" scroll-y="true" bounces="true">
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[0].type }}</text>
-              <text class="indices__value">{{ indices[0].value }}</text>
-            </div>
-            <div class="indices__icon">
-              <image src="{{ indices[0].icon }}" />
-              <text
-                style="
-                  position: absolute;
-                  top: 43px;
-                  left: 0;
-                  width: 100%;
-                  text-align: center;
-                  line-height: 42px;
-                  font-size: 42px;
-                  font-weight: bold;
-                  color: white;
-                "
-              >
-                {{ indices[0].desc }}
-              </text>
-              <text
-                style="
-                  position: absolute;
-                  bottom: 4px;
-                  left: 0;
-                  width: 100%;
-                  text-align: center;
-                  line-height: 24px;
-                  font-size: 24px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                UV
-              </text>
-            </div>
-          </div>
-
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[1].type }}</text>
-              <text class="indices__value">{{ indices[1].value }}%</text>
-            </div>
-            <div class="indices__icon">
-              <progress
-                class="indices__humidity"
-                percent="{{ indices[1].percent }}"
-                type="arc"
-              ></progress>
-              <div
-                style="
-                  position: absolute;
-                  top: 0px;
-                  left: 0px;
-                  width: 100%;
-                  height: 100%;
-                  align-items: center;
-                  justify-content: center;
-                "
-              >
-                <image src="/common/images/hum/hum_wight.png" />
+        <div style="width: 100%; height: 100%">
+          <scroll class="indices" scroll-y="true" bounces="true">
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[0].type }}</text>
+                <text class="indices__value">{{ indices[0].value }}</text>
               </div>
-              <text
-                style="
-                  position: absolute;
-                  bottom: 6px;
-                  left: 0;
-                  width: 100%;
-                  text-align: center;
-                  line-height: 20px;
-                  font-size: 20px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                {{ indices[1].desc }}
-              </text>
-            </div>
-          </div>
-
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[2].type }}</text>
-              <text class="indices__value">{{ indices[2].value }}</text>
-            </div>
-            <div class="indices__icon">
-              <image style="width: 128px; height: 128px" src="/common/images/wind/wind1.png" />
-              <image
-                class="indices__wind-arrow"
-                style="{{ indices[2].rotationStyle }}"
-                src="/common/images/wind/wind3.png"
-              />
-              <image
-                style="position: absolute; top: 0; left: 0; width: 128px; height: 128px"
-                src="/common/images/wind/wind2.png"
-              />
-            </div>
-          </div>
-
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[3].type }}</text>
-              <text class="indices__value">{{ indices[3].value }}</text>
-            </div>
-            <div class="indices__icon">
-              <image src="{{ indices[3].icon }}" />
-              <div
-                style="
-                  position: absolute;
-                  top: 0px;
-                  left: 0px;
-                  width: 100%;
-                  height: 100%;
-                  align-items: center;
-                  justify-content: center;
-                "
-              >
-                <image src="{{ indices[3].arrow }}" />
+              <div class="indices__icon">
+                <image src="{{ indices[0].icon }}" />
+                <text
+                  style="
+                    position: absolute;
+                    top: 43px;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 42px;
+                    font-size: 42px;
+                    font-weight: bold;
+                    color: white;
+                  "
+                >
+                  {{ indices[0].desc }}
+                </text>
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 4px;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 24px;
+                    font-size: 24px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                  UV
+                </text>
               </div>
-              <text
-                style="
-                  position: absolute;
-                  bottom: 6px;
-                  left: 0;
-                  width: 100%;
-                  text-align: center;
-                  line-height: 20px;
-                  font-size: 20px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                hpa
-              </text>
             </div>
-          </div>
 
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[4].type }}</text>
-              <text class="indices__value">{{ indices[4].value }}</text>
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[1].type }}</text>
+                <text class="indices__value">{{ indices[1].value }}%</text>
+              </div>
+              <div class="indices__icon">
+                <progress
+                  class="indices__humidity"
+                  percent="{{ indices[1].percent }}"
+                  type="arc"
+                ></progress>
+                <div
+                  style="
+                    position: absolute;
+                    top: 0px;
+                    left: 0px;
+                    width: 100%;
+                    height: 100%;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <image src="/common/images/hum/hum_wight.png" />
+                </div>
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 6px;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 20px;
+                    font-size: 20px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                  {{ indices[1].desc }}
+                </text>
+              </div>
             </div>
-            <div class="indices__icon">
-              <image style="margin: -8px" src="{{ indices[4].icon }}" />
-              <text
-                style="
-                  position: absolute;
-                  bottom: 20px;
-                  left: 2px;
-                  line-height: 20px;
-                  font-size: 20px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                {{ indices[4].sunrise }}
-              </text>
-              <text
-                style="
-                  position: absolute;
-                  bottom: 20px;
-                  right: 2px;
-                  line-height: 20px;
-                  font-size: 20px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                {{ indices[4].sunset }}
-              </text>
-            </div>
-          </div>
 
-          <div class="hero mt-lg">
-            <div class="btn btn--primary" onclick="About()">
-              <text class="btn__text">关于</text>
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[2].type }}</text>
+                <text class="indices__value">{{ indices[2].value }}</text>
+              </div>
+              <div class="indices__icon">
+                <image style="width: 128px; height: 128px" src="/common/images/wind/wind1.png" />
+                <image
+                  class="indices__wind-arrow"
+                  style="{{ indices[2].rotationStyle }}"
+                  src="/common/images/wind/wind3.png"
+                />
+                <image
+                  style="position: absolute; top: 0; left: 0; width: 128px; height: 128px"
+                  src="/common/images/wind/wind2.png"
+                />
+              </div>
             </div>
-          </div>
-        </scroll>
+
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[3].type }}</text>
+                <text class="indices__value">{{ indices[3].value }}</text>
+              </div>
+              <div class="indices__icon">
+                <image src="{{ indices[3].icon }}" />
+                <div
+                  style="
+                    position: absolute;
+                    top: 0px;
+                    left: 0px;
+                    width: 100%;
+                    height: 100%;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <image src="{{ indices[3].arrow }}" />
+                </div>
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 6px;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 20px;
+                    font-size: 20px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                  hpa
+                </text>
+              </div>
+            </div>
+
+            <div class="indices__item">
+              <div class="indices__content">
+                <text class="indices__type">{{ indices[4].type }}</text>
+                <text class="indices__value">{{ indices[4].value }}</text>
+              </div>
+              <div class="indices__icon">
+                <image style="margin: -8px" src="{{ indices[4].icon }}" />
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 20px;
+                    left: 2px;
+                    line-height: 20px;
+                    font-size: 20px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                  {{ indices[4].sunrise }}
+                </text>
+                <text
+                  style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 2px;
+                    line-height: 20px;
+                    font-size: 20px;
+                    color: rgba(255, 255, 255, 0.75);
+                  "
+                >
+                  {{ indices[4].sunset }}
+                </text>
+              </div>
+            </div>
+
+            <div class="hero mt-lg">
+              <div class="btn btn--primary" onclick="About()">
+                <text class="btn__text">关于</text>
+              </div>
+            </div>
+          </scroll>
+        </div>
       </div>
     </scroll>
   </div>
@@ -1184,8 +1185,9 @@ export default {
    */
   async detectAdvancedFeatureSupport() {
     try {
-      this.supportsAdvancedFeatures =
-        await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+      this.supportsAdvancedFeatures = await DeviceService.isProductSupported(
+        ADVANCED_FEATURE_PRODUCTS
+      )
     } catch (error) {
       console.error("检测设备能力失败:", error)
       this.supportsAdvancedFeatures = false
@@ -1770,6 +1772,7 @@ export default {
 }
 
 .indices {
+  width: 100%;
   height: 100%;
   margin-top: 6px;
   padding: 0 8px 28px 8px;

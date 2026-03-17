@@ -77,7 +77,8 @@ export const CIRCLE_SCREEN_PRODUCTS = [
   "xiaomi watch s4 esim",
   "xiaomi watch s4 sport",
   "marconi_o62m_watch",
-  "xiaomi watch s4 41mm"
+  "xiaomi watch s4 41mm",
+  "xiaomi watch s5 46mm",
 ]
 
 // 用户提示消息
