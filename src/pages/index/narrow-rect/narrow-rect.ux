@@ -1276,25 +1276,30 @@ export default {
   },
 
   handleSwiperChange(event) {
-    const index = event.index || 0
-    this.updateSwiperIndicator(index)
+    const rawIndex =
+      event && event.index !== undefined
+        ? event.index
+        : event && event.detail && event.detail.index !== undefined
+          ? event.detail.index
+          : 0
+    const index = Number(rawIndex)
+    this.updateSwiperIndicator(Number.isNaN(index) ? 0 : index)
   },
 
   updateSwiperIndicator(index) {
     const pageCount = this.forecastHourlyPages.length
-    if (pageCount <= 1) return
-
-      const trackWidth = 100
-      const indicatorWidth = 25
-      const maxOffset = trackWidth - indicatorWidth
-
-      // 计算位置逻辑：根据页数平均分配到固定 4 档
-      let indicatorOffset = 0
-      const segmentCount = 4
-      const maxSegmentIndex = segmentCount - 1
-      const segmentIndex =
-        pageCount > 1 ? Math.round((index / (pageCount - 1)) * maxSegmentIndex) : 0
-      indicatorOffset = Math.round((maxOffset / maxSegmentIndex) * segmentIndex)
+    const totalItems = this.forecastHourly.length
+    const itemsPerPage =
+      this.forecastHourlyPages[0] && this.forecastHourlyPages[0].length
+        ? this.forecastHourlyPages[0].length
+        : 0
+    const trackWidth = 100
+    const safeIndex = Math.min(Math.max(index, 0), Math.max(pageCount - 1, 0))
+    const indicatorWidth =
+      totalItems > 0 ? Math.round((trackWidth * itemsPerPage) / totalItems) : trackWidth
+    const maxOffset = trackWidth - indicatorWidth
+    const progress = pageCount > 1 ? safeIndex / (pageCount - 1) : 0
+    const indicatorOffset = Math.round(maxOffset * progress)
 
     this.hourlyIndicatorStyle = {
       width: `${indicatorWidth}px`,
