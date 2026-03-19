@@ -408,11 +408,11 @@ export default {
     ],
     systemTime: "__:__",
     hourlyIndicatorStyle: {
-        width: "25px",
-        transform: JSON.stringify({
-          translateX: "0px"
-        })
-      },
+      width: "25px",
+      transform: JSON.stringify({
+        translateX: "0px"
+      })
+    },
     timeDigit1: "_",
     timeDigit2: "_",
     timeDigit3: "_",
@@ -1185,9 +1185,8 @@ export default {
    */
   async detectAdvancedFeatureSupport() {
     try {
-      this.supportsAdvancedFeatures = await DeviceService.isProductSupported(
-        ADVANCED_FEATURE_PRODUCTS
-      )
+      this.supportsAdvancedFeatures =
+        await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
     } catch (error) {
       console.error("检测设备能力失败:", error)
       this.supportsAdvancedFeatures = false
