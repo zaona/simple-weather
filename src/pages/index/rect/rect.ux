@@ -106,7 +106,7 @@
           <text class="title-bar__time">{{ systemTime }}</text>
         </div>
 
-        <scroll class="indices" scroll-y="true" bounces="true">
+        <scroll class="indices" scroll-y="true">
           <div class="indices__item">
             <div class="indices__content">
               <text class="indices__type">{{ indices[0].type }}</text>

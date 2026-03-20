@@ -110,7 +110,7 @@
           <text class="title-bar__text">未来天气</text>
         </div>
 
-        <scroll class="forecast-daily" scroll-y="true" bounces="true">
+        <scroll class="forecast-daily" scroll-y="true">
           <div
             class="forecast-daily__item"
             for="{{ item in forecastDaily.slice(0, 7) }}"
@@ -147,7 +147,7 @@
           <text class="title-bar__text">天气指数</text>
         </div>
 
-        <scroll class="indices" scroll-y="true" bounces="true">
+        <scroll class="indices" scroll-y="true">
           <div class="indices__item">
             <div class="indices__content">
               <text class="indices__type">{{ indices[0].type }}</text>
@@ -1587,9 +1587,9 @@ export default {
 /* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
 @media (width: 106) {
   .section--snap {
-  height: 520px;
-  scroll-snap-align: start;
-}
+    height: 520px;
+    scroll-snap-align: start;
+  }
 }
 
 .title {
@@ -1818,7 +1818,7 @@ export default {
 }
 
 .forecast-daily__item {
-  width:100%;
+  width: 100%;
   flex-direction: column;
   margin-bottom: 12px;
   justify-content: center;
