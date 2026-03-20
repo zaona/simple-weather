@@ -59,7 +59,8 @@ export const ADVANCED_FEATURE_PRODUCTS = [
   "xiaomi watch s4 esim",
   "xiaomi watch s4 sport",
   "o65m",
-  "marconi_o62m_watch"
+  "marconi_o62m_watch",
+  "xiaomi watch s5 esim 46mm"
 ]
 
 // 矩形屏设备 product 名称列表
