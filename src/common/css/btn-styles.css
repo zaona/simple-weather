@@ -1,0 +1,31 @@
+/**
+ * 按钮公共样式
+ */
+
+.btn {
+  flex-direction: column;
+  align-items: center;
+}
+
+.btn__text {
+  font-size: 28px;
+  color: #ffffff;
+}
+
+.btn--primary {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 50%;
+}
+
+.btn--secondary {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 50%;
+}
+
+.btn--secondary-square {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 18px 30px;
+  border-radius: 8px;
+}
