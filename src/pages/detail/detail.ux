@@ -1,6 +1,6 @@
 <template>
   <!-- 页面容器，支持右滑返回 -->
-  <div class="page-container" @swipe="toHomePageSwipe">
+  <div class="page" @swipe="toHomePageSwipe">
     <!-- 背景图片 -->
     <image
       class="page__bg"
@@ -20,18 +20,16 @@
         <text class="text-subtitle">{{ updateTime }}</text>
       </div>
 
-      <!-- 当前天气概览 -->
-      <div class="content-hero card-margin">
-        <image class="icon-weather-main" src="/common/images/weather-icons/{{ iconCode }}.png" />
-        <text class="text-weather">{{ textDay }}</text>
-        <text class="text-temp-range">{{ tempMinMax }}</text>
-      </div>
-
       <!-- 按类别组织的详细天气数据 -->
-      <div class="card card-double" for="{{ category in weatherCategories }}">
-        <div class="item-data" for="{{ item in category.items }}">
-          <text class="text-data-value">{{ item.value }}{{ item.unit }}</text>
-          <text class="text-data-label">{{ item.name }}</text>
+      <div class="card" for="{{ category in weatherCategories }}">
+        <text class="text-card-title">{{ category.title }}</text>
+        <div class="card-content">
+          <div class="card-grid">
+            <div class="item-data" for="{{ item in category.items }}">
+              <text class="text-data-value">{{ item.value }}{{ item.unit }}</text>
+              <text class="text-data-label">{{ item.name }}</text>
+            </div>
+          </div>
         </div>
       </div>
     </scroll>
@@ -67,59 +65,11 @@ export default {
     isLoading: true, // 加载状态
     location: "__", // 地点
     updateTime: "__", // 选中的日期或加载状态
-    iconCode: "__", // 天气图标代码
-    textDay: "__", // 白天天气描述
-    tempMinMax: "__°/__°", // 最高/最低温度
     backgroundImage: "", // 背景图片
     backgroundFolder: "default", // 背景图片目录
 
     // 按类别组织的天气指标数据
-    weatherCategories: [
-      {
-        // 基础气象指标
-        items: [
-          {name: "紫外线指数", value: "__", unit: "", uniqueId: 1},
-          {name: "相对湿度", value: "__", unit: "%", uniqueId: 2},
-          {name: "大气压强", value: "__", unit: "hPa", uniqueId: 5},
-          {name: "能见度", value: "__", unit: "km", uniqueId: 7},
-          {name: "云量", value: "__", unit: "%", uniqueId: 8}
-        ]
-      },
-      {
-        // 降水指标
-        items: [{name: "总降水量", value: "__", unit: "mm", uniqueId: 6}]
-      },
-      {
-        // 日间天气
-        items: [
-          {name: "白天天气描述", value: "__", unit: "", uniqueId: 13},
-          {name: "白天风向", value: "__", unit: "", uniqueId: 3},
-          {name: "白天风力等级", value: "__", unit: "级", uniqueId: 4},
-          {name: "白天风速", value: "__", unit: "km/h", uniqueId: 17},
-          {name: "白天风向角度", value: "__", unit: "°", uniqueId: 19}
-        ]
-      },
-      {
-        // 夜间天气
-        items: [
-          {name: "夜间天气描述", value: "__", unit: "", uniqueId: 14},
-          {name: "夜间风向", value: "__", unit: "", uniqueId: 15},
-          {name: "夜间风力等级", value: "__", unit: "级", uniqueId: 16},
-          {name: "夜间风速", value: "__", unit: "km/h", uniqueId: 18},
-          {name: "夜间风向角度", value: "__", unit: "°", uniqueId: 20}
-        ]
-      },
-      {
-        // 天文时间
-        items: [
-          {name: "日出时间", value: "__", unit: "", uniqueId: 9},
-          {name: "日落时间", value: "__", unit: "", uniqueId: 10},
-          {name: "月升时间", value: "__", unit: "", uniqueId: 21},
-          {name: "月落时间", value: "__", unit: "", uniqueId: 22},
-          {name: "月相名称", value: "__", unit: "", uniqueId: 23}
-        ]
-      }
-    ],
+    weatherCategories: [],
 
     /**
      * 右滑返回index页面
@@ -136,15 +86,7 @@ export default {
    * @param {Object} selectedData - 选中日期的天气数据
    */
   updateWeatherFigures(selectedData) {
-    const valueMap = this.getDetailedWeatherFigures(selectedData)
-
-    // 遍历并更新各项数值
-    this.weatherCategories = this.weatherCategories.map((category) => ({
-      items: category.items.map((item) => ({
-        ...item,
-        value: valueMap[item.uniqueId] !== undefined ? valueMap[item.uniqueId] : item.value
-      }))
-    }))
+    this.weatherCategories = this.buildWeatherCategories(selectedData)
   },
 
   /**
@@ -194,9 +136,6 @@ export default {
     this.updateTime = this.selectedDate || ""
 
     const isNight = WeatherDataUtils.isNightTime(selectedData.sunrise, selectedData.sunset)
-    this.iconCode = WeatherDataUtils.getMappedIconCode(selectedData.iconDay, isNight)
-    this.textDay = selectedData.textDay
-    this.tempMinMax = this.formatTempRange(selectedData.tempMin, selectedData.tempMax)
     const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay, isNight)
 
     const productLower = (product || "").toLowerCase()
@@ -208,43 +147,307 @@ export default {
     this.backgroundFolder = isRect || isNarrowRect || isCircle ? "rect" : "default"
   },
 
-  formatTempRange(tempMin, tempMax) {
-    return `${tempMin}°/${tempMax}°`
-  },
+  buildWeatherCategories(selectedData = {}) {
+    const readValue = (value) =>
+      value === undefined || value === null || value === "" ? "__" : value
 
-  getDetailedWeatherFigures(selectedData) {
-    return {
-      1: selectedData.uvIndex || "__",
-      2: selectedData.humidity || "__",
-      3: selectedData.windDirDay || "__",
-      4: selectedData.windScaleDay || "__",
-      5: selectedData.pressure || "__",
-      6: selectedData.precip || "__",
-      7: selectedData.vis || "__",
-      8: selectedData.cloud || "__",
-      9: selectedData.sunrise || "__",
-      10: selectedData.sunset || "__",
-      11: selectedData.tempMax || "__",
-      12: selectedData.tempMin || "__",
-      13: selectedData.textDay || "__",
-      14: selectedData.textNight || "__",
-      15: selectedData.windDirNight || "__",
-      16: selectedData.windScaleNight || "__",
-      17: selectedData.windSpeedDay || "__",
-      18: selectedData.windSpeedNight || "__",
-      19: selectedData.wind360Day || "__",
-      20: selectedData.wind360Night || "__",
-      21: selectedData.moonrise || "__",
-      22: selectedData.moonset || "__",
-      23: selectedData.moonPhase || "__"
-    }
+    return [
+      {
+        title: "温度与天气",
+        items: [
+          {name: "最高温度", value: readValue(selectedData.tempMax), unit: "°"},
+          {name: "最低温度", value: readValue(selectedData.tempMin), unit: "°"},
+          {name: "白天天气", value: readValue(selectedData.textDay), unit: ""},
+          {name: "夜间天气", value: readValue(selectedData.textNight), unit: ""},
+          // {name: "白天图标代码", value: readValue(selectedData.iconDay), unit: ""},
+          // {name: "夜间图标代码", value: readValue(selectedData.iconNight), unit: ""},
+          {name: "紫外线指数", value: readValue(selectedData.uvIndex), unit: ""},
+          {name: "总降水量", value: readValue(selectedData.precip), unit: "mm"}
+        ]
+      },
+      {
+        title: "白天风力",
+        items: [
+          {name: "风向", value: readValue(selectedData.windDirDay), unit: ""},
+          {name: "风力等级", value: readValue(selectedData.windScaleDay), unit: "级"},
+          {name: "风速", value: readValue(selectedData.windSpeedDay), unit: ""},
+          {name: "风向角度", value: readValue(selectedData.wind360Day), unit: "°"}
+        ]
+      },
+      {
+        title: "夜间风力",
+        items: [
+          {name: "风向", value: readValue(selectedData.windDirNight), unit: ""},
+          {name: "风力等级", value: readValue(selectedData.windScaleNight), unit: "级"},
+          {name: "风速", value: readValue(selectedData.windSpeedNight), unit: ""},
+          {name: "风向角度", value: readValue(selectedData.wind360Night), unit: "°"}
+        ]
+      },
+      {
+        title: "空气与能见度",
+        items: [
+          {name: "相对湿度", value: readValue(selectedData.humidity), unit: "%"},
+          {name: "大气压强", value: readValue(selectedData.pressure), unit: ""},
+          {name: "能见度", value: readValue(selectedData.vis), unit: "km"},
+          {name: "云量", value: readValue(selectedData.cloud), unit: "%"}
+        ]
+      },
+      {
+        title: "天文",
+        items: [
+          {name: "日出时间", value: readValue(selectedData.sunrise), unit: ""},
+          {name: "日落时间", value: readValue(selectedData.sunset), unit: ""},
+          {name: "月升时间", value: readValue(selectedData.moonrise), unit: ""},
+          {name: "月落时间", value: readValue(selectedData.moonset), unit: ""},
+          {name: "月相名称", value: readValue(selectedData.moonPhase), unit: ""}
+          // {name: "月相图标代码", value: readValue(selectedData.moonPhaseIcon), unit: ""}
+        ]
+      }
+    ]
   }
 }
 </script>
 
 <style>
 /* 引入公共样式 */
-@import "../../common/css/style.css";
 @import "../../common/css/loading-styles.css";
 @import "../../common/css/page-bg-styles.css";
+
+.page {
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.main-content {
+  padding: 0 8px 48px 8px;
+  color: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.page-header {
+  margin-top: 26px;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+.text-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.text-subtitle {
+  font-size: 24px;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.text-data-value {
+  font-size: 36px;
+  font-weight: bold;
+  margin-left: -1px;
+}
+
+.text-data-label {
+  font-size: 24px;
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.text-card-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.card {
+  width: 100%;
+  flex-direction: column;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.card-content {
+  width: 100%;
+  margin-top: -14px;
+  flex-direction: column;
+}
+
+.item-data {
+  flex-direction: column;
+  margin-top: 14px;
+}
+
+.card-grid {
+  flex-direction: column;
+}
+
+/* 针对圆表 (分辨率: 466px*466px, 水平dp值: 233) */
+@media (width: 233) or (width: 240) {
+  .main-content {
+    padding: 0px 8px 88px 8px;
+  }
+
+  .text-title {
+    font-size: 36px;
+    font-weight: normal;
+  }
+
+  .text-subtitle {
+    font-size: 24px;
+    margin-top: 4px;
+  }
+
+  .text-data-value {
+    font-size: 36px;
+    font-weight: bold;
+    margin-left: -1px;
+  }
+
+  .text-data-label {
+    font-size: 26px;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .text-card-title {
+    font-size: 28px;
+  }
+
+  .card {
+    width: 90%;
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .card-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .item-data {
+    width: 49%;
+    margin-left: 2px;
+  }
+
+  .card-content {
+    margin-left: -2px;
+  }
+}
+
+/* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 216) {
+  .main-content {
+    padding: 0px 8px 32px 8px;
+  }
+
+  .text-title {
+    font-size: 36px;
+    font-weight: normal;
+  }
+
+  .text-subtitle {
+    font-size: 24px;
+    margin-top: 4px;
+  }
+
+  .text-data-value {
+    font-size: 36px;
+    font-weight: bold;
+    margin-left: -1px;
+  }
+
+  .text-data-label {
+    font-size: 26px;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .text-card-title {
+    font-size: 28px;
+  }
+
+  .card {
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .card-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .item-data {
+    width: 49%;
+    margin-left: 2px;
+  }
+
+  .card-content {
+    margin-left: -2px;
+  }
+}
+
+/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 160) {
+  .main-content {
+    padding: 0px 8px 16px 8px;
+  }
+
+  .text-title {
+    font-size: 36px;
+    font-weight: normal;
+  }
+
+  .text-subtitle {
+    font-size: 24px;
+    margin-top: 4px;
+  }
+
+  .text-data-value {
+    font-size: 36px;
+    font-weight: bold;
+    margin-left: -1px;
+  }
+
+  .text-data-label {
+    font-size: 26px;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .text-card-title {
+    font-size: 28px;
+  }
+
+  .card {
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .card-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .item-data {
+    width: 49%;
+    margin-left: 2px;
+  }
+
+  .card-content {
+    margin-left: -2px;
+  }
+}
 </style>
