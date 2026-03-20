@@ -1308,10 +1308,10 @@ export default {
     const forecastHourly = this.buildForecastHourly(hourlyList)
     this.forecastHourly = forecastHourly
 
-    // 每 4 个一组进行分组
+    // 每 2 个一组进行分组
     const pages = []
-    for (let i = 0; i < forecastHourly.length; i += 4) {
-      pages.push(forecastHourly.slice(i, i + 4))
+    for (let i = 0; i < forecastHourly.length; i += 2) {
+      pages.push(forecastHourly.slice(i, i + 2))
     }
     this.forecastHourlyPages = pages
 
