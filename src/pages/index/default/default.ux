@@ -110,21 +110,21 @@
           <text class="title-bar__text">未来天气</text>
         </div>
 
-        <div class="forecast-daily">
+        <scroll class="forecast-daily" scroll-y="true" bounces="true">
           <div
             class="forecast-daily__item"
             for="{{ item in forecastDaily.slice(0, 7) }}"
             @click="DetailInfo(item)"
           >
-            <div class="forecast-daily__left">
+            <text class="forecast-daily__time">{{ item.time }}</text>
+            <div class="forecast-daily__detail">
+              <text class="forecast-daily__temperature">
+                {{ item.temperature.from }}°/{{ item.temperature.to }}°
+              </text>
               <image class="forecast-daily__icon" src="{{ item.icon }}" />
-              <text class="forecast-daily__time">{{ item.time }}</text>
             </div>
-            <text class="forecast-daily__temperature">
-              {{ item.temperature.from }}°/{{ item.temperature.to }}°
-            </text>
           </div>
-        </div>
+        </scroll>
       </div>
 
       <div class="section section--snap">
@@ -1722,7 +1722,7 @@ export default {
 }
 
 .title-bar__text {
-  margin-top: -30px;
+  margin-top: -36px;
   line-height: 24px;
   font-size: 24px;
   color: white;
@@ -1740,13 +1740,12 @@ export default {
   width: 25px;
   height: 33px;
   font-size: 25px;
-  font-weight: 600;
   line-height: normal;
   text-align: center;
   display: flex;
   align-items: flex-end;
   letter-spacing: normal;
-  color: rgba(255, 255, 255, 0.6);
+  color: white;
   transform-origin: 12.5px 16.5px;
 }
 
@@ -1810,21 +1809,19 @@ export default {
 }
 
 .forecast-daily {
+  margin-top: 10px;
+  height: 364px;
   width: 100%;
   padding: 0 16px;
   flex-direction: column;
+  align-items: center;
 }
 
 .forecast-daily__item {
-  align-items: center;
+  width:100%;
+  flex-direction: column;
   margin-bottom: 12px;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.forecast-daily__left {
-  flex-direction: row;
-  align-items: center;
+  justify-content: center;
 }
 
 .forecast-daily__icon {
@@ -1833,10 +1830,17 @@ export default {
 }
 
 .forecast-daily__time {
-  margin-left: 16px;
-  line-height: 32px;
-  font-size: 32px;
-  color: white;
+  line-height: 28px;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.forecast-daily__detail {
+  width: 100%;
+  margin-top: 6px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .forecast-daily__temperature {
@@ -1855,7 +1859,7 @@ export default {
 .indices__item {
   padding: 16px;
   background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 32px;
+  border-radius: 24px;
   margin-bottom: 12px;
   flex-direction: row;
   justify-content: space-between;
@@ -1873,7 +1877,7 @@ export default {
 }
 
 .indices__value {
-  margin-top: 14px;
+  margin-top: 7px;
   line-height: 42px;
   font-size: 42px;
   color: white;
