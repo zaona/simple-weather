@@ -11,7 +11,7 @@
           <image class="about__app-icon" src="/common/logo.png" />
           <div class="about__app-text">
             <text class="about__app-name">简明天气</text>
-            <text class="about__app-version">v2.3.0</text>
+            <text class="about__app-version">v2.3.1</text>
           </div>
         </div>
       </div>
@@ -20,7 +20,7 @@
         <div class="about__setting-row">
           <div class="about__setting-text">
             <text class="about__setting-title">自动更新</text>
-            <text class="about__setting-subtitle">超过1h自动更新天气</text>
+            <text class="about__setting-subtitle">过期1h自动更新</text>
           </div>
           <switch
             class="about__switch"
