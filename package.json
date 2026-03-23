@@ -1,6 +1,6 @@
 {
   "name": "simple-weather",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "",
   "engines": {
     "node": ">=8.10"
@@ -8,7 +8,7 @@
   "scripts": {
     "start": "aiot start --watch",
     "build": "aiot build",
-    "release": "aiot release --drop-console=true --enable-protobuf --enable-jsc",
+    "release": "aiot release --drop-console=true --enable-jsc",
     "format": "prettier --write \"src/**/*.{ux,js,less,css}\""
   },
   "devDependencies": {
