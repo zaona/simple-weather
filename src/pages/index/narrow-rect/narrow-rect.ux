@@ -834,7 +834,7 @@ export default {
       : Math.min(Math.max(Math.round((uvNumber / 11) * 100), 0), 100)
     const uvIcon = this.getImageByPercent(
       "/common/images/uv/uv",
-      15,
+      12,
       uvPercent,
       "/common/images/uv/uv1.png"
     )
