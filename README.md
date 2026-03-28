@@ -1,4 +1,4 @@
-<img src="src/common/logo.png" alt="腕上漫画" width="64" style="margin-bottom: 4px;">
+<img src="src/common/logo.png" alt="简明天气" width="64">
 
 # 简明天气
 
@@ -29,7 +29,7 @@ com.application.zaona.weather
 - 天气状况展示：显示今天及未来天气概览，支持进入详情页查看单日完整指标。
 - 逐小时天气：在支持的设备上可开启 24h 小时级天气卡片。
 - 自动更新：在支持的设备上可开启，数据超过 1 小时自动尝试刷新。
-- 手动更新：关于页可主动触发更新。
+- 手动更新：在首页下拉可触发更新。
 - 多布局适配：根据设备 `product` 自动路由到 `default` / `circle` / `rect` / `narrow-rect` 界面。
 - 本地持久化：天气、逐小时天气、设置。
 
@@ -82,7 +82,7 @@ export const WEATHER_API_PRIVATE = {
 
 ## 开发规范
 
-从2.x版本开始，CSS类名命名遵循 [BEM](https://en.bem.info/methodology/css/) 规范，部分陈旧代码会逐步改写
+本项目CSS类名命名遵循 [BEM](https://en.bem.info/methodology/css/) 规范
 
 BEM = Block（独立组件） + Element（组件内部元素） + Modifier（状态或变体）
 
