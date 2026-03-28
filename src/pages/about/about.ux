@@ -11,7 +11,7 @@
           <image class="about__app-icon" src="/common/logo.png" />
           <div class="about__app-text">
             <text class="about__app-name">简明天气</text>
-            <text class="about__app-version">v2.3.2</text>
+            <text class="about__app-version">v{{ versionName }}</text>
           </div>
         </div>
       </div>
@@ -68,7 +68,8 @@ export default {
     showDebugPanel: false, // 是否显示调试面板
     autoUpdateEnabled: false, // 自动更新开关
     hourlyForecastEnabled: false, // 逐小时天气开关
-    showAutoUpdateCard: false
+    showAutoUpdateCard: false,
+    versionName: "unknown"
   },
 
   /**
@@ -77,6 +78,7 @@ export default {
   async onInit() {
     // 根据调试模式决定是否显示调试面板
     this.showDebugPanel = DebugService.isDebugMode()
+    this.loadManifestVersion()
     await this.setupAutoUpdatePanel()
   },
 
@@ -161,6 +163,19 @@ export default {
    */
   async handleClearData() {
     await DebugService.clearLocalData()
+  },
+
+  /**
+   * 获取版本信息（从manifest.json）
+   */
+  loadManifestVersion() {
+    try {
+      const manifest = require("../../manifest.json")
+      this.versionName = manifest.versionName || "unknown"
+    } catch (error) {
+      console.warn("无法加载manifest.json获取版本信息:", error.message)
+      this.versionName = "unknown"
+    }
   }
 }
 </script>
