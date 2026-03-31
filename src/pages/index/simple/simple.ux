@@ -111,7 +111,14 @@ import DeviceService from "../../../common/js/device-service.js"
 import DebugService from "../../../common/js/debug-service.js"
 import {WEATHER_API_ERRORS} from "../../../common/js/weather-api-service.js"
 import RefreshController from "../../../common/js/refresh-controller.js"
-import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../../common/js/config.js"
+import {
+  MESSAGES,
+  TOAST_DURATION,
+  ADVANCED_FEATURE_PRODUCTS,
+  RECT_SCREEN_PRODUCTS,
+  NARROW_RECT_SCREEN_PRODUCTS,
+  CIRCLE_SCREEN_PRODUCTS
+} from "../../../common/js/config.js"
 
 // 导入工具类
 import {DateUtils, WeatherDataUtils} from "../../../common/js/weather-utils.js"
@@ -151,6 +158,7 @@ export default {
     },
     forecastHourly: [],
     forecastHourlyPages: [],
+    hourlyItemsPerPage: 2,
     forecastDaily: [],
     indices: [
       {type: "紫外线", value: "__"},
@@ -641,11 +649,42 @@ export default {
       this.supportsAdvancedFeatures = await DeviceService.isProductSupported(
         ADVANCED_FEATURE_PRODUCTS
       )
+      await this.detectHourlyItemsPerPage()
     } catch (error) {
       console.error("检测设备能力失败:", error)
       this.supportsAdvancedFeatures = false
     } finally {
       this.updateHourlyCardVisibility()
+    }
+  },
+
+  /**
+   * 检测设备类型，确定逐小时预报每页个数
+   */
+  async detectHourlyItemsPerPage() {
+    try {
+      const isNarrowRect = await DeviceService.isProductSupported(NARROW_RECT_SCREEN_PRODUCTS)
+      if (isNarrowRect) {
+        this.hourlyItemsPerPage = 3
+        return
+      }
+
+      const isRect = await DeviceService.isProductSupported(RECT_SCREEN_PRODUCTS)
+      if (isRect) {
+        this.hourlyItemsPerPage = 4
+        return
+      }
+
+      const isCircle = await DeviceService.isProductSupported(CIRCLE_SCREEN_PRODUCTS)
+      if (isCircle) {
+        this.hourlyItemsPerPage = 4
+        return
+      }
+
+      this.hourlyItemsPerPage = 2
+    } catch (error) {
+      console.error("检测设备类型失败:", error)
+      this.hourlyItemsPerPage = 2
     }
   },
 
@@ -710,10 +749,10 @@ export default {
     const forecastHourly = this.buildForecastHourly(hourlyList)
     this.forecastHourly = forecastHourly
 
-    // 每 2 个一组进行分组
+    const itemsPerPage = this.hourlyItemsPerPage
     const pages = []
-    for (let i = 0; i < forecastHourly.length; i += 2) {
-      pages.push(forecastHourly.slice(i, i + 2))
+    for (let i = 0; i < forecastHourly.length; i += itemsPerPage) {
+      pages.push(forecastHourly.slice(i, i + itemsPerPage))
     }
     this.forecastHourlyPages = pages
 
