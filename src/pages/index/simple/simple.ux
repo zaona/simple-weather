@@ -17,10 +17,9 @@
       class="page__scroll"
       scroll-y="true"
       bounces="true"
-      style="scroll-snap-type: y mandatory; scroll-snap-stop: always"
       if="{{ !isLoading }}"
     >
-      <div class="section section--snap">
+      <div class="section section--hero">
         <div class="title">
           <text class="title__location">{{ current.location }}</text>
           <div class="title__time">
@@ -53,26 +52,7 @@
         </div>
       </div>
 
-      <div class="section section--snap" if="{{ showHourlyForecastCard }}">
-        <div class="title-bar" style="align-items: center">
-          <div class="title-bar__header" style="width: 212px; position: relative; height: 77px">
-            <text class="time" style="left: 60.9px; top: 3.8px; transform: rotate(-21deg)">
-              {{ timeDigit1 }}
-            </text>
-            <text class="time" style="left: 79px; top: -1px; transform: rotate(-9deg)">
-              {{ timeDigit2 }}
-            </text>
-            <text class="time" style="left: 93.5px; top: -5px">{{ ":" }}</text>
-            <text class="time" style="left: 108px; top: -1px; transform: rotate(9deg)">
-              {{ timeDigit3 }}
-            </text>
-            <text class="time" style="left: 126.1px; top: 3.8px; transform: rotate(21deg)">
-              {{ timeDigit4 }}
-            </text>
-          </div>
-          <text class="title-bar__text">天气预测</text>
-        </div>
-
+      <div class="section" if="{{ showHourlyForecastCard }}">
         <swiper class="forecast-hourly" indicator="false" loop="false" @change="handleSwiperChange">
           <div class="forecast-hourly__page" for="{{ page in forecastHourlyPages }}">
             <div class="forecast-hourly__item" for="{{ item in page }}">
@@ -90,27 +70,8 @@
         </div>
       </div>
 
-      <div class="section section--snap">
-        <div class="title-bar" style="align-items: center">
-          <div class="title-bar__header" style="width: 212px; position: relative; height: 77px">
-            <text class="time" style="left: 60.9px; top: 3.8px; transform: rotate(-21deg)">
-              {{ timeDigit1 }}
-            </text>
-            <text class="time" style="left: 79px; top: -1px; transform: rotate(-9deg)">
-              {{ timeDigit2 }}
-            </text>
-            <text class="time" style="left: 93.5px; top: -5px">{{ ":" }}</text>
-            <text class="time" style="left: 108px; top: -1px; transform: rotate(9deg)">
-              {{ timeDigit3 }}
-            </text>
-            <text class="time" style="left: 126.1px; top: 3.8px; transform: rotate(21deg)">
-              {{ timeDigit4 }}
-            </text>
-          </div>
-          <text class="title-bar__text">未来天气</text>
-        </div>
-
-        <scroll class="forecast-daily" scroll-y="true">
+      <div class="section">
+        <div class="forecast-daily">
           <div
             class="forecast-daily__item"
             for="{{ item in forecastDaily.slice(0, 7) }}"
@@ -124,198 +85,16 @@
               <image class="forecast-daily__icon" src="{{ item.icon }}" />
             </div>
           </div>
-        </scroll>
+        </div>
       </div>
 
-      <div class="section section--snap">
-        <div class="title-bar" style="align-items: center">
-          <div class="title-bar__header" style="width: 212px; position: relative; height: 77px">
-            <text class="time" style="left: 60.9px; top: 3.8px; transform: rotate(-21deg)">
-              {{ timeDigit1 }}
-            </text>
-            <text class="time" style="left: 79px; top: -1px; transform: rotate(-9deg)">
-              {{ timeDigit2 }}
-            </text>
-            <text class="time" style="left: 93.5px; top: -5px">{{ ":" }}</text>
-            <text class="time" style="left: 108px; top: -1px; transform: rotate(9deg)">
-              {{ timeDigit3 }}
-            </text>
-            <text class="time" style="left: 126.1px; top: 3.8px; transform: rotate(21deg)">
-              {{ timeDigit4 }}
-            </text>
-          </div>
-          <text class="title-bar__text">天气指数</text>
-        </div>
-
-        <scroll class="indices" scroll-y="true">
-          <div class="indices__item">
+      <div class="section">
+        <div class="indices">
+          <div class="indices__item" for="{{ item in indices }}">
             <div class="indices__content">
-              <text class="indices__type">{{ indices[0].type }}</text>
-              <text class="indices__value">{{ indices[0].value }}</text>
+              <text class="indices__type">{{ item.type }}</text>
+              <text class="indices__value">{{ item.value }}</text>
             </div>
-            <!-- <div class="indices__icon">
-              <image src="{{ indices[0].icon }}" />
-              <text
-                style="
-                  position: absolute;
-                  top: 43px;
-                  left: 0;
-                  width: 100%;
-                  text-align: center;
-                  line-height: 42px;
-                  font-size: 42px;
-                  font-weight: bold;
-                  color: white;
-                "
-              >
-                {{ indices[0].desc }}
-              </text>
-              <text
-                style="
-                  position: absolute;
-                  bottom: 4px;
-                  left: 0;
-                  width: 100%;
-                  text-align: center;
-                  line-height: 24px;
-                  font-size: 24px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                UV
-              </text>
-            </div> -->
-          </div>
-
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[1].type }}</text>
-              <text class="indices__value">{{ indices[1].value }}%</text>
-            </div>
-            <!-- <div class="indices__icon">
-              <progress
-                class="indices__humidity"
-                percent="{{ indices[1].percent }}"
-                type="arc"
-              ></progress>
-              <div
-                style="
-                  position: absolute;
-                  top: 0px;
-                  left: 0px;
-                  width: 100%;
-                  height: 100%;
-                  align-items: center;
-                  justify-content: center;
-                "
-              >
-                <image src="/common/images/hum/hum_wight.png" />
-              </div>
-              <text
-                style="
-                  position: absolute;
-                  bottom: 6px;
-                  left: 0;
-                  width: 100%;
-                  text-align: center;
-                  line-height: 20px;
-                  font-size: 20px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                {{ indices[1].desc }}
-              </text>
-            </div> -->
-          </div>
-
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[2].type }}</text>
-              <text class="indices__value">{{ indices[2].value }}</text>
-            </div>
-            <!-- <div class="indices__icon">
-              <image style="width: 128px; height: 128px" src="/common/images/wind/wind1.png" />
-              <image
-                class="indices__wind-arrow"
-                style="{{ indices[2].rotationStyle }}"
-                src="/common/images/wind/wind3.png"
-              />
-              <image
-                style="position: absolute; top: 0; left: 0; width: 128px; height: 128px"
-                src="/common/images/wind/wind2.png"
-              />
-            </div> -->
-          </div>
-
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[3].type }}</text>
-              <text class="indices__value">{{ indices[3].value }}</text>
-            </div>
-            <!-- <div class="indices__icon">
-              <image src="{{ indices[3].icon }}" />
-              <div
-                style="
-                  position: absolute;
-                  top: 0px;
-                  left: 0px;
-                  width: 100%;
-                  height: 100%;
-                  align-items: center;
-                  justify-content: center;
-                "
-              >
-                <image src="{{ indices[3].arrow }}" />
-              </div>
-              <text
-                style="
-                  position: absolute;
-                  bottom: 6px;
-                  left: 0;
-                  width: 100%;
-                  text-align: center;
-                  line-height: 20px;
-                  font-size: 20px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                hpa
-              </text>
-            </div> -->
-          </div>
-
-          <div class="indices__item">
-            <div class="indices__content">
-              <text class="indices__type">{{ indices[4].type }}</text>
-              <text class="indices__value">{{ indices[4].value }}</text>
-            </div>
-            <!-- <div class="indices__icon">
-              <image style="margin: -8px" src="{{ indices[4].icon }}" />
-              <text
-                style="
-                  position: absolute;
-                  bottom: 20px;
-                  left: 2px;
-                  line-height: 20px;
-                  font-size: 20px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                {{ indices[4].sunrise }}
-              </text>
-              <text
-                style="
-                  position: absolute;
-                  bottom: 20px;
-                  right: 2px;
-                  line-height: 20px;
-                  font-size: 20px;
-                  color: rgba(255, 255, 255, 0.75);
-                "
-              >
-                {{ indices[4].sunset }}
-              </text>
-            </div> -->
           </div>
 
           <div class="hero mt-lg">
@@ -323,7 +102,7 @@
               <text class="btn__text">关于</text>
             </div>
           </div>
-        </scroll>
+        </div>
       </div>
     </scroll>
   </div>
@@ -385,79 +164,18 @@ export default {
     forecastHourlyPages: [],
     forecastDaily: [],
     indices: [
-      {
-        type: "__",
-        value: "__",
-        desc: "__",
-        percent: 0,
-        icon: "/common/images/uv/uv1.png",
-        arrow: "/common/images/uv/uv15.png",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: "__",
-        value: "__",
-        desc: "__",
-        percent: 0,
-        icon: "",
-        arrow: "",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: "__",
-        value: "__",
-        desc: "__",
-        percent: 0,
-        icon: "",
-        arrow: "",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: "__",
-        value: "__",
-        desc: "__",
-        percent: 0,
-        icon: "/common/images/air/Air13.png",
-        arrow: "/common/images/uv/uv15.png",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: "__",
-        value: "__",
-        sunrise: "__",
-        sunset: "__",
-        percent: 0,
-        icon: "/common/images/sunset/sunset20.png",
-        arrow: "",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      }
+      {type: "紫外线", value: "__"},
+      {type: "湿度", value: "__"},
+      {type: "风向", value: "__"},
+      {type: "气压", value: "__"},
+      {type: "日出", value: "__"}
     ],
-    systemTime: "__:__",
     hourlyIndicatorStyle: {
       width: "40px",
       transform: JSON.stringify({
         translateX: "0px"
       })
-    },
-    timeDigit1: "_",
-    timeDigit2: "_",
-    timeDigit3: "_",
-    timeDigit4: "_"
+    }
   },
 
   applyPreloadedData(preloaded) {
@@ -520,146 +238,6 @@ export default {
       }
     }
     return this.calculateAverageTemperature(todayData)
-  },
-
-  getHumidityDesc(percent) {
-    if (typeof percent !== "number" || Number.isNaN(percent)) {
-      return ""
-    }
-    if (percent < 30) {
-      return "干燥"
-    }
-    if (percent < 40) {
-      return "偏干"
-    }
-    if (percent < 60) {
-      return "舒适"
-    }
-    if (percent < 70) {
-      return "偏湿"
-    }
-    return "潮湿"
-  },
-
-  getUvDesc(indexValue) {
-    const numeric = Number(indexValue)
-    if (Number.isNaN(numeric)) {
-      return "__"
-    }
-    if (numeric <= 2) {
-      return "弱"
-    }
-    if (numeric <= 5) {
-      return "中等"
-    }
-    if (numeric <= 7) {
-      return "强"
-    }
-    if (numeric <= 10) {
-      return "很强"
-    }
-    return "极强"
-  },
-
-  getPercentByRange(value, min, max) {
-    const numeric = Number(value)
-    if (Number.isNaN(numeric)) {
-      return 0
-    }
-    const clamped = Math.min(Math.max(numeric, min), max)
-    return Math.round(((clamped - min) / (max - min)) * 100)
-  },
-
-  getImageByPercent(basePath, maxIndex, percent, fallbackPath) {
-    const normalized = Math.min(Math.max(Math.round(percent), 0), 100)
-    const index = 1 + Math.round((normalized / 100) * (maxIndex - 1))
-    if (!basePath) {
-      return fallbackPath || ""
-    }
-    return `${basePath}${index}.png`
-  },
-
-  getPressureArrow(pressure) {
-    const numeric = Number(pressure)
-    if (Number.isNaN(numeric)) {
-      return "/common/images/uv/uv15.png"
-    }
-    if (numeric > 1008) {
-      return "/common/images/uv/uv14.png"
-    }
-    if (numeric < 1008) {
-      return "/common/images/uv/uv13.png"
-    }
-    return "/common/images/uv/uv15.png"
-  },
-
-  getWindRotation(degValue) {
-    const numeric = Number(degValue)
-    if (Number.isNaN(numeric)) {
-      return 0
-    }
-    if (numeric < 0) {
-      return 0
-    }
-    const normalized = (numeric + 180) % 360
-    return Math.round(normalized)
-  },
-
-  getSunPercent(sunriseText, sunsetText) {
-    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
-      return 0
-    }
-    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
-      return 0
-    }
-    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
-      return 0
-    }
-    const [srH, srM] = sunriseText.split(":").map((value) => Number(value))
-    const [ssH, ssM] = sunsetText.split(":").map((value) => Number(value))
-    if ([srH, srM, ssH, ssM].some((value) => Number.isNaN(value))) {
-      return 0
-    }
-    const sunriseMinutes = srH * 60 + srM
-    const sunsetMinutes = ssH * 60 + ssM
-    const now = new Date()
-    const nowMinutes = now.getHours() * 60 + now.getMinutes()
-    if (sunsetMinutes <= sunriseMinutes) {
-      return 0
-    }
-    const progress = Math.min(
-      Math.max(nowMinutes - sunriseMinutes, 0),
-      sunsetMinutes - sunriseMinutes
-    )
-    return Math.round((progress / (sunsetMinutes - sunriseMinutes)) * 100)
-  },
-
-  getSunDisplayInfo(sunriseText, sunsetText) {
-    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
-      return {label: "日出", time: sunriseText || "--"}
-    }
-    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
-      return {label: "日出", time: sunriseText || "--"}
-    }
-    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
-      return {label: "日出", time: sunriseText || "--"}
-    }
-    const [srH, srM] = sunriseText.split(":").map((value) => Number(value))
-    const [ssH, ssM] = sunsetText.split(":").map((value) => Number(value))
-    if ([srH, srM, ssH, ssM].some((value) => Number.isNaN(value))) {
-      return {label: "日出", time: sunriseText || "--"}
-    }
-    const sunriseMinutes = srH * 60 + srM
-    const sunsetMinutes = ssH * 60 + ssM
-    const now = new Date()
-    const nowMinutes = now.getHours() * 60 + now.getMinutes()
-
-    // 如果现在已经过了日落，或者还没到日出，显示日出
-    if (nowMinutes >= sunsetMinutes || nowMinutes < sunriseMinutes) {
-      return {label: "日出", time: sunriseText}
-    }
-    // 否则显示日落
-    return {label: "日落", time: sunsetText}
   },
 
   buildForecastHourly(hourlyList = [], limit = 12) {
@@ -803,163 +381,23 @@ export default {
   buildIndices(todayData) {
     if (!todayData) {
       return [
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "/common/images/uv/uv1.png",
-          arrow: "/common/images/uv/uv15.png",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        },
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "",
-          arrow: "",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        },
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "",
-          arrow: "",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        },
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "/common/images/air/Air13.png",
-          arrow: "/common/images/uv/uv15.png",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        },
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "/common/images/sunset/sunset20.png",
-          arrow: "",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        }
+        {type: "紫外线", value: "__"},
+        {type: "湿度", value: "__"},
+        {type: "风向", value: "__"},
+        {type: "气压", value: "__"},
+        {type: "日出", value: "__"}
       ]
     }
 
-    const uvValue = todayData.uvIndex || "__"
-    const humidityValue = todayData.humidity || "__"
-    const humidityNumber = Number(humidityValue)
-    const humidityPercent = Number.isNaN(humidityNumber)
-      ? 0
-      : Math.min(Math.max(Math.round(humidityNumber), 0), 100)
-    const humidityDesc = this.getHumidityDesc(humidityPercent)
-    const windType = todayData.windDirDay || "风向"
-    const windValue = todayData.windScaleDay ? `${todayData.windScaleDay}级` : "__"
-    const pressureValue = todayData.pressure ? `${todayData.pressure}` : "__"
-    const sunriseValue = todayData.sunrise || "--"
-    const sunsetValue = todayData.sunset || "--"
-    const uvNumber = Number(uvValue)
-    const uvPercent = Number.isNaN(uvNumber)
-      ? 0
-      : Math.min(Math.max(Math.round((uvNumber / 11) * 100), 0), 100)
-    const uvIcon = this.getImageByPercent(
-      "/common/images/uv/uv",
-      12,
-      uvPercent,
-      "/common/images/uv/uv1.png"
-    )
-    const pressurePercent = this.getPercentByRange(pressureValue, 980, 1040)
-    const airIcon = this.getImageByPercent(
-      "/common/images/air/Air",
-      21,
-      pressurePercent,
-      "/common/images/air/Air13.png"
-    )
-    const pressureArrow = this.getPressureArrow(pressureValue)
-    const sunPercent = this.getSunPercent(sunriseValue, sunsetValue)
-    const sunIcon = this.getImageByPercent(
-      "/common/images/sunset/sunset",
-      21,
-      sunPercent,
-      "/common/images/sunset/sunset20.png"
-    )
-    const sunInfo = this.getSunDisplayInfo(sunriseValue, sunsetValue)
-    const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
-    const windRotationStyle = {
-      transform: JSON.stringify({rotate: `${windRotation}deg`})
-    }
-    const uvDesc = this.getUvDesc(uvValue)
-
     return [
+      {type: "紫外线", value: todayData.uvIndex || "__"},
+      {type: "湿度", value: todayData.humidity ? `${todayData.humidity}%` : "__"},
       {
-        type: "紫外线",
-        value: uvDesc,
-        desc: uvValue,
-        percent: uvPercent,
-        icon: uvIcon,
-        arrow: "/common/images/uv/uv15.png",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
+        type: todayData.windDirDay || "风向",
+        value: todayData.windScaleDay ? `${todayData.windScaleDay}级` : "__"
       },
-      {
-        type: "湿度",
-        value: humidityValue,
-        desc: humidityDesc,
-        percent: humidityPercent,
-        icon: "",
-        arrow: "",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: windType,
-        value: windValue,
-        desc: "",
-        percent: 0,
-        icon: "",
-        arrow: "",
-        rotation: windRotation,
-        rotationStyle: windRotationStyle
-      },
-      {
-        type: "气压",
-        value: pressureValue,
-        desc: "",
-        percent: pressurePercent,
-        icon: airIcon,
-        arrow: pressureArrow,
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: sunInfo.label,
-        value: sunInfo.time,
-        sunrise: sunriseValue,
-        sunset: sunsetValue,
-        percent: sunPercent,
-        icon: sunIcon,
-        arrow: "",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      }
+      {type: "气压", value: todayData.pressure ? `${todayData.pressure}` : "__"},
+      {type: "日出", value: todayData.sunrise || "--"}
     ]
   },
 
@@ -995,26 +433,6 @@ export default {
     const updateTime = new Date(weatherData.updateTime)
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
     this.syncRectWeather(weatherData, todayData, timeAgo)
-  },
-
-  formatTime(dateValue) {
-    if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) {
-      return "__:__"
-    }
-    const hours = String(dateValue.getHours()).padStart(2, "0")
-    const minutes = String(dateValue.getMinutes()).padStart(2, "0")
-    return `${hours}:${minutes}`
-  },
-
-  updateTimeDigits() {
-    const now = new Date()
-    const hours = String(now.getHours()).padStart(2, "0")
-    const minutes = String(now.getMinutes()).padStart(2, "0")
-    this.timeDigit1 = hours[0]
-    this.timeDigit2 = hours[1]
-    this.timeDigit3 = minutes[0]
-    this.timeDigit4 = minutes[1]
-    this.systemTime = `${hours}:${minutes}`
   },
 
   /**
@@ -1445,7 +863,6 @@ export default {
    * 页面显示时初始化连接并刷新缓存
    */
   async onShow() {
-    this.updateTimeDigits()
     await this.syncFeatureSettings()
     await this.syncFeatureSettings(true)
 
@@ -1579,16 +996,14 @@ export default {
   position: relative;
 }
 
-.section--snap {
+.section--hero {
   height: 490px;
-  scroll-snap-align: start;
 }
 
 /* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
 @media (width: 106) {
-  .section--snap {
+  .section--hero {
     height: 520px;
-    scroll-snap-align: start;
   }
 }
 
@@ -1712,41 +1127,6 @@ export default {
 .alert__icon {
   width: 32px;
   height: 32px;
-}
-
-.title-bar {
-  flex-shrink: 0;
-  width: 100%;
-  padding: 0px 0px 14px 0px;
-  flex-direction: column;
-}
-
-.title-bar__text {
-  margin-top: -36px;
-  line-height: 24px;
-  font-size: 24px;
-  color: white;
-}
-
-.title-bar__header {
-  width: 212px;
-  height: 77px;
-  flex-direction: column;
-  align-items: center;
-}
-
-.time {
-  position: absolute;
-  width: 25px;
-  height: 33px;
-  font-size: 25px;
-  line-height: normal;
-  text-align: center;
-  display: flex;
-  align-items: flex-end;
-  letter-spacing: normal;
-  color: white;
-  transform-origin: 12.5px 16.5px;
 }
 
 .forecast-hourly {
@@ -1882,30 +1262,6 @@ export default {
   font-size: 42px;
   color: white;
   font-weight: bold;
-}
-
-.indices__icon {
-  position: relative;
-  width: 128px;
-  height: 128px;
-}
-
-.indices__humidity {
-  padding: 5px;
-  width: 100%;
-  height: 100%;
-  layer-color: rgba(255, 255, 255, 0.6);
-  color: white;
-  stroke-width: 10px;
-}
-
-.indices__wind-arrow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform-origin: 64px 64px;
-  width: 128px;
-  height: 128px;
 }
 
 /* 复用原 style.css 中用到的按钮与间距样式 */
