@@ -62,12 +62,19 @@
       <div class="section section-gap">
         <div class="forecast-daily">
           <div
-            class="forecast-daily__item"
+            class="forecast-daily__item {{ useHorizontalDailyLayout ? 'forecast-daily__item--horizontal' : '' }}"
             for="{{ item in forecastDaily.slice(0, 7) }}"
             @click="DetailInfo(item)"
           >
-            <text class="forecast-daily__time">{{ item.time }}</text>
-            <div class="forecast-daily__detail">
+            <div if="{{ useHorizontalDailyLayout }}" class="forecast-daily__left">
+              <image class="forecast-daily__icon" src="{{ item.icon }}" />
+              <text class="forecast-daily__time forecast-daily__time--horizontal">{{ item.time }}</text>
+            </div>
+            <text if="{{ useHorizontalDailyLayout }}" class="forecast-daily__temperature">
+              {{ item.temperature.from }}°/{{ item.temperature.to }}°
+            </text>
+            <text if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__time">{{ item.time }}</text>
+            <div if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__detail">
               <text class="forecast-daily__temperature">
                 {{ item.temperature.from }}°/{{ item.temperature.to }}°
               </text>
@@ -159,6 +166,7 @@ export default {
     forecastHourly: [],
     forecastHourlyPages: [],
     hourlyItemsPerPage: 2,
+    useHorizontalDailyLayout: false,
     forecastDaily: [],
     indices: [
       {type: "紫外线", value: "__"},
@@ -659,32 +667,37 @@ export default {
   },
 
   /**
-   * 检测设备类型，确定逐小时预报每页个数
+   * 检测设备类型，确定逐小时预报每页个数和逐日预报布局
    */
   async detectHourlyItemsPerPage() {
     try {
       const isNarrowRect = await DeviceService.isProductSupported(NARROW_RECT_SCREEN_PRODUCTS)
       if (isNarrowRect) {
         this.hourlyItemsPerPage = 3
+        this.useHorizontalDailyLayout = true
         return
       }
 
       const isRect = await DeviceService.isProductSupported(RECT_SCREEN_PRODUCTS)
       if (isRect) {
         this.hourlyItemsPerPage = 4
+        this.useHorizontalDailyLayout = true
         return
       }
 
       const isCircle = await DeviceService.isProductSupported(CIRCLE_SCREEN_PRODUCTS)
       if (isCircle) {
         this.hourlyItemsPerPage = 4
+        this.useHorizontalDailyLayout = true
         return
       }
 
       this.hourlyItemsPerPage = 2
+      this.useHorizontalDailyLayout = false
     } catch (error) {
       console.error("检测设备类型失败:", error)
       this.hourlyItemsPerPage = 2
+      this.useHorizontalDailyLayout = false
     }
   },
 
@@ -1166,6 +1179,17 @@ export default {
   justify-content: center;
 }
 
+.forecast-daily__item--horizontal {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forecast-daily__left {
+  flex-direction: row;
+  align-items: center;
+}
+
 .forecast-daily__icon {
   width: 48px;
   height: 48px;
@@ -1175,6 +1199,11 @@ export default {
   line-height: 28px;
   font-size: 28px;
   color: rgba(255, 255, 255, 0.75);
+}
+
+.forecast-daily__time--horizontal {
+  margin-left: 16px;
+  color: white;
 }
 
 .forecast-daily__detail {
@@ -1286,6 +1315,11 @@ export default {
   .indices__value {
     margin-top: 14px;
   }
+
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
+  }
 }
 
 /* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
@@ -1322,6 +1356,11 @@ export default {
 
   .forecast-daily {
     padding: 0 32px;
+  }
+
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
   }
 }
 
@@ -1369,6 +1408,11 @@ export default {
 
   .forecast-daily__item {
     width: 90%;
+  }
+
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
   }
 
   .page__scroll {
@@ -1422,6 +1466,11 @@ export default {
     width: 90%;
   }
 
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
+  }
+
   .page__scroll {
     align-items: center;
   }
@@ -1471,6 +1520,11 @@ export default {
 
   .forecast-daily__item {
     width: 90%;
+  }
+
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
   }
 
   .page__scroll {
