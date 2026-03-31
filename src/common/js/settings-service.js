@@ -4,7 +4,8 @@ import {STORAGE, MESSAGES, TOAST_DURATION} from "./config.js"
 
 const DEFAULT_SETTINGS = {
   autoUpdateEnabled: false,
-  hourlyForecastEnabled: false
+  hourlyForecastEnabled: false,
+  reduceAnimationEnabled: false
 }
 
 class SettingsService {
@@ -96,6 +97,15 @@ class SettingsService {
   }
 
   /**
+   * 检查减弱动画是否开启
+   * @returns {Promise<boolean>}
+   */
+  async isReduceAnimationEnabled() {
+    const settings = await this.getSettings()
+    return !!settings.reduceAnimationEnabled
+  }
+
+  /**
    * 更新自动更新配置
    * @param {boolean} enabled
    * @returns {Promise<boolean>}
@@ -119,6 +129,20 @@ class SettingsService {
     const nextSettings = {
       ...settings,
       hourlyForecastEnabled: !!enabled
+    }
+    return this.saveSettings(nextSettings)
+  }
+
+  /**
+   * 更新减弱动画配置
+   * @param {boolean} enabled
+   * @returns {Promise<boolean>}
+   */
+  async setReduceAnimationEnabled(enabled) {
+    const settings = await this.getSettings()
+    const nextSettings = {
+      ...settings,
+      reduceAnimationEnabled: !!enabled
     }
     return this.saveSettings(nextSettings)
   }

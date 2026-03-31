@@ -14,6 +14,7 @@
 <script>
 import router from "@system.router"
 import DeviceService from "../../common/js/device-service.js"
+import SettingsService from "../../common/js/settings-service.js"
 import {
   RECT_SCREEN_PRODUCTS,
   CIRCLE_SCREEN_PRODUCTS,
@@ -52,7 +53,11 @@ export default {
     this.hasRouted = true
 
     let target = "/pages/index/default"
-    if (await DeviceService.isProductInList(NARROW_RECT_SCREEN_PRODUCTS)) {
+    const reduceAnimationEnabled = await SettingsService.isReduceAnimationEnabled()
+
+    if (reduceAnimationEnabled) {
+      target = "/pages/index/simple"
+    } else if (await DeviceService.isProductInList(NARROW_RECT_SCREEN_PRODUCTS)) {
       target = "/pages/index/narrow-rect"
     } else if (await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)) {
       target = "/pages/index/rect"

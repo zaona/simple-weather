@@ -16,6 +16,20 @@
         </div>
       </div>
 
+      <div class="about__card">
+        <div class="about__setting-row">
+          <div class="about__setting-text">
+            <text class="about__setting-title">减弱动画</text>
+            <text class="about__setting-subtitle">更简单的主页</text>
+          </div>
+          <switch
+            class="about__switch"
+            checked="{{ reduceAnimationEnabled }}"
+            @change="handleReduceAnimationToggle"
+          />
+        </div>
+      </div>
+
       <div class="about__card" if="{{ showAutoUpdateCard }}">
         <div class="about__setting-row">
           <div class="about__setting-text">
@@ -57,10 +71,11 @@
 
 <script>
 import router from "@system.router"
+import {showToast} from "@system.prompt"
 import DebugService from "../../common/js/debug-service.js"
 import SettingsService from "../../common/js/settings-service.js"
 import DeviceService from "../../common/js/device-service.js"
-import {ADVANCED_FEATURE_PRODUCTS} from "../../common/js/config.js"
+import {ADVANCED_FEATURE_PRODUCTS, TOAST_DURATION} from "../../common/js/config.js"
 
 export default {
   // 页面私有数据
@@ -68,6 +83,7 @@ export default {
     showDebugPanel: false, // 是否显示调试面板
     autoUpdateEnabled: false, // 自动更新开关
     hourlyForecastEnabled: false, // 逐小时天气开关
+    reduceAnimationEnabled: false, // 减弱动画开关
     showAutoUpdateCard: false,
     versionName: "unknown"
   },
@@ -95,6 +111,7 @@ export default {
       } else {
         this.autoUpdateEnabled = false
         this.hourlyForecastEnabled = false
+        this.reduceAnimationEnabled = false
       }
     } catch (error) {
       console.error("设备信息处理失败:", error)
@@ -118,6 +135,7 @@ export default {
       const settings = await SettingsService.getSettings()
       this.autoUpdateEnabled = !!settings.autoUpdateEnabled
       this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
+      this.reduceAnimationEnabled = !!settings.reduceAnimationEnabled
     } catch (error) {
       console.error("加载设置失败:", error)
     }
@@ -149,6 +167,26 @@ export default {
     if (!saved) {
       this.hourlyForecastEnabled = previousValue
     }
+  },
+
+  /**
+   * 切换减弱动画展示
+   */
+  async handleReduceAnimationToggle(event) {
+    const nextValue = typeof event.checked === "boolean" ? event.checked : !!event.detail?.checked
+    const previousValue = this.reduceAnimationEnabled
+    this.reduceAnimationEnabled = nextValue
+
+    const saved = await SettingsService.setReduceAnimationEnabled(nextValue)
+    if (!saved) {
+      this.reduceAnimationEnabled = previousValue
+      return
+    }
+
+    showToast({
+      message: "重启应用时生效",
+      duration: TOAST_DURATION.SHORT
+    })
   },
 
   /**
@@ -286,11 +324,11 @@ export default {
 }
 
 .about__switch {
-  width: 80px;
-  height: 40px;
+  width: 60px;
+  height: 30px;
 }
 
-.about__btn--spaced{
+.about__btn--spaced {
   margin-top: 16px;
 }
 
@@ -336,6 +374,11 @@ export default {
 
   .about__app-version {
     font-size: 30px;
+  }
+
+  .about__switch {
+    width: 80px;
+    height: 40px;
   }
 }
 
@@ -396,6 +439,11 @@ export default {
     font-size: 30px;
     text-align: left;
   }
+
+  .about__switch {
+    width: 80px;
+    height: 40px;
+  }
 }
 
 /* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
@@ -439,6 +487,11 @@ export default {
 
   .about__app-version {
     font-size: 30px;
+  }
+
+  .about__switch {
+    width: 80px;
+    height: 40px;
   }
 }
 </style>

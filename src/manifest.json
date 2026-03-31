@@ -44,6 +44,9 @@
       "pages/index/default": {
         "component": "default"
       },
+      "pages/index/simple": {
+        "component": "simple"
+      },
       "pages/index/rect": {
         "component": "rect"
       },
