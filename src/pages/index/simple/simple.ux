@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <scroll class="page__scroll" scroll-y="true" bounces="true" if="{{ !isLoading }}">
+    <scroll class="page__scroll" @scroll="handlePullScroll" scroll-y="true" bounces="true" if="{{ !isLoading }}">
       <div class="section section--hero">
         <div class="title">
           <text class="title__location">{{ current.location }}</text>
