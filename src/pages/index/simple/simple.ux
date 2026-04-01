@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <image class="page__bg" src="/common/images/weather-bgs/default/{{ backgroundImage }}.png" />
+    <image class="page__bg" src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png" />
 
     <!-- 加载动画容器 -->
     <div class="loading" if="{{ isLoading }}">
@@ -150,6 +150,7 @@ export default {
     textDay: "__", // 白天天气描述
     tempMinMax: "__°/__°", // 最高/最低温度
     backgroundImage: "", // 背景图片
+    backgroundFolder: "default", // 背景图片目录
 
     // 新版界面数据
     current: {
@@ -675,6 +676,7 @@ export default {
       if (isNarrowRect) {
         this.hourlyItemsPerPage = 3
         this.useHorizontalDailyLayout = true
+        this.backgroundFolder = "rect"
         return
       }
 
@@ -682,6 +684,7 @@ export default {
       if (isRect) {
         this.hourlyItemsPerPage = 4
         this.useHorizontalDailyLayout = true
+        this.backgroundFolder = "rect"
         return
       }
 
@@ -689,15 +692,18 @@ export default {
       if (isCircle) {
         this.hourlyItemsPerPage = 4
         this.useHorizontalDailyLayout = true
+        this.backgroundFolder = "rect"
         return
       }
 
       this.hourlyItemsPerPage = 2
       this.useHorizontalDailyLayout = false
+      this.backgroundFolder = "default"
     } catch (error) {
       console.error("检测设备类型失败:", error)
       this.hourlyItemsPerPage = 2
       this.useHorizontalDailyLayout = false
+      this.backgroundFolder = "default"
     }
   },
 

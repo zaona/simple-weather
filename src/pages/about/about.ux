@@ -19,8 +19,8 @@
       <div class="about__card">
         <div class="about__setting-row">
           <div class="about__setting-text">
-            <text class="about__setting-title">减弱动画</text>
-            <text class="about__setting-subtitle">更简单的主页</text>
+            <text class="about__setting-title">简化首页</text>
+            <text class="about__setting-subtitle">简单流畅</text>
           </div>
           <switch
             class="about__switch"
