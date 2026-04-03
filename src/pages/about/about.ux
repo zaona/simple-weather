@@ -20,7 +20,7 @@
         <div class="about__setting-row">
           <div class="about__setting-text">
             <text class="about__setting-title">简化首页</text>
-            <text class="about__setting-subtitle">简单流畅</text>
+            <text class="about__setting-subtitle">重启生效</text>
           </div>
           <switch
             class="about__switch"
@@ -103,15 +103,14 @@ export default {
    */
   async setupAutoUpdatePanel() {
     try {
+      await this.loadFeatureSettings()
+
       const isSupportedDevice = await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
       this.showAutoUpdateCard = isSupportedDevice
 
-      if (isSupportedDevice) {
-        await this.loadFeatureSettings()
-      } else {
+      if (!isSupportedDevice) {
         this.autoUpdateEnabled = false
         this.hourlyForecastEnabled = false
-        this.reduceAnimationEnabled = false
       }
     } catch (error) {
       console.error("设备信息处理失败:", error)
