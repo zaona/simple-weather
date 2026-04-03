@@ -14,6 +14,8 @@ export const WEATHER_API_ERRORS = {
   LOCATION_INFO_MISSING: "LOCATION_INFO_MISSING"
 }
 
+const WEATHER_REQUEST_SOURCE = "quickapp"
+
 function fetchJson(url, options = {}) {
   const {method = "GET", data = null, header = {}} = options
 
@@ -78,6 +80,7 @@ class WeatherApiService {
       )
     ])
     const payload = {
+      source: WEATHER_REQUEST_SOURCE,
       locationId,
       modules: {
         daily: WEATHER_API.DAILY_RANGE,
