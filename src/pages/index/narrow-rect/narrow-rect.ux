@@ -298,7 +298,6 @@ import {showToast} from "@system.prompt"
 import DataService from "../../../common/js/data-service.js"
 import ConnectionService from "../../../common/js/connection-service.js"
 import SettingsService from "../../../common/js/settings-service.js"
-import HourlyDataService from "../../../common/js/hourly-data-service.js"
 import DeviceService from "../../../common/js/device-service.js"
 import DebugService from "../../../common/js/debug-service.js"
 import {WEATHER_API_ERRORS} from "../../../common/js/weather-api-service.js"
@@ -677,12 +676,13 @@ export default {
   },
 
   buildForecastBase(weatherData) {
+    const dailyList = DataService.getDailyList(weatherData)
     const todayStr = DateUtils.getTodayString()
-    const todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
+    const todayData = dailyList.find((day) => day.fxDate === todayStr)
     const todaySunrise = todayData ? todayData.sunrise : null
     const todaySunset = todayData ? todayData.sunset : null
 
-    return weatherData.daily
+    return dailyList
       .filter((day) => {
         const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
         return dayDiff >= -1
@@ -931,7 +931,7 @@ export default {
     this.textDay = baseWeather.textDay
     this.tempMinMax = baseWeather.tempMinMax
     this.backgroundImage = baseWeather.backgroundImage
-    this.location = weatherData.location || "未知地点"
+    this.location = DataService.getLocationName(weatherData)
 
     const currentTemperature = this.getCurrentTemperature(todayData, this.forecastHourly)
     this.current = {
@@ -947,12 +947,12 @@ export default {
         ? `/common/images/weather-icons/${this.iconCode}.png`
         : "/common/images/weather-icons/cloudy.png"
     }
-    this.forecastDaily = this.buildForecastDaily(weatherData.daily || [])
+    this.forecastDaily = this.buildForecastDaily(DataService.getDailyList(weatherData))
     this.indices = this.buildIndices(todayData)
   },
 
   applyWeatherData(weatherData, todayData) {
-    const updateTime = new Date(weatherData.updateTime)
+    const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
     this.syncRectWeather(weatherData, todayData, timeAgo)
   },
@@ -1058,7 +1058,7 @@ export default {
     }
 
     try {
-      await RefreshController.refreshDailyData()
+      await RefreshController.refreshWeatherData()
 
       const result = await this.loadWeatherData(true, {
         hourly: {
@@ -1128,7 +1128,7 @@ export default {
     }
 
     const {weatherData, todayData} = result
-    const updateTime = new Date(weatherData.updateTime)
+    const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
     this.syncRectWeather(weatherData, todayData, timeAgo)
     const hourlyOptions = options.hourly || {}
@@ -1210,24 +1210,18 @@ export default {
     const {silent = true, forceRefresh = false} = options
 
     try {
-      const result = await RefreshController.ensureHourlyData({forceRefresh})
-      const hourlyData = result?.hourlyData
+      const weatherData = forceRefresh
+        ? (await RefreshController.ensureDailyData({forceRefresh})).weatherData
+        : await DataService.readWeatherData(true)
+      let hourlyList = DataService.getHourlyList(weatherData)
 
-      if (hourlyData && Array.isArray(hourlyData.hourly)) {
-        this.applyHourlyForecastList(hourlyData.hourly)
+      if (hourlyList.length === 0 && !forceRefresh) {
+        const refreshedWeatherData = await RefreshController.refreshWeatherData()
+        hourlyList = DataService.getHourlyList(refreshedWeatherData)
+      }
 
-        if (result.error && !silent && result.error?.code !== "DATA_SAVE_FAILED") {
-          const toastMessage =
-            result.error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
-              ? MESSAGES.LOCATION_INFO_MISSING
-              : MESSAGES.FETCH_WEATHER_ERROR
-
-          showToast({
-            message: toastMessage,
-            duration: TOAST_DURATION.NORMAL
-          })
-        }
-
+      if (hourlyList.length > 0) {
+        this.applyHourlyForecastList(hourlyList)
         return
       }
     } catch (error) {
@@ -1362,11 +1356,13 @@ export default {
         // 有数据，关闭加载动画
         this.isLoading = false
       } else {
-        const shouldAutoUpdate =
-          this.autoUpdateEnabled && (result.status === "expired" || result.status === "no_data")
+        const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
 
         if (shouldAutoUpdate) {
-          await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+          const updated = await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+          if (!updated) {
+            this.isLoading = false
+          }
         } else {
           let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
 
@@ -1380,6 +1376,7 @@ export default {
             message: toastMessage,
             duration: TOAST_DURATION.LONG
           })
+          this.isLoading = false
         }
       }
       this.isFirstLoad = false
@@ -1400,14 +1397,12 @@ export default {
 
     // 清除缓存，确保重新从本地文件读取
     DataService.clearCache()
-    HourlyDataService.clearCache()
-
     // 重新加载一次，以便反映其他页面的修改
     const result = await this.loadWeatherData(true)
 
     if (result.success) {
       await this.maybeAutoUpdate(result.weatherData, {silent: true})
-    } else if (this.autoUpdateEnabled) {
+    } else {
       const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
       if (shouldAutoUpdate) {
         await this.UpdateWeather({auto: true, silent: true, showLoading: false})
@@ -1440,12 +1435,12 @@ export default {
       }
 
       // 计算更新时间
-      const updateTime = new Date(weatherData.updateTime)
+      const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
       const timeAgo = DateUtils.formatTimeAgo(updateTime)
       const todayStr = DateUtils.getTodayString()
 
       // 查找今天的数据
-      const todayData = weatherData.daily.find((day) => day.fxDate === todayStr)
+      const todayData = DataService.getDailyList(weatherData).find((day) => day.fxDate === todayStr)
 
       if (!todayData) {
         showToast({
@@ -1461,8 +1456,7 @@ export default {
       // 保存数据到本地
       await DataService.saveWeatherData(data.data)
 
-      // 与每日数据同时刷新逐小时数据
-      await this.loadHourlyForecastData({silent: true, forceRefresh: true})
+      await this.loadHourlyForecastData({silent: true})
 
       showToast({
         message: MESSAGES.DATA_UPDATED,

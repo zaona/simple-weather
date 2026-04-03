@@ -7,8 +7,6 @@
 export const STORAGE = {
   // 天气数据存储路径
   WEATHER_FILE: "internal://files/weather.txt",
-  // 逐小时天气数据存储路径
-  HOURLY_WEATHER_FILE: "internal://files/weather-hourly.txt",
   // 设置存储路径
   SETTINGS_FILE: "internal://files/settings.txt"
 }
@@ -47,8 +45,8 @@ export const MANUAL_UPDATE = {
 
 // 天气 API 配置（公共参数）
 export const WEATHER_API = {
-  DAILY_PATH: "/v7/weather/7d",
-  HOURLY_PATH: "/v7/weather/24h",
+  DAILY_RANGE: "7d",
+  HOURLY_RANGE: "24h",
   REQUEST_TIMEOUT: 10000
 }
 

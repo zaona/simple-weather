@@ -223,10 +223,11 @@ function createMockWeatherData() {
   })
 
   return {
-    location: "北京",
+    code: "200",
+    locationId: "101010100",
     updateTime: new Date().toISOString(),
-    fxLink: "https://www.qweather.com/weather/jiangyin-101190202.html",
-    daily
+    location: "北京",
+    hourly: null
   }
 }
 

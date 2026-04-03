@@ -1,33 +1,20 @@
 /**
  * 数据管理服务
- * 统一管理天气数据的存储、读取和缓存
+ * 统一管理聚合天气数据的存储、读取和缓存
  */
 
 import file from "@system.file"
 import {STORAGE, DATA, MESSAGES, TOAST_DURATION} from "./config.js"
 import {showToast} from "@system.prompt"
 
-/**
- * 数据服务类
- * 提供天气数据的读写、缓存和查询功能
- */
 class DataService {
   constructor() {
-    // 内存缓存
     this.cache = null
-    // 缓存时间戳
     this.cacheTime = null
   }
 
-  /**
-   * 读取天气数据
-   * 优先使用缓存，缓存失效或不存在时从文件读取
-   * @param {boolean} silent - 静默模式，不显示错误Toast
-   * @returns {Promise<Object|null>} 天气数据对象，失败返回null
-   */
   readWeatherData(silent = false) {
     return new Promise((resolve) => {
-      // 检查缓存是否有效
       if (this.cache && this.cacheTime) {
         const now = Date.now()
         if (now - this.cacheTime < DATA.CACHE_EXPIRY) {
@@ -37,18 +24,20 @@ class DataService {
         }
       }
 
-      // 缓存失效或不存在，从文件读取
       file.readText({
         uri: STORAGE.WEATHER_FILE,
         success: (data) => {
           try {
             const weatherData = JSON.parse(data.text)
-            // 更新缓存
+            if (!this.validateWeatherData(weatherData)) {
+              throw new Error("INVALID_WEATHER_DATA")
+            }
+
             this.cache = weatherData
             this.cacheTime = Date.now()
             resolve(weatherData)
-          } catch (e) {
-            console.error("数据解析失败:", e)
+          } catch (error) {
+            console.error("数据解析失败:", error)
             if (!silent) {
               showToast({
                 message: MESSAGES.DATA_FORMAT_ERROR,
@@ -72,13 +61,25 @@ class DataService {
     })
   }
 
-  /**
-   * 保存天气数据到文件
-   * 带重试机制，最多重试指定次数
-   * @param {string} dataText - 要保存的数据（JSON字符串）
-   * @param {number} retryCount - 当前重试次数（内部使用）
-   * @returns {Promise<boolean>} 保存成功返回true，失败返回false
-   */
+  readRawWeatherData() {
+    return new Promise((resolve) => {
+      file.readText({
+        uri: STORAGE.WEATHER_FILE,
+        success: (data) => {
+          try {
+            resolve(JSON.parse(data.text))
+          } catch (error) {
+            console.error("原始数据解析失败:", error)
+            resolve(null)
+          }
+        },
+        fail: () => {
+          resolve(null)
+        }
+      })
+    })
+  }
+
   saveWeatherData(dataText, retryCount = 0) {
     return new Promise((resolve) => {
       file.writeText({
@@ -87,19 +88,20 @@ class DataService {
         success: () => {
           console.log("数据已保存到本地")
 
-          // 更新缓存
           try {
-            this.cache = JSON.parse(dataText)
-            this.cacheTime = Date.now()
-          } catch (e) {
-            console.error("保存后更新缓存失败:", e)
+            const weatherData = JSON.parse(dataText)
+            this.cache = this.validateWeatherData(weatherData) ? weatherData : null
+            this.cacheTime = this.cache ? Date.now() : null
+          } catch (error) {
+            console.error("保存后更新缓存失败:", error)
+            this.cache = null
+            this.cacheTime = null
           }
 
           resolve(true)
         },
         fail: () => {
           if (retryCount < DATA.MAX_SAVE_RETRIES) {
-            // 重试
             setTimeout(() => {
               this.saveWeatherData(dataText, retryCount + 1).then(resolve)
             }, DATA.SAVE_RETRY_DELAY)
@@ -116,46 +118,96 @@ class DataService {
     })
   }
 
-  /**
-   * 根据日期获取天气数据
-   * @param {string} date - 日期字符串，格式：YYYY-MM-DD
-   * @param {boolean} silent - 静默模式，不显示错误Toast
-   * @returns {Promise<Object|null>} 指定日期的天气数据，失败返回null
-   */
-  async getDataByDate(date, silent = false) {
-    const weatherData = await this.readWeatherData(silent)
-
-    if (!weatherData || !weatherData.daily || !Array.isArray(weatherData.daily)) {
+  getDailyModule(weatherData) {
+    if (!weatherData || !weatherData.daily) {
       return null
     }
 
-    const dayData = weatherData.daily.find((day) => day.fxDate === date)
+    if (Array.isArray(weatherData.daily)) {
+      return {
+        daily: weatherData.daily,
+        updateTime: weatherData.updateTime || ""
+      }
+    }
+
+    if (typeof weatherData.daily === "object") {
+      return weatherData.daily
+    }
+
+    return null
+  }
+
+  getHourlyModule(weatherData) {
+    if (!weatherData || weatherData.hourly === null || weatherData.hourly === undefined) {
+      return null
+    }
+
+    if (Array.isArray(weatherData.hourly)) {
+      return {
+        hourly: weatherData.hourly,
+        updateTime: weatherData.updateTime || ""
+      }
+    }
+
+    if (typeof weatherData.hourly === "object") {
+      return weatherData.hourly
+    }
+
+    return null
+  }
+
+  getDailyList(weatherData) {
+    const dailyModule = this.getDailyModule(weatherData)
+    return Array.isArray(dailyModule?.daily) ? dailyModule.daily : []
+  }
+
+  getHourlyList(weatherData) {
+    const hourlyModule = this.getHourlyModule(weatherData)
+    return Array.isArray(hourlyModule?.hourly) ? hourlyModule.hourly : []
+  }
+
+  getPrimaryUpdateTime(weatherData) {
+    if (typeof weatherData?.updateTime === "string" && weatherData.updateTime) {
+      return weatherData.updateTime
+    }
+
+    return ""
+  }
+
+  getLocationName(weatherData) {
+    if (!weatherData) {
+      return "未知地点"
+    }
+
+    return weatherData.location || weatherData.name || "未知地点"
+  }
+
+  async getDataByDate(date, silent = false) {
+    const weatherData = await this.readWeatherData(silent)
+    const dailyList = this.getDailyList(weatherData)
+    if (dailyList.length === 0) {
+      return null
+    }
+
+    const dayData = dailyList.find((day) => day.fxDate === date)
     return dayData || null
   }
 
-  /**
-   * 获取今天的天气数据
-   * @param {boolean} silent - 静默模式，不显示错误Toast
-   * @returns {Promise<Object|null>} 今天的天气数据，如果失败返回 { status: 'error_type' }
-   */
   async getTodayData(silent = false) {
     const weatherData = await this.readWeatherData(silent)
+    const dailyList = this.getDailyList(weatherData)
 
-    // 完全没有数据（首次使用或文件读取失败）
-    if (!weatherData || !weatherData.daily || !Array.isArray(weatherData.daily)) {
+    if (!weatherData || dailyList.length === 0) {
       return {status: "no_data"}
     }
 
-    // 获取今天的日期字符串
     const today = new Date()
     const year = today.getFullYear()
     const month = String(today.getMonth() + 1).padStart(2, "0")
     const day = String(today.getDate()).padStart(2, "0")
     const todayStr = `${year}-${month}-${day}`
+    const dayData = dailyList.find((item) => item.fxDate === todayStr)
 
-    const dayData = weatherData.daily.find((day) => day.fxDate === todayStr)
-
-    // 有数据但已过期（今天的数据不存在）
     if (!dayData) {
       if (!silent) {
         showToast({
@@ -166,7 +218,6 @@ class DataService {
       return {status: "expired"}
     }
 
-    // 数据正常
     return {
       status: "success",
       weatherData,
@@ -175,25 +226,15 @@ class DataService {
     }
   }
 
-  /**
-   * 清除缓存
-   * 强制下次读取从文件加载
-   */
   clearCache() {
     this.cache = null
     this.cacheTime = null
     console.log("缓存已清除")
   }
 
-  /**
-   * 验证天气数据格式
-   * @param {Object} data - 要验证的数据对象
-   * @returns {boolean} 数据格式是否有效
-   */
   validateWeatherData(data) {
-    return data && data.daily && Array.isArray(data.daily) && data.daily.length > 0
+    return !!data && typeof data === "object" && !Array.isArray(data)
   }
 }
 
-// 导出单例
 export default new DataService()

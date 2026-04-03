@@ -31,7 +31,7 @@ com.application.zaona.weather
 - 自动更新：在支持的设备上可开启，数据超过 1 小时自动尝试刷新。
 - 手动更新：在首页下拉可触发更新。
 - 多布局适配：根据设备 `product` 自动路由到 `default` / `circle` / `rect` / `narrow-rect` 界面。
-- 本地持久化：天气、逐小时天气、设置。
+- 本地持久化：聚合天气数据、设置。
 
 ## 数据来源
 
@@ -39,10 +39,10 @@ com.application.zaona.weather
 
 1. 互联同步链路（手表 <- 同步器端）
    - 通过 `@system.interconnect` 建立连接。
-   - 监听并接收天气 JSON，校验后写入本地文件。
-2. API 拉取链路（手表 -> 和风天气接口）
+   - 监听并接收聚合天气 JSON，校验后写入 `weather.txt`。
+2. API 拉取链路（手表 -> 天气后端）
    - 从本地缓存提取 `locationId`。
-   - 请求 `/v7/weather/7d` 与 `/v7/weather/24h`。
+   - 请求 `POST 后端接口`。
 
 ## 调试模式
 
@@ -59,26 +59,24 @@ export const DEBUG = {
 - 加载页出现“关于”入口
 - 关于页显示调试面板（`模拟数据` / `清除数据`）
 
-## 天气 API 配置
+## 天气接口
 
-如果需要使用手表端主动拉取天气能力，请配置私有 API 参数：
+手表端主动拉取统一使用后端聚合接口：
 
-1. 复制 `src/common/js/weather-api-config-example.js`
-2. 重命名为 `src/common/js/weather-api-config.js`
-3. 填入你的 API 主机与密钥
+请求体示例：
 
-可参考 [获取和风天气API配置](https://www.yuque.com/zaona/weather/api)
-
-```javascript
-export const WEATHER_API_PRIVATE = {
-  HOST: "https://xxx.re.qweatherapi.com",
-  KEY: "your-api-key"
+```json
+{
+  "locationId": "101190201",
+  "modules": {
+    "daily": "7d",
+    "hourly": "24h"
+  }
 }
 ```
 
-建议：
-
-- `weather-api-config.js` 仅用于本地/私有环境，不要提交真实密钥。
+说明：
+- `hourly` 根据手表端“天气预测”开关决定是否请求
 
 ## 开发规范
 
@@ -130,7 +128,6 @@ npm run format
 ## 数据文件
 
 - 天气数据：`internal://files/weather.txt`
-- 逐小时数据：`internal://files/weather-hourly.txt`
 - 用户设置：`internal://files/settings.txt`
 
 ## 许可证
