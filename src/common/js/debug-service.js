@@ -227,6 +227,7 @@ function createMockWeatherData() {
     locationId: "101010100",
     updateTime: new Date().toISOString(),
     location: "北京",
+    daily,
     hourly: null
   }
 }

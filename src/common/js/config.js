@@ -46,7 +46,7 @@ export const MANUAL_UPDATE = {
 // 天气 API 配置（公共参数）
 export const WEATHER_API = {
   DAILY_RANGE: "7d",
-  HOURLY_RANGE: "24h",
+  HOURLY_RANGE: "168h",
   REQUEST_TIMEOUT: 10000
 }
 
