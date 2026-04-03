@@ -1,6 +1,9 @@
 <template>
   <div class="page">
-    <image class="page__bg" src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png" />
+    <image
+      class="page__bg"
+      src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png"
+    />
 
     <!-- 加载动画容器 -->
     <div class="loading" if="{{ isLoading }}">
@@ -13,7 +16,13 @@
       </div>
     </div>
 
-    <scroll class="page__scroll" @scroll="handlePullScroll" scroll-y="true" bounces="true" if="{{ !isLoading }}">
+    <scroll
+      class="page__scroll"
+      @scroll="handlePullScroll"
+      scroll-y="true"
+      bounces="true"
+      if="{{ !isLoading }}"
+    >
       <div class="section section--hero">
         <div class="title">
           <text class="title__location">{{ current.location }}</text>
@@ -68,12 +77,16 @@
           >
             <div if="{{ useHorizontalDailyLayout }}" class="forecast-daily__left">
               <image class="forecast-daily__icon" src="{{ item.icon }}" />
-              <text class="forecast-daily__time forecast-daily__time--horizontal">{{ item.time }}</text>
+              <text class="forecast-daily__time forecast-daily__time--horizontal">
+                {{ item.time }}
+              </text>
             </div>
             <text if="{{ useHorizontalDailyLayout }}" class="forecast-daily__temperature">
               {{ item.temperature.from }}°/{{ item.temperature.to }}°
             </text>
-            <text if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__time">{{ item.time }}</text>
+            <text if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__time">
+              {{ item.time }}
+            </text>
             <div if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__detail">
               <text class="forecast-daily__temperature">
                 {{ item.temperature.from }}°/{{ item.temperature.to }}°
@@ -655,9 +668,8 @@ export default {
    */
   async detectAdvancedFeatureSupport() {
     try {
-      this.supportsAdvancedFeatures = await DeviceService.isProductSupported(
-        ADVANCED_FEATURE_PRODUCTS
-      )
+      this.supportsAdvancedFeatures =
+        await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
       await this.detectHourlyItemsPerPage()
     } catch (error) {
       console.error("检测设备能力失败:", error)
@@ -1366,7 +1378,6 @@ export default {
 
 /* 针对其余圆表 (分辨率: 466px*466px, 水平dp值: 233) */
 @media (width: 233) {
-
   .section--hero {
     height: 466px;
   }
@@ -1422,7 +1433,6 @@ export default {
 
 /* 针对s4 41mm (分辨率: 466px*466px) */
 @media (shape: circle) {
-
   .section--hero {
     height: 466px;
   }
@@ -1478,7 +1488,6 @@ export default {
 
 /* 针对s5 (分辨率: 480px*480px, 水平dp值: 240) */
 @media (width: 240) {
-
   .section--hero {
     height: 480px;
   }
