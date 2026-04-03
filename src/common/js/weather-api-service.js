@@ -7,7 +7,7 @@ import fetch from "@system.fetch"
 import DataService from "./data-service.js"
 import SettingsService from "./settings-service.js"
 import DeviceService from "./device-service.js"
-import {WEATHER_API, ADVANCED_FEATURE_PRODUCTS} from "./config.js"
+import {WEATHER_API, ADVANCED_FEATURE_PRODUCT_BLACKLIST} from "./config.js"
 import WEATHER_API_PRIVATE from "./weather-api-config.js"
 
 export const WEATHER_API_ERRORS = {
@@ -73,7 +73,9 @@ class WeatherApiService {
 
     const [hourlyEnabled, supportsAdvancedFeatures] = await Promise.all([
       SettingsService.isHourlyForecastEnabled(),
-      DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+      DeviceService.isProductBlocked(ADVANCED_FEATURE_PRODUCT_BLACKLIST).then(
+        (isBlocked) => !isBlocked
+      )
     ])
     const payload = {
       locationId,

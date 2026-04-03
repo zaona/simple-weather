@@ -302,7 +302,11 @@ import DeviceService from "../../../common/js/device-service.js"
 import DebugService from "../../../common/js/debug-service.js"
 import {WEATHER_API_ERRORS} from "../../../common/js/weather-api-service.js"
 import RefreshController from "../../../common/js/refresh-controller.js"
-import {MESSAGES, TOAST_DURATION, ADVANCED_FEATURE_PRODUCTS} from "../../../common/js/config.js"
+import {
+  MESSAGES,
+  TOAST_DURATION,
+  ADVANCED_FEATURE_PRODUCT_BLACKLIST
+} from "../../../common/js/config.js"
 
 // 导入工具类
 import {DateUtils, WeatherDataUtils} from "../../../common/js/weather-utils.js"
@@ -1178,8 +1182,9 @@ export default {
    */
   async detectAdvancedFeatureSupport() {
     try {
-      this.supportsAdvancedFeatures =
-        await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+      this.supportsAdvancedFeatures = !(await DeviceService.isProductBlocked(
+        ADVANCED_FEATURE_PRODUCT_BLACKLIST
+      ))
     } catch (error) {
       console.error("检测设备能力失败:", error)
       this.supportsAdvancedFeatures = false

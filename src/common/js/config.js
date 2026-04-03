@@ -50,17 +50,10 @@ export const WEATHER_API = {
   REQUEST_TIMEOUT: 10000
 }
 
-// 支持高级功能的设备 product 名称列表
-export const ADVANCED_FEATURE_PRODUCTS = [
-  "emulator-vela",
-  "xiaomi watch s3 esim",
-  "xiaomi watch s4 esim",
-  "xiaomi watch s4 sport",
-  "o65m",
-  "marconi_o62m_watch",
-  "xiaomi watch s5 esim 46mm",
-  "xiaomi smart band 9 pro",
-  "redmi watch 6"
+// 禁用高级功能的设备 product 名称黑名单
+export const ADVANCED_FEATURE_PRODUCT_BLACKLIST = [
+  "xiaomi smart band 9",
+  "xiaomi smart band 10"
 ]
 
 // 矩形屏设备 product 名称列表

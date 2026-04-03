@@ -133,7 +133,7 @@ import RefreshController from "../../../common/js/refresh-controller.js"
 import {
   MESSAGES,
   TOAST_DURATION,
-  ADVANCED_FEATURE_PRODUCTS,
+  ADVANCED_FEATURE_PRODUCT_BLACKLIST,
   RECT_SCREEN_PRODUCTS,
   NARROW_RECT_SCREEN_PRODUCTS,
   CIRCLE_SCREEN_PRODUCTS
@@ -660,8 +660,9 @@ export default {
    */
   async detectAdvancedFeatureSupport() {
     try {
-      this.supportsAdvancedFeatures =
-        await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+      this.supportsAdvancedFeatures = !(await DeviceService.isProductBlocked(
+        ADVANCED_FEATURE_PRODUCT_BLACKLIST
+      ))
       await this.detectHourlyItemsPerPage()
     } catch (error) {
       console.error("检测设备能力失败:", error)

@@ -77,7 +77,10 @@ import {showToast} from "@system.prompt"
 import DebugService from "../../common/js/debug-service.js"
 import SettingsService from "../../common/js/settings-service.js"
 import DeviceService from "../../common/js/device-service.js"
-import {ADVANCED_FEATURE_PRODUCTS, TOAST_DURATION} from "../../common/js/config.js"
+import {
+  ADVANCED_FEATURE_PRODUCT_BLACKLIST,
+  TOAST_DURATION
+} from "../../common/js/config.js"
 
 export default {
   // 页面私有数据
@@ -107,7 +110,9 @@ export default {
     try {
       await this.loadFeatureSettings()
 
-      const isSupportedDevice = await DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+      const isSupportedDevice = !(await DeviceService.isProductBlocked(
+        ADVANCED_FEATURE_PRODUCT_BLACKLIST
+      ))
       this.showAutoUpdateCard = isSupportedDevice
 
       if (!isSupportedDevice) {
