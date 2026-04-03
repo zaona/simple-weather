@@ -1150,16 +1150,8 @@ export default {
         SettingsService.clearCache()
       }
 
-      if (!this.supportsAdvancedFeatures) {
-        this.autoUpdateEnabled = false
-        this.hourlyForecastEnabled = false
-        this.hasHourlyData = false
-        this.updateHourlyCardVisibility()
-        return
-      }
-
       const settings = await SettingsService.getSettings()
-      this.autoUpdateEnabled = !!settings.autoUpdateEnabled
+      this.autoUpdateEnabled = this.supportsAdvancedFeatures && !!settings.autoUpdateEnabled
       this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
     } catch (error) {
       console.error("同步设置失败:", error)
@@ -1172,7 +1164,7 @@ export default {
    * 更新逐小时卡片的可见性
    */
   updateHourlyCardVisibility() {
-    const canShowFeature = this.supportsAdvancedFeatures && this.hourlyForecastEnabled
+    const canShowFeature = this.hourlyForecastEnabled
     const shouldShow = canShowFeature && this.hasHourlyData
     this.showHourlyForecastCard = shouldShow
     if (!shouldShow) {
@@ -1201,7 +1193,7 @@ export default {
    * @param {Object} options
    */
   async loadHourlyForecastData(options = {}) {
-    if (!this.supportsAdvancedFeatures || !this.hourlyForecastEnabled) {
+    if (!this.hourlyForecastEnabled) {
       this.hasHourlyData = false
       this.updateHourlyCardVisibility()
       return

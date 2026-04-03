@@ -30,6 +30,20 @@
         </div>
       </div>
 
+      <div class="about__card">
+        <div class="about__setting-row">
+          <div class="about__setting-text">
+            <text class="about__setting-title">天气预测</text>
+            <text class="about__setting-subtitle">小时天气</text>
+          </div>
+          <switch
+            class="about__switch"
+            checked="{{ hourlyForecastEnabled }}"
+            @change="handleHourlyForecastToggle"
+          />
+        </div>
+      </div>
+
       <div class="about__card" if="{{ showAutoUpdateCard }}">
         <div class="about__setting-row">
           <div class="about__setting-text">
@@ -40,18 +54,6 @@
             class="about__switch"
             checked="{{ autoUpdateEnabled }}"
             @change="handleAutoUpdateToggle"
-          />
-        </div>
-
-        <div class="about__setting-row about__setting-row--spaced">
-          <div class="about__setting-text">
-            <text class="about__setting-title">天气预测</text>
-            <text class="about__setting-subtitle">逐小时天气预报</text>
-          </div>
-          <switch
-            class="about__switch"
-            checked="{{ hourlyForecastEnabled }}"
-            @change="handleHourlyForecastToggle"
           />
         </div>
       </div>
@@ -110,7 +112,6 @@ export default {
 
       if (!isSupportedDevice) {
         this.autoUpdateEnabled = false
-        this.hourlyForecastEnabled = false
       }
     } catch (error) {
       console.error("设备信息处理失败:", error)

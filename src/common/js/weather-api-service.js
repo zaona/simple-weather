@@ -6,7 +6,8 @@
 import fetch from "@system.fetch"
 import DataService from "./data-service.js"
 import SettingsService from "./settings-service.js"
-import {WEATHER_API} from "./config.js"
+import DeviceService from "./device-service.js"
+import {WEATHER_API, ADVANCED_FEATURE_PRODUCTS} from "./config.js"
 import WEATHER_API_PRIVATE from "./weather-api-config.js"
 
 export const WEATHER_API_ERRORS = {
@@ -70,12 +71,16 @@ class WeatherApiService {
       throw error
     }
 
-    const hourlyEnabled = await SettingsService.isHourlyForecastEnabled()
+    const [hourlyEnabled, supportsAdvancedFeatures] = await Promise.all([
+      SettingsService.isHourlyForecastEnabled(),
+      DeviceService.isProductSupported(ADVANCED_FEATURE_PRODUCTS)
+    ])
     const payload = {
       locationId,
       modules: {
         daily: WEATHER_API.DAILY_RANGE,
-        hourly: hourlyEnabled ? WEATHER_API.HOURLY_RANGE : null
+        hourly:
+          supportsAdvancedFeatures && hourlyEnabled ? WEATHER_API.HOURLY_RANGE : null
       }
     }
 
