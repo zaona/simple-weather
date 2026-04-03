@@ -665,7 +665,7 @@ export default {
     return {label: "日落", time: sunsetText}
   },
 
-  buildForecastHourly(hourlyList = [], limit = 12) {
+  buildForecastHourly(hourlyList = [], limit = 6) {
     const processed = this.processHourlyList(hourlyList, limit)
     if (processed.length === 0) {
       return []
@@ -746,7 +746,7 @@ export default {
       })
   },
 
-  processHourlyList(hourlyList = [], limit = 12) {
+  processHourlyList(hourlyList = [], limit = 6) {
     if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
       return []
     }
@@ -1168,6 +1168,10 @@ export default {
   /**
    * 加载并显示天气数据
    * @param {boolean} silent - 静默模式，不显示错误Toast
+   * @param {Object} options
+   * @param {boolean} options.skipHourly - 是否跳过逐小时加载
+   * @param {boolean} options.deferHourly - 是否延迟逐小时加载（不阻塞当前流程）
+   * @param {Object} options.hourly - 逐小时加载参数
    * @returns {Object} 返回 { success: boolean, status: string, weatherData?: Object }
    */
   async loadWeatherData(silent = false, options = {}) {
@@ -1186,12 +1190,24 @@ export default {
     const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
     this.syncRectWeather(weatherData, todayData, timeAgo)
+    const {skipHourly = false, deferHourly = false} = options
+    if (skipHourly) {
+      return {success: true, status: "success", weatherData}
+    }
+
     const hourlyOptions = options.hourly || {}
     const mergedHourlyOptions = {
       silent: hourlyOptions.silent !== undefined ? hourlyOptions.silent : silent,
       ...hourlyOptions
     }
-    await this.loadHourlyForecastData(mergedHourlyOptions)
+    const hourlyTask = this.loadHourlyForecastData(mergedHourlyOptions)
+    if (deferHourly) {
+      Promise.resolve(hourlyTask).catch((error) => {
+        console.error("分步加载逐小时天气失败:", error)
+      })
+    } else {
+      await hourlyTask
+    }
 
     return {success: true, status: "success", weatherData}
   },
@@ -1388,22 +1404,29 @@ export default {
    */
   async onInit() {
     this.showDebugEntry = DebugService.isDebugMode()
+    let hasPreloadedData = false
 
     if (typeof globalThis !== "undefined" && globalThis.__preloadedWeatherData) {
-      this.applyPreloadedData(globalThis.__preloadedWeatherData)
+      hasPreloadedData = this.applyPreloadedData(globalThis.__preloadedWeatherData)
       globalThis.__preloadedWeatherData = null
     }
 
-    await this.detectAdvancedFeatureSupport()
-    await this.syncFeatureSettings()
+    if (hasPreloadedData && this.isFirstLoad) {
+      this.isLoading = false
+    }
 
-    // 加载本地数据（静默模式）
-    const result = await this.loadWeatherData(true)
+    const featureSetupTask = (async () => {
+      await this.detectAdvancedFeatureSupport()
+      await this.syncFeatureSettings()
+    })()
+
+    // 第一步：优先加载并展示今日天气数据（不等待逐小时）
+    const result = await this.loadWeatherData(true, {skipHourly: true})
 
     // 首次加载完成
     if (this.isFirstLoad) {
       if (result.success) {
-        // 有数据，关闭加载动画
+        // 今日数据可用后立即展示界面，逐小时后续补齐
         this.isLoading = false
       } else {
         const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
@@ -1413,6 +1436,8 @@ export default {
           if (!updated) {
             this.isLoading = false
           }
+          // 自动更新成功后也要确保关闭加载态
+          this.isLoading = false
         } else {
           let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
 
@@ -1432,7 +1457,11 @@ export default {
       this.isFirstLoad = false
     }
 
+    await featureSetupTask
+
     if (result.success) {
+      // 第二步：在今日天气可见后，后台补加载逐小时数据
+      await this.loadHourlyForecastData({silent: true})
       await this.maybeAutoUpdate(result.weatherData)
     }
   },
@@ -1442,15 +1471,21 @@ export default {
    */
   async onShow() {
     this.updateTimeDigits()
-    await this.syncFeatureSettings()
-    await this.syncFeatureSettings(true)
+    const featureSyncTask = (async () => {
+      await this.syncFeatureSettings()
+      await this.syncFeatureSettings(true)
+    })()
 
     // 清除缓存，确保重新从本地文件读取
     DataService.clearCache()
-    // 重新加载一次，以便反映其他页面的修改
-    const result = await this.loadWeatherData(true)
+    // 第一步：先刷新今日数据，避免等待逐小时导致界面阻塞
+    const result = await this.loadWeatherData(true, {skipHourly: true})
+
+    await featureSyncTask
 
     if (result.success) {
+      // 第二步：页面可见后补加载逐小时
+      await this.loadHourlyForecastData({silent: true})
       await this.maybeAutoUpdate(result.weatherData, {silent: true})
     } else {
       const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"

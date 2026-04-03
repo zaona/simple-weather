@@ -46,7 +46,7 @@ export const MANUAL_UPDATE = {
 // 天气 API 配置（公共参数）
 export const WEATHER_API = {
   DAILY_RANGE: "7d",
-  HOURLY_RANGE: "168h",
+  HOURLY_RANGE: "24h",
   REQUEST_TIMEOUT: 10000
 }
 
@@ -54,7 +54,6 @@ export const WEATHER_API = {
 export const ADVANCED_FEATURE_PRODUCT_BLACKLIST = [
   "xiaomi smart band 9",
   "xiaomi smart band 10",
-  "xiaomi smart band 9 pro",
 ]
 
 // 矩形屏设备 product 名称列表
