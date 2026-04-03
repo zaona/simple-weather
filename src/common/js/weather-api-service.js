@@ -143,6 +143,36 @@ class WeatherApiService {
       }
     }
 
+    let fxLink = ""
+
+    if (typeof weatherData.fxLink === "string") {
+      fxLink = weatherData.fxLink
+    } else if (weatherData.daily && typeof weatherData.daily === "object") {
+      if (typeof weatherData.daily.fxLink === "string") {
+        fxLink = weatherData.daily.fxLink
+      } else if (Array.isArray(weatherData.daily.daily) && weatherData.daily.daily.length > 0) {
+        const firstDay = weatherData.daily.daily.find((day) => typeof day.fxLink === "string")
+        fxLink = firstDay?.fxLink || ""
+      }
+    } else if (Array.isArray(weatherData.daily) && weatherData.daily.length > 0) {
+      const firstDay = weatherData.daily.find((day) => typeof day.fxLink === "string")
+      fxLink = firstDay?.fxLink || ""
+    }
+
+    if (!fxLink) {
+      return null
+    }
+
+    const suffixMatch = fxLink.match(/-(\d+)(?:\.html)?$/i)
+    if (suffixMatch && suffixMatch[1]) {
+      return suffixMatch[1]
+    }
+
+    const allDigits = fxLink.match(/(\d+)/g)
+    if (allDigits && allDigits.length > 0) {
+      return allDigits[allDigits.length - 1]
+    }
+
     return null
   }
 }
