@@ -729,13 +729,15 @@ export default {
         ? (await RefreshController.ensureDailyData({forceRefresh})).weatherData
         : await DataService.readWeatherData(true)
       let hourlyList = DataService.getHourlyList(weatherData)
+      let hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
 
-      if (hourlyList.length === 0 && !forceRefresh) {
+      if (!hasDisplayableHourlyData && !forceRefresh) {
         const refreshedWeatherData = await RefreshController.refreshWeatherData()
         hourlyList = DataService.getHourlyList(refreshedWeatherData)
+        hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
       }
 
-      if (hourlyList.length > 0) {
+      if (hasDisplayableHourlyData) {
         this.applyHourlyForecastList(hourlyList)
         return
       }
