@@ -193,6 +193,19 @@ class DataService {
     return dayData || null
   }
 
+  getDataByDateFromCache(date) {
+    if (!date || !this.cache) {
+      return null
+    }
+
+    const dailyList = this.getDailyList(this.cache)
+    if (dailyList.length === 0) {
+      return null
+    }
+
+    return dailyList.find((day) => day.fxDate === date) || null
+  }
+
   async getTodayData(silent = false) {
     const weatherData = await this.readWeatherData(silent)
     const dailyList = this.getDailyList(weatherData)

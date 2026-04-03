@@ -89,6 +89,21 @@ export default {
     this.weatherCategories = this.buildWeatherCategories(selectedData)
   },
 
+  applyDetailData(selectedData) {
+    this.updateDetailCurrentWeather(selectedData, "")
+    this.updateWeatherFigures(selectedData)
+    this.isLoading = false
+  },
+
+  async updateBackgroundByDevice(selectedData) {
+    try {
+      const product = await DeviceService.getProduct()
+      this.updateDetailCurrentWeather(selectedData, product)
+    } catch (error) {
+      console.error("获取设备信息失败:", error)
+    }
+  },
+
   /**
    * 页面初始化
    */
@@ -103,7 +118,15 @@ export default {
       return
     }
 
-    // 从服务层读取指定日期的数据
+    // 优先使用缓存数据，避免页面跳转后重复IO导致首屏变慢
+    const cachedSelectedData = DataService.getDataByDateFromCache(this.selectedDate)
+    if (cachedSelectedData) {
+      this.applyDetailData(cachedSelectedData)
+      this.updateBackgroundByDevice(cachedSelectedData)
+      return
+    }
+
+    // 回退到文件读取
     const selectedData = await DataService.getDataByDate(this.selectedDate)
 
     if (!selectedData) {
@@ -115,21 +138,8 @@ export default {
       return
     }
 
-    let product = ""
-    try {
-      product = await DeviceService.getProduct()
-    } catch (error) {
-      console.error("获取设备信息失败:", error)
-    }
-
-    // 更新顶部天气概览
-    this.updateDetailCurrentWeather(selectedData, product)
-
-    // 更新天气指标面板
-    this.updateWeatherFigures(selectedData)
-
-    // 数据加载完成
-    this.isLoading = false
+    this.applyDetailData(selectedData)
+    this.updateBackgroundByDevice(selectedData)
   },
 
   updateDetailCurrentWeather(selectedData, product) {
