@@ -301,8 +301,8 @@ export default {
   flex-direction: column;
 }
 
-/* 针对圆表 (分辨率: 466px*466px, 水平dp值: 233) */
-@media (width: 233) or (width: 240) {
+/* 针对圆表 */
+@media (shape: circle) {
   .detail__content {
     padding: 0px 8px 88px 8px;
   }

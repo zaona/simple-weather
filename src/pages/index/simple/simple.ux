@@ -1406,61 +1406,6 @@ export default {
   }
 }
 
-/* 针对其余圆表 (分辨率: 466px*466px, 水平dp值: 233) */
-@media (width: 233) {
-  .section--hero {
-    height: 466px;
-  }
-
-  .title__location {
-    line-height: 32px;
-    font-size: 32px;
-  }
-
-  .current__temperature {
-    line-height: 120px;
-    font-size: 120px;
-  }
-
-  .indices {
-    align-items: center;
-  }
-
-  .indices__item {
-    padding: 28px;
-    border-radius: 32px;
-    width: 90%;
-  }
-
-  .indices__type {
-    line-height: 28px;
-    font-size: 28px;
-  }
-
-  .indices__value {
-    margin-top: 14px;
-    line-height: 56px;
-    font-size: 56px;
-  }
-
-  .forecast-daily {
-    padding: 0 32px;
-  }
-
-  .forecast-daily__item {
-    width: 90%;
-  }
-
-  .forecast-daily__time--horizontal {
-    line-height: 32px;
-    font-size: 32px;
-  }
-
-  .page__scroll {
-    align-items: center;
-  }
-}
-
 /* 针对s4 41mm (分辨率: 466px*466px) */
 @media (shape: circle) {
   .section--hero {
@@ -1520,6 +1465,61 @@ export default {
 @media (width: 240) {
   .section--hero {
     height: 480px;
+  }
+
+  .title__location {
+    line-height: 32px;
+    font-size: 32px;
+  }
+
+  .current__temperature {
+    line-height: 120px;
+    font-size: 120px;
+  }
+
+  .indices {
+    align-items: center;
+  }
+
+  .indices__item {
+    padding: 28px;
+    border-radius: 32px;
+    width: 90%;
+  }
+
+  .indices__type {
+    line-height: 28px;
+    font-size: 28px;
+  }
+
+  .indices__value {
+    margin-top: 14px;
+    line-height: 56px;
+    font-size: 56px;
+  }
+
+  .forecast-daily {
+    padding: 0 32px;
+  }
+
+  .forecast-daily__item {
+    width: 90%;
+  }
+
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
+  }
+
+  .page__scroll {
+    align-items: center;
+  }
+}
+
+/* 针对其余圆表 (分辨率: 466px*466px, 水平dp值: 233) */
+@media (width: 233) {
+  .section--hero {
+    height: 466px;
   }
 
   .title__location {
