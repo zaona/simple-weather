@@ -1117,7 +1117,6 @@ export default {
 
       const result = await this.loadWeatherData(true, {
         hourly: {
-          forceRefresh: true,
           silent: config.silent
         }
       })
@@ -1215,12 +1214,8 @@ export default {
   /**
    * 同步高级功能配置
    */
-  async syncFeatureSettings(forceReload = false) {
+  async syncFeatureSettings() {
     try {
-      if (forceReload && SettingsService.clearCache) {
-        SettingsService.clearCache()
-      }
-
       const settings = await SettingsService.getSettings()
       this.autoUpdateEnabled = this.supportsAdvancedFeatures && !!settings.autoUpdateEnabled
       this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
@@ -1471,29 +1466,6 @@ export default {
    */
   async onShow() {
     this.updateTimeDigits()
-    const featureSyncTask = (async () => {
-      await this.syncFeatureSettings()
-      await this.syncFeatureSettings(true)
-    })()
-
-    // 清除缓存，确保重新从本地文件读取
-    DataService.clearCache()
-    // 第一步：先刷新今日数据，避免等待逐小时导致界面阻塞
-    const result = await this.loadWeatherData(true, {skipHourly: true})
-
-    await featureSyncTask
-
-    if (result.success) {
-      // 第二步：页面可见后补加载逐小时
-      await this.loadHourlyForecastData({silent: true})
-      await this.maybeAutoUpdate(result.weatherData, {silent: true})
-    } else {
-      const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
-      if (shouldAutoUpdate) {
-        await this.UpdateWeather({auto: true, silent: true, showLoading: false})
-      }
-    }
-
     // 初始化连接并注册消息处理
     ConnectionService.init((data) => {
       this.handleWeatherData(data)

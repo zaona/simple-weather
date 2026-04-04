@@ -157,7 +157,13 @@ export default {
     const saved = await SettingsService.setAutoUpdateEnabled(nextValue)
     if (!saved) {
       this.autoUpdateEnabled = previousValue
+      return
     }
+
+    showToast({
+      message: "已保存，重启后生效",
+      duration: TOAST_DURATION.SHORT
+    })
   },
 
   /**
@@ -171,7 +177,13 @@ export default {
     const saved = await SettingsService.setHourlyForecastEnabled(nextValue)
     if (!saved) {
       this.hourlyForecastEnabled = previousValue
+      return
     }
+
+    showToast({
+      message: "已保存，重启后生效",
+      duration: TOAST_DURATION.SHORT
+    })
   },
 
   /**
@@ -189,7 +201,7 @@ export default {
     }
 
     showToast({
-      message: "重启应用时生效",
+      message: "已保存，重启后生效",
       duration: TOAST_DURATION.SHORT
     })
   },
