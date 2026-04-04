@@ -15,6 +15,7 @@
 import router from "@system.router"
 import DeviceService from "../../common/js/device-service.js"
 import SettingsService from "../../common/js/settings-service.js"
+import DataService from "../../common/js/data-service.js"
 import {
   RECT_SCREEN_PRODUCTS,
   CIRCLE_SCREEN_PRODUCTS,
@@ -36,6 +37,7 @@ export default {
 
   async onInit() {
     this.showDebugEntry = DebugService.isDebugMode()
+    const preloadTask = this.preloadWeatherData()
 
     try {
       await DeviceService.getProduct()
@@ -43,7 +45,34 @@ export default {
       console.error("获取设备信息失败:", error)
     }
 
+    await preloadTask
     await this.routeToTarget()
+  },
+
+  setPreloadedWeatherData(payload) {
+    if (typeof globalThis === "undefined") {
+      return
+    }
+    globalThis.__preloadedWeatherData = payload
+  },
+
+  async preloadWeatherData() {
+    try {
+      const result = await DataService.getTodayData(true)
+      if (!result || result.status !== "success") {
+        this.setPreloadedWeatherData(null)
+        return
+      }
+
+      this.setPreloadedWeatherData({
+        weatherData: result.weatherData,
+        todayData: result.todayData,
+        todayStr: result.todayStr
+      })
+    } catch (error) {
+      console.error("预加载天气数据失败:", error)
+      this.setPreloadedWeatherData(null)
+    }
   },
 
   async routeToTarget() {

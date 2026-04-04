@@ -968,7 +968,7 @@ export default {
     ]
   },
 
-  syncRectWeather(weatherData, todayData, timeAgo) {
+  syncWeather(weatherData, todayData, timeAgo) {
     RefreshController.recordDailyUpdate(weatherData)
     const baseWeather = this.buildBaseWeather(todayData, timeAgo)
     this.updateTime = baseWeather.updateTime
@@ -999,7 +999,7 @@ export default {
   applyWeatherData(weatherData, todayData) {
     const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
-    this.syncRectWeather(weatherData, todayData, timeAgo)
+    this.syncWeather(weatherData, todayData, timeAgo)
   },
 
   formatTime(dateValue) {
@@ -1189,7 +1189,7 @@ export default {
     const {weatherData, todayData} = result
     const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
     const timeAgo = DateUtils.formatTimeAgo(updateTime)
-    this.syncRectWeather(weatherData, todayData, timeAgo)
+    this.syncWeather(weatherData, todayData, timeAgo)
     const {skipHourly = false, deferHourly = false} = options
     if (skipHourly) {
       return {success: true, status: "success", weatherData}
@@ -1517,7 +1517,7 @@ export default {
       }
 
       // 更新界面
-      this.syncRectWeather(weatherData, todayData, timeAgo)
+      this.syncWeather(weatherData, todayData, timeAgo)
 
       // 保存数据到本地
       await DataService.saveWeatherData(data.data)
