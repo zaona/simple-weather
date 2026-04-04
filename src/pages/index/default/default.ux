@@ -1429,7 +1429,15 @@ export default {
         if (shouldAutoUpdate) {
           const updated = await this.UpdateWeather({auto: true, silent: true, showLoading: false})
           if (!updated) {
-            this.isLoading = false
+            const fallbackMessage =
+              result.status === "expired"
+                ? MESSAGES.WAITING_FOR_UPDATE
+                : MESSAGES.WAITING_FOR_FIRST_DATA
+
+            showToast({
+              message: fallbackMessage,
+              duration: TOAST_DURATION.LONG
+            })
           }
           // 自动更新成功后也要确保关闭加载态
           this.isLoading = false
