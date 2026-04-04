@@ -47,7 +47,8 @@ export const MANUAL_UPDATE = {
 export const WEATHER_API = {
   DAILY_RANGE: "7d",
   HOURLY_RANGE: "24h",
-  REQUEST_TIMEOUT: 10000
+  REQUEST_TIMEOUT: 10000,
+  SYNC_PATH: "/api/weather/sync"
 }
 
 // 禁用高级功能的设备 product 名称黑名单

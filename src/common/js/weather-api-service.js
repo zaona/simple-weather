@@ -89,7 +89,7 @@ class WeatherApiService {
       }
     }
 
-    const url = buildUrl(WEATHER_API_PRIVATE.HOST, WEATHER_API_PRIVATE.SYNC_PATH)
+    const url = buildUrl(WEATHER_API_PRIVATE.HOST, WEATHER_API.SYNC_PATH)
     const weatherData = await fetchJson(url, {
       method: "POST",
       data: JSON.stringify(payload),
