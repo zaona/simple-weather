@@ -1663,14 +1663,6 @@ export default {
   scroll-snap-align: start;
 }
 
-/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
-@media (width: 106) {
-  .section--snap {
-    height: 520px;
-    scroll-snap-align: start;
-  }
-}
-
 .title {
   flex-shrink: 0;
   margin-top: 26px;
@@ -1844,14 +1836,14 @@ export default {
 .forecast-hourly__item {
   flex-direction: column;
   align-items: center;
-  margin: 0 12px;
-  width: 88px;
+  width: 90%;
 }
 
 .forecast-hourly__time {
   line-height: 28px;
   font-size: 28px;
   color: rgba(255, 255, 255, 0.75);
+  lines: 1;
 }
 
 .forecast-hourly__temperature {
@@ -1866,7 +1858,7 @@ export default {
 }
 
 .progress-bar {
-  margin-top: 80px;
+  margin-top: 60px;
   flex-direction: column;
   align-items: center;
 }
@@ -2011,5 +2003,26 @@ export default {
 
 .mt-lg {
   margin-top: 12px;
+}
+
+/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
+@media (width: 106) {
+  .section--snap {
+    height: 520px;
+    scroll-snap-align: start;
+  }
+
+  .forecast-hourly__item {
+    flex-direction: column;
+    align-items: center;
+    margin: 0 12px;
+    width: 88px;
+  }
+
+  .progress-bar {
+    margin-top: 80px;
+    flex-direction: column;
+    align-items: center;
+  }
 }
 </style>

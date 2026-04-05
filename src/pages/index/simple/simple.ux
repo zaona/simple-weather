@@ -1239,6 +1239,7 @@ export default {
   line-height: 28px;
   font-size: 28px;
   color: rgba(255, 255, 255, 0.75);
+  lines: 1;
 }
 
 .forecast-hourly__temperature {
