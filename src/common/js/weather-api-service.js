@@ -14,8 +14,6 @@ export const WEATHER_API_ERRORS = {
   LOCATION_INFO_MISSING: "LOCATION_INFO_MISSING"
 }
 
-const WEATHER_REQUEST_SOURCE = "quickapp"
-
 function fetchJson(url, options = {}) {
   const {method = "GET", data = null, header = {}} = options
 
@@ -57,6 +55,14 @@ function fetchJson(url, options = {}) {
   })
 }
 
+function buildAuthHeaders(extraHeaders = {}) {
+  return {
+    "X-Client-Type": WEATHER_API_PRIVATE.AUTH.CLIENT_TYPE,
+    "X-API-Key": WEATHER_API_PRIVATE.AUTH.API_KEY,
+    ...extraHeaders
+  }
+}
+
 function buildUrl(base, path) {
   const trimmedBase = base.endsWith("/") ? base.slice(0, -1) : base
   const normalizedPath = path.startsWith("/") ? path : `/${path}`
@@ -80,7 +86,6 @@ class WeatherApiService {
       )
     ])
     const payload = {
-      source: WEATHER_REQUEST_SOURCE,
       locationId,
       modules: {
         daily: WEATHER_API.DAILY_RANGE,
@@ -93,9 +98,9 @@ class WeatherApiService {
     const weatherData = await fetchJson(url, {
       method: "POST",
       data: JSON.stringify(payload),
-      header: {
+      header: buildAuthHeaders({
         "Content-Type": "application/json"
-      }
+      })
     })
 
     if (!DataService.validateWeatherData(weatherData)) {
