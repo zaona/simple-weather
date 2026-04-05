@@ -1424,6 +1424,12 @@ export default {
         this.isLoading = false
         this.isFirstLoad = false
       }
+      const shouldFallbackForHourly =
+        this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
+      if (shouldFallbackForHourly) {
+        await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+        return
+      }
       await this.maybeAutoUpdate(preloadedWeatherData)
       return
     }
@@ -1435,6 +1441,11 @@ export default {
     if (this.isFirstLoad) {
       if (result.success) {
         this.isLoading = false
+        const shouldFallbackForHourly =
+          this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
+        if (shouldFallbackForHourly) {
+          await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+        }
       } else {
         const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
 
