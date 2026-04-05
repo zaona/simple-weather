@@ -424,10 +424,14 @@ export default {
 
   applyPreloadedData(preloaded) {
     if (!preloaded || !preloaded.weatherData || !preloaded.todayData) {
-      return false
+      return null
     }
-    this.applyWeatherData(preloaded.weatherData, preloaded.todayData)
-    return true
+
+    const {weatherData, todayData} = preloaded
+    const hourlyList = this.hourlyForecastEnabled ? DataService.getHourlyList(weatherData) : []
+    this.applyWeatherSnapshot(weatherData, todayData, hourlyList)
+
+    return weatherData
   },
 
   normalizeTempRange(rangeText) {
@@ -955,11 +959,95 @@ export default {
   },
 
   applyWeatherData(weatherData, todayData) {
-    const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
-    const timeAgo = DateUtils.formatTimeAgo(updateTime)
-    this.syncWeather(weatherData, todayData, timeAgo)
+    this.applyWeatherSnapshot(weatherData, todayData, [])
   },
 
+  findTodayData(weatherData) {
+    const todayStr = DateUtils.getTodayString()
+    return DataService.getDailyList(weatherData).find((day) => day.fxDate === todayStr) || null
+  },
+
+  getTimeAgoByWeatherData(weatherData) {
+    const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
+    return DateUtils.formatTimeAgo(updateTime)
+  },
+
+  applyWeatherSnapshot(weatherData, todayData, hourlyList = []) {
+    if (!weatherData || !todayData) {
+      return false
+    }
+
+    let hasDisplayableHourlyData = false
+    if (this.hourlyForecastEnabled) {
+      hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
+      if (hasDisplayableHourlyData) {
+        this.forecastHourly = this.buildForecastHourly(hourlyList)
+      } else {
+        this.forecastHourly = []
+        this.forecastHourlyPages = []
+      }
+    } else {
+      this.forecastHourly = []
+      this.forecastHourlyPages = []
+    }
+
+    const timeAgo = this.getTimeAgoByWeatherData(weatherData)
+    this.syncWeather(weatherData, todayData, timeAgo)
+
+    if (this.hourlyForecastEnabled && hasDisplayableHourlyData) {
+      this.applyHourlyForecastList(hourlyList)
+    } else {
+      this.hasHourlyData = false
+      this.updateHourlyCardVisibility()
+    }
+
+    return true
+  },
+
+  async resolveHourlyData(weatherData, options = {}) {
+    if (!this.hourlyForecastEnabled) {
+      return {weatherData, hourlyList: []}
+    }
+
+    const {silent = true, forceRefresh = false, allowRefreshFallback = true} = options
+
+    try {
+      let nextWeatherData = weatherData
+
+      if (forceRefresh) {
+        nextWeatherData = (await RefreshController.ensureDailyData({forceRefresh})).weatherData
+      }
+
+      let hourlyList = DataService.getHourlyList(nextWeatherData)
+      let hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
+
+      if (!hasDisplayableHourlyData && !forceRefresh && allowRefreshFallback) {
+        nextWeatherData = await RefreshController.refreshWeatherData()
+        hourlyList = DataService.getHourlyList(nextWeatherData)
+        hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
+      }
+
+      return {
+        weatherData: nextWeatherData,
+        hourlyList: hasDisplayableHourlyData ? hourlyList : []
+      }
+    } catch (error) {
+      console.error("获取逐小时天气失败:", error)
+      if (!silent && error?.code !== "DATA_SAVE_FAILED") {
+        const toastMessage =
+          error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+            ? MESSAGES.LOCATION_INFO_MISSING
+            : MESSAGES.FETCH_WEATHER_ERROR
+
+        showToast({
+          message: toastMessage,
+          duration: TOAST_DURATION.NORMAL
+        })
+      }
+    }
+
+    return {weatherData, hourlyList: []}
+  },
   formatTime(dateValue) {
     if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) {
       return "__:__"
@@ -1117,7 +1205,6 @@ export default {
    * @param {boolean} silent - 静默模式，不显示错误Toast
    * @param {Object} options
    * @param {boolean} options.skipHourly - 是否跳过逐小时加载
-   * @param {boolean} options.deferHourly - 是否延迟逐小时加载（不阻塞当前流程）
    * @param {Object} options.hourly - 逐小时加载参数
    * @returns {Object} 返回 { success: boolean, status: string, weatherData?: Object }
    */
@@ -1133,32 +1220,25 @@ export default {
       }
     }
 
-    const {weatherData, todayData} = result
-    const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
-    const timeAgo = DateUtils.formatTimeAgo(updateTime)
-    this.syncWeather(weatherData, todayData, timeAgo)
-    const {skipHourly = false, deferHourly = false} = options
-    if (skipHourly) {
-      return {success: true, status: "success", weatherData}
-    }
-
+    let {weatherData, todayData} = result
+    const {skipHourly = false} = options
     const hourlyOptions = options.hourly || {}
     const mergedHourlyOptions = {
       silent: hourlyOptions.silent !== undefined ? hourlyOptions.silent : silent,
       ...hourlyOptions
     }
-    const hourlyTask = this.loadHourlyForecastData(mergedHourlyOptions)
-    if (deferHourly) {
-      Promise.resolve(hourlyTask).catch((error) => {
-        console.error("分步加载逐小时天气失败:", error)
-      })
-    } else {
-      await hourlyTask
+
+    let hourlyList = []
+    if (!skipHourly) {
+      const resolved = await this.resolveHourlyData(weatherData, mergedHourlyOptions)
+      weatherData = resolved.weatherData || weatherData
+      hourlyList = resolved.hourlyList || []
+      todayData = this.findTodayData(weatherData) || todayData
     }
 
+    this.applyWeatherSnapshot(weatherData, todayData, hourlyList)
     return {success: true, status: "success", weatherData}
   },
-
   /**
    * 同步高级功能配置
    */
@@ -1208,50 +1288,38 @@ export default {
    * @param {Object} options
    */
   async loadHourlyForecastData(options = {}) {
-    if (!this.hourlyForecastEnabled) {
-      this.hasHourlyData = false
-      this.updateHourlyCardVisibility()
-      return
-    }
-
-    const {silent = true, forceRefresh = false} = options
-
     try {
-      const weatherData = forceRefresh
+      const {silent = true, forceRefresh = false} = options
+      const baseWeatherData = forceRefresh
         ? (await RefreshController.ensureDailyData({forceRefresh})).weatherData
         : await DataService.readWeatherData(true)
-      let hourlyList = DataService.getHourlyList(weatherData)
-      let hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
 
-      if (!hasDisplayableHourlyData && !forceRefresh) {
-        const refreshedWeatherData = await RefreshController.refreshWeatherData()
-        hourlyList = DataService.getHourlyList(refreshedWeatherData)
-        hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
-      }
-
-      if (hasDisplayableHourlyData) {
-        this.applyHourlyForecastList(hourlyList)
+      if (!baseWeatherData) {
+        this.hasHourlyData = false
+        this.updateHourlyCardVisibility()
         return
       }
-    } catch (error) {
-      console.error("获取逐小时天气失败:", error)
-      if (!silent && error?.code !== "DATA_SAVE_FAILED") {
-        const toastMessage =
-          error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
-            ? MESSAGES.LOCATION_INFO_MISSING
-            : MESSAGES.FETCH_WEATHER_ERROR
 
-        showToast({
-          message: toastMessage,
-          duration: TOAST_DURATION.NORMAL
-        })
+      const todayData = this.findTodayData(baseWeatherData)
+      if (!todayData) {
+        this.hasHourlyData = false
+        this.updateHourlyCardVisibility()
+        return
       }
+
+      const resolved = await this.resolveHourlyData(baseWeatherData, {
+        silent,
+        forceRefresh
+      })
+      const weatherData = resolved.weatherData || baseWeatherData
+      const latestTodayData = this.findTodayData(weatherData) || todayData
+      this.applyWeatherSnapshot(weatherData, latestTodayData, resolved.hourlyList || [])
+    } catch (error) {
+      console.error("读取逐小时天气失败:", error)
+      this.hasHourlyData = false
+      this.updateHourlyCardVisibility()
     }
-
-    this.hasHourlyData = false
-    this.updateHourlyCardVisibility()
   },
-
   /**
    * 应用逐小时天气数据
    * @param {Array} hourlyList
@@ -1347,29 +1415,31 @@ export default {
    */
   async onInit() {
     this.showDebugEntry = DebugService.isDebugMode()
-    let hasPreloadedData = false
 
+    await this.detectAdvancedFeatureSupport()
+    await this.syncFeatureSettings()
+
+    let preloadedWeatherData = null
     if (typeof globalThis !== "undefined" && globalThis.__preloadedWeatherData) {
-      hasPreloadedData = this.applyPreloadedData(globalThis.__preloadedWeatherData)
+      preloadedWeatherData = this.applyPreloadedData(globalThis.__preloadedWeatherData)
       globalThis.__preloadedWeatherData = null
     }
 
-    if (hasPreloadedData && this.isFirstLoad) {
-      this.isLoading = false
+    if (preloadedWeatherData) {
+      if (this.isFirstLoad) {
+        this.isLoading = false
+        this.isFirstLoad = false
+      }
+      await this.maybeAutoUpdate(preloadedWeatherData)
+      return
     }
 
-    const featureSetupTask = (async () => {
-      await this.detectAdvancedFeatureSupport()
-      await this.syncFeatureSettings()
-    })()
-
-    // 第一步：优先加载并展示今日天气数据（不等待逐小时）
-    const result = await this.loadWeatherData(true, {skipHourly: true})
+    // 首屏一次性加载今日与逐小时数据
+    const result = await this.loadWeatherData(true)
 
     // 首次加载完成
     if (this.isFirstLoad) {
       if (result.success) {
-        // 今日数据可用后立即展示界面，逐小时后续补齐
         this.isLoading = false
       } else {
         const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
@@ -1408,11 +1478,7 @@ export default {
       this.isFirstLoad = false
     }
 
-    await featureSetupTask
-
     if (result.success) {
-      // 第二步：在今日天气可见后，后台补加载逐小时数据
-      await this.loadHourlyForecastData({silent: true})
       await this.maybeAutoUpdate(result.weatherData)
     }
   },
@@ -1447,13 +1513,7 @@ export default {
         return
       }
 
-      // 计算更新时间
-      const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
-      const timeAgo = DateUtils.formatTimeAgo(updateTime)
-      const todayStr = DateUtils.getTodayString()
-
-      // 查找今天的数据
-      const todayData = DataService.getDailyList(weatherData).find((day) => day.fxDate === todayStr)
+      const todayData = this.findTodayData(weatherData)
 
       if (!todayData) {
         showToast({
@@ -1463,13 +1523,16 @@ export default {
         return
       }
 
-      // 更新界面
-      this.syncWeather(weatherData, todayData, timeAgo)
+      const resolved = await this.resolveHourlyData(weatherData, {
+        silent: true,
+        allowRefreshFallback: false
+      })
+      const latestWeatherData = resolved.weatherData || weatherData
+      const latestTodayData = this.findTodayData(latestWeatherData) || todayData
+      this.applyWeatherSnapshot(latestWeatherData, latestTodayData, resolved.hourlyList || [])
 
       // 保存数据到本地
-      await DataService.saveWeatherData(data.data)
-
-      await this.loadHourlyForecastData({silent: true})
+      await DataService.saveWeatherData(JSON.stringify(latestWeatherData))
 
       showToast({
         message: MESSAGES.DATA_UPDATED,
@@ -1486,7 +1549,6 @@ export default {
       ConnectionService.resetConnectionState()
     }
   },
-
   /**
    * 页面隐藏时关闭连接
    */
