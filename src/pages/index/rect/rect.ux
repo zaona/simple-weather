@@ -1009,7 +1009,7 @@ export default {
       return {weatherData, hourlyList: []}
     }
 
-    const {silent = true, forceRefresh = false, allowRefreshFallback = true} = options
+    const {silent = true, forceRefresh = false} = options
 
     try {
       let nextWeatherData = weatherData
@@ -1020,12 +1020,6 @@ export default {
 
       let hourlyList = DataService.getHourlyList(nextWeatherData)
       let hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
-
-      if (!hasDisplayableHourlyData && !forceRefresh && allowRefreshFallback) {
-        nextWeatherData = await RefreshController.refreshWeatherData()
-        hourlyList = DataService.getHourlyList(nextWeatherData)
-        hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
-      }
 
       return {
         weatherData: nextWeatherData,
@@ -1524,8 +1518,7 @@ export default {
       }
 
       const resolved = await this.resolveHourlyData(weatherData, {
-        silent: true,
-        allowRefreshFallback: false
+        silent: true
       })
       const latestWeatherData = resolved.weatherData || weatherData
       const latestTodayData = this.findTodayData(latestWeatherData) || todayData
