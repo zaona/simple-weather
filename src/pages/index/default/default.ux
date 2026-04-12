@@ -57,17 +57,17 @@
       <div class="section section--snap" if="{{ showHourlyForecastCard }}">
         <div class="title-bar" style="align-items: center">
           <div class="title-bar__header" style="width: 212px; position: relative; height: 77px">
-            <text class="time" style="left: 60.9px; top: 3.8px; transform: rotate(-21deg)">
+            <text class="time" style="left: 60.9px; top: 13.8px; transform: rotate(-21deg)">
               {{ timeDigit1 }}
             </text>
-            <text class="time" style="left: 79px; top: -1px; transform: rotate(-9deg)">
+            <text class="time" style="left: 79px; top: 9px; transform: rotate(-9deg)">
               {{ timeDigit2 }}
             </text>
-            <text class="time" style="left: 93.5px; top: -5px">{{ ":" }}</text>
-            <text class="time" style="left: 108px; top: -1px; transform: rotate(9deg)">
+            <text class="time" style="left: 93.5px; top: 5px">{{ ":" }}</text>
+            <text class="time" style="left: 108px; top: 9px; transform: rotate(9deg)">
               {{ timeDigit3 }}
             </text>
-            <text class="time" style="left: 126.1px; top: 3.8px; transform: rotate(21deg)">
+            <text class="time" style="left: 126.1px; top: 13.8px; transform: rotate(21deg)">
               {{ timeDigit4 }}
             </text>
           </div>
@@ -94,17 +94,17 @@
       <div class="section section--snap">
         <div class="title-bar" style="align-items: center">
           <div class="title-bar__header" style="width: 212px; position: relative; height: 77px">
-            <text class="time" style="left: 60.9px; top: 3.8px; transform: rotate(-21deg)">
+            <text class="time" style="left: 60.9px; top: 13px; transform: rotate(-21deg)">
               {{ timeDigit1 }}
             </text>
-            <text class="time" style="left: 79px; top: -1px; transform: rotate(-9deg)">
+            <text class="time" style="left: 79px; top: 9px; transform: rotate(-9deg)">
               {{ timeDigit2 }}
             </text>
-            <text class="time" style="left: 93.5px; top: -5px">{{ ":" }}</text>
-            <text class="time" style="left: 108px; top: -1px; transform: rotate(9deg)">
+            <text class="time" style="left: 93.5px; top: 6px">{{ ":" }}</text>
+            <text class="time" style="left: 108px; top: 9px; transform: rotate(9deg)">
               {{ timeDigit3 }}
             </text>
-            <text class="time" style="left: 126.1px; top: 3.8px; transform: rotate(21deg)">
+            <text class="time" style="left: 126.1px; top: 13px; transform: rotate(21deg)">
               {{ timeDigit4 }}
             </text>
           </div>
@@ -131,17 +131,17 @@
       <div class="section section--snap">
         <div class="title-bar" style="align-items: center">
           <div class="title-bar__header" style="width: 212px; position: relative; height: 77px">
-            <text class="time" style="left: 60.9px; top: 3.8px; transform: rotate(-21deg)">
+            <text class="time" style="left: 60.9px; top: 13px; transform: rotate(-21deg)">
               {{ timeDigit1 }}
             </text>
-            <text class="time" style="left: 79px; top: -1px; transform: rotate(-9deg)">
+            <text class="time" style="left: 79px; top: 9px; transform: rotate(-9deg)">
               {{ timeDigit2 }}
             </text>
-            <text class="time" style="left: 93.5px; top: -5px">{{ ":" }}</text>
-            <text class="time" style="left: 108px; top: -1px; transform: rotate(9deg)">
+            <text class="time" style="left: 93.5px; top: 6px">{{ ":" }}</text>
+            <text class="time" style="left: 108px; top: 9px; transform: rotate(9deg)">
               {{ timeDigit3 }}
             </text>
-            <text class="time" style="left: 126.1px; top: 3.8px; transform: rotate(21deg)">
+            <text class="time" style="left: 126.1px; top: 13px; transform: rotate(21deg)">
               {{ timeDigit4 }}
             </text>
           </div>
@@ -1793,7 +1793,7 @@ export default {
 }
 
 .title-bar__text {
-  margin-top: -36px;
+  margin-top: -26px;
   line-height: 24px;
   font-size: 24px;
   color: white;
