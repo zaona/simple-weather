@@ -258,6 +258,11 @@ export default {
     return this.calculateAverageTemperature(todayData)
   },
 
+  getPrimaryHourlyEntry(hourlyList = []) {
+    const processed = this.processHourlyList(hourlyList, 1)
+    return processed.length > 0 ? processed[0] : null
+  },
+
   getHourlyDisplayLimit(limit) {
     if (Number.isFinite(limit) && limit > 0) {
       return Math.floor(limit)
@@ -271,7 +276,7 @@ export default {
       return []
     }
 
-    return processed.map((entry, index) => {
+    return processed.map((entry) => {
       const tempText = entry.temp !== undefined && entry.temp !== null ? String(entry.temp) : ""
       const temperature = tempText ? tempText.replace("°", "") : "__"
       const icon = entry.iconCode
@@ -307,14 +312,25 @@ export default {
     })
   },
 
-  buildBaseWeather(todayData, timeAgo) {
+  buildBaseWeather(todayData, timeAgo, hourlyEntry = null) {
     const isNight = WeatherDataUtils.isNightTime(todayData.sunrise, todayData.sunset)
+    const hasHourlyEntry = !!hourlyEntry
+    const iconCode = hasHourlyEntry
+      ? hourlyEntry.iconCode
+      : WeatherDataUtils.getMappedIconCode(todayData.iconDay, isNight)
+    const weatherText = hasHourlyEntry ? hourlyEntry.text : todayData.textDay
+    const backgroundImage = hasHourlyEntry
+      ? WeatherDataUtils.getMappedBackgroundImage(hourlyEntry.iconRaw, hourlyEntry.isNight)
+      : WeatherDataUtils.getMappedBackgroundImage(todayData.iconDay, isNight)
     return {
       updateTime: timeAgo,
-      iconCode: WeatherDataUtils.getMappedIconCode(todayData.iconDay, isNight),
-      textDay: todayData.textDay,
+      iconCode,
+      textDay: weatherText,
       tempMinMax: this.formatTempRange(todayData.tempMin, todayData.tempMax),
-      backgroundImage: WeatherDataUtils.getMappedBackgroundImage(todayData.iconDay, isNight),
+      backgroundImage,
+      currentTemperature: hasHourlyEntry
+        ? this.getCurrentTemperature(null, [{temp: hourlyEntry.temp}])
+        : this.getCurrentTemperature(todayData, []),
       isNight
     }
   },
@@ -401,6 +417,9 @@ export default {
         name: displayHour,
         temp: tempValue,
         iconCode: mappedIcon,
+        iconRaw: Number.isNaN(iconCodeRaw) ? raw.icon : iconCodeRaw,
+        text: raw.text || raw.textDay || raw.weather || "__",
+        isNight,
         uniqueId: fxTime ? `${fxTime}-${index}` : `hour-${index}`
       }
     })
@@ -429,9 +448,9 @@ export default {
     ]
   },
 
-  syncWeather(weatherData, todayData, timeAgo) {
+  syncWeather(weatherData, todayData, timeAgo, hourlyEntry = null) {
     RefreshController.recordDailyUpdate(weatherData)
-    const baseWeather = this.buildBaseWeather(todayData, timeAgo)
+    const baseWeather = this.buildBaseWeather(todayData, timeAgo, hourlyEntry)
     this.updateTime = baseWeather.updateTime
     this.iconCode = baseWeather.iconCode
     this.textDay = baseWeather.textDay
@@ -439,12 +458,11 @@ export default {
     this.backgroundImage = baseWeather.backgroundImage
     this.location = DataService.getLocationName(weatherData)
 
-    const currentTemperature = this.getCurrentTemperature(todayData, this.forecastHourly)
     this.current = {
       location: this.location,
       relativeTime: timeAgo,
-      weather: todayData.textDay || "__",
-      temperature: currentTemperature,
+      weather: baseWeather.textDay || "__",
+      temperature: baseWeather.currentTemperature,
       temperatureDaily: {
         from: todayData.tempMin || "__",
         to: todayData.tempMax || "__"
@@ -477,10 +495,13 @@ export default {
     }
 
     let hasDisplayableHourlyData = false
+    let primaryHourlyEntry = null
     if (this.hourlyForecastEnabled) {
-      hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
+      const forecastHourly = this.buildForecastHourly(hourlyList)
+      hasDisplayableHourlyData = forecastHourly.length > 0
       if (hasDisplayableHourlyData) {
-        this.forecastHourly = this.buildForecastHourly(hourlyList)
+        this.forecastHourly = forecastHourly
+        primaryHourlyEntry = this.getPrimaryHourlyEntry(hourlyList)
       } else {
         this.forecastHourly = []
         this.forecastHourlyPages = []
@@ -491,7 +512,7 @@ export default {
     }
 
     const timeAgo = this.getTimeAgoByWeatherData(weatherData)
-    this.syncWeather(weatherData, todayData, timeAgo)
+    this.syncWeather(weatherData, todayData, timeAgo, primaryHourlyEntry)
 
     if (this.hourlyForecastEnabled && hasDisplayableHourlyData) {
       this.applyHourlyForecastList(hourlyList)
@@ -861,12 +882,6 @@ export default {
     }
     this.forecastHourlyPages = pages
 
-    if (forecastHourly.length > 0) {
-      this.current = {
-        ...this.current,
-        temperature: this.getCurrentTemperature(null, forecastHourly)
-      }
-    }
     this.hasHourlyData = forecastHourly.length > 0
     this.updateHourlyCardVisibility()
   },
