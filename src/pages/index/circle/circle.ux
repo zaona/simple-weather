@@ -821,7 +821,7 @@ export default {
         temp: tempValue,
         iconCode: mappedIcon,
         iconRaw: Number.isNaN(iconCodeRaw) ? raw.icon : iconCodeRaw,
-        text: raw.text || raw.textDay || raw.weather || "__",
+        text: raw.text || "__",
         isNight,
         uniqueId: fxTime ? `${fxTime}-${index}` : `hour-${index}`
       }
