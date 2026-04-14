@@ -89,19 +89,10 @@ export default {
     this.weatherCategories = this.buildWeatherCategories(selectedData)
   },
 
-  applyDetailData(selectedData) {
-    this.updateDetailCurrentWeather(selectedData, "")
+  applyDetailData(selectedData, product) {
+    this.updateDetailCurrentWeather(selectedData, product)
     this.updateWeatherFigures(selectedData)
     this.isLoading = false
-  },
-
-  async updateBackgroundByDevice(selectedData) {
-    try {
-      const product = await DeviceService.getProduct()
-      this.updateDetailCurrentWeather(selectedData, product)
-    } catch (error) {
-      console.error("获取设备信息失败:", error)
-    }
   },
 
   /**
@@ -118,16 +109,13 @@ export default {
       return
     }
 
-    // 优先使用缓存数据，避免页面跳转后重复IO导致首屏变慢
-    const cachedSelectedData = DataService.getDataByDateFromCache(this.selectedDate)
-    if (cachedSelectedData) {
-      this.applyDetailData(cachedSelectedData)
-      this.updateBackgroundByDevice(cachedSelectedData)
-      return
-    }
-
-    // 回退到文件读取
-    const selectedData = await DataService.getDataByDate(this.selectedDate)
+    const [selectedData, product] = await Promise.all([
+      DataService.getDataByDate(this.selectedDate),
+      DeviceService.getProduct().catch((error) => {
+        console.error("获取设备信息失败:", error)
+        return ""
+      })
+    ])
 
     if (!selectedData) {
       this.isLoading = false
@@ -138,8 +126,7 @@ export default {
       return
     }
 
-    this.applyDetailData(selectedData)
-    this.updateBackgroundByDevice(selectedData)
+    this.applyDetailData(selectedData, product)
   },
 
   updateDetailCurrentWeather(selectedData, product) {
