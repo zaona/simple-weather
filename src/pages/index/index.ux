@@ -37,7 +37,7 @@ export default {
 
   async onInit() {
     this.showDebugEntry = DebugService.isDebugMode()
-    const preloadTask = this.preloadWeatherData()
+    const preloadTask = this.preloadTodaySnapshot()
 
     try {
       await DeviceService.getProduct()
@@ -45,8 +45,17 @@ export default {
       console.error("获取设备信息失败:", error)
     }
 
-    await preloadTask
-    await this.routeToTarget()
+    const preloadResult = await preloadTask
+    const canEnterHome = this.hasValidTodaySnapshot(preloadResult)
+    if (canEnterHome) {
+      await this.routeToHomeLayout()
+      return
+    }
+
+    this.setPreloadedWeatherData(null)
+    router.replace({
+      uri: "/pages/no-data"
+    })
   },
 
   setPreloadedWeatherData(payload) {
@@ -56,26 +65,37 @@ export default {
     globalThis.__preloadedWeatherData = payload
   },
 
-  async preloadWeatherData() {
+  async preloadTodaySnapshot() {
     try {
       const result = await DataService.getTodayData(true)
       if (!result || result.status !== "success") {
         this.setPreloadedWeatherData(null)
-        return
+        return null
       }
 
-      this.setPreloadedWeatherData({
+      const payload = {
         weatherData: result.weatherData,
         todayData: result.todayData,
         todayStr: result.todayStr
-      })
+      }
+      this.setPreloadedWeatherData(payload)
+      return payload
     } catch (error) {
       console.error("预加载天气数据失败:", error)
       this.setPreloadedWeatherData(null)
+      return null
     }
   },
 
-  async routeToTarget() {
+  hasValidTodaySnapshot(payload) {
+    if (!payload || !payload.weatherData || !payload.todayData) {
+      return false
+    }
+
+    return true
+  },
+
+  async routeToHomeLayout() {
     if (this.hasRouted) {
       return
     }

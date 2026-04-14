@@ -1,0 +1,365 @@
+<template>
+  <div class="no-data">
+    <scroll class="no-data__content" scroll-y="true" bounces="true">
+      <div class="no-data__header">
+        <text class="no-data__title">无数据</text>
+        <text class="no-data__subtitle"></text>
+      </div>
+
+      <div class="no-data__card">
+        <div class="no-data__card-content">
+          <text class="no-data__desc" if="{{ mode === 'no_data' }}">请同步天气数据</text>
+          <text class="no-data__desc" if="{{ mode === 'expired' && supportsAdvancedFeatures }}">
+            本地数据已过期
+          </text>
+          <text class="no-data__desc" if="{{ mode === 'expired' && !supportsAdvancedFeatures }}">
+            当前设备不支持自动更新
+          </text>
+
+          <div class="no-data__actions" if="{{ mode === 'expired' && supportsAdvancedFeatures }}">
+            <div
+              class="btn btn--secondary-square"
+              onclick="RequestRefresh()"
+              if="{{ !isUpdating }}"
+            >
+              <text class="btn__text">尝试更新</text>
+            </div>
+            <div class="btn btn--secondary-square no-data__btn--spaced" if="{{ isUpdating }}">
+              <text class="btn__text">更新中...</text>
+            </div>
+          </div>
+        </div>
+      </div>
+    </scroll>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+import {showToast} from "@system.prompt"
+
+import ConnectionService from "../../common/js/connection-service.js"
+import DataService from "../../common/js/data-service.js"
+import RefreshController from "../../common/js/refresh-controller.js"
+import DeviceService from "../../common/js/device-service.js"
+import {DateUtils} from "../../common/js/weather-utils.js"
+import {
+  MESSAGES,
+  TOAST_DURATION,
+  ADVANCED_FEATURE_PRODUCT_BLACKLIST
+} from "../../common/js/config.js"
+import {WEATHER_API_ERRORS} from "../../common/js/weather-api-service.js"
+
+export default {
+  private: {
+    mode: "no_data",
+    isUpdating: false,
+    hasNavigated: false,
+    supportsAdvancedFeatures: false
+  },
+
+  async onInit() {
+    await this.detectAdvancedFeatureSupport()
+    await this.syncAvailabilityState()
+  },
+
+  async detectAdvancedFeatureSupport() {
+    try {
+      this.supportsAdvancedFeatures = !(await DeviceService.isProductBlocked(
+        ADVANCED_FEATURE_PRODUCT_BLACKLIST
+      ))
+    } catch (error) {
+      console.error("检测设备能力失败:", error)
+      this.supportsAdvancedFeatures = false
+    }
+  },
+
+  onShow() {
+    ConnectionService.init((data) => {
+      this.handleWeatherData(data)
+    })
+  },
+
+  onHide() {
+    try {
+      ConnectionService.close()
+    } catch (error) {
+      console.error("关闭连接失败:", error)
+    }
+  },
+
+  onDestroy() {
+    try {
+      ConnectionService.close()
+    } catch (error) {
+      console.error("关闭连接失败:", error)
+    }
+  },
+
+  async syncAvailabilityState() {
+    const state = await this.resolveAvailabilityState()
+    if (state.usable) {
+      this.navigateToEntry()
+      return
+    }
+    this.mode = state.mode || "no_data"
+  },
+
+  async resolveAvailabilityState() {
+    const todayResult = await DataService.getTodayData(true)
+
+    if (todayResult && todayResult.status === "success") {
+      return {
+        usable: true,
+        mode: "no_data"
+      }
+    }
+
+    if (todayResult && todayResult.status === "expired") {
+      return {
+        usable: false,
+        mode: "expired"
+      }
+    }
+
+    return {
+      usable: false,
+      mode: "no_data"
+    }
+  },
+
+  findTodayData(weatherData) {
+    const todayStr = DateUtils.getTodayString()
+    return DataService.getDailyList(weatherData).find((day) => day.fxDate === todayStr) || null
+  },
+
+  hasUsableTodayData(weatherData) {
+    if (!DataService.validateWeatherData(weatherData)) {
+      return false
+    }
+
+    const todayData = this.findTodayData(weatherData)
+    if (!todayData) {
+      return false
+    }
+    return true
+  },
+
+  async RequestRefresh() {
+    if (this.mode !== "expired" || this.isUpdating || !this.supportsAdvancedFeatures) {
+      return
+    }
+
+    this.isUpdating = true
+    try {
+      const weatherData = await RefreshController.refreshWeatherData()
+      if (this.hasUsableTodayData(weatherData)) {
+        showToast({
+          message: MESSAGES.DATA_UPDATED,
+          duration: TOAST_DURATION.SHORT
+        })
+        this.navigateToEntry()
+        return
+      }
+
+      showToast({
+        message: MESSAGES.WAITING_FOR_UPDATE,
+        duration: TOAST_DURATION.NORMAL
+      })
+    } catch (error) {
+      const message =
+        error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+          ? MESSAGES.LOCATION_INFO_MISSING
+          : MESSAGES.FETCH_WEATHER_ERROR
+      showToast({
+        message,
+        duration: TOAST_DURATION.NORMAL
+      })
+    } finally {
+      this.isUpdating = false
+    }
+  },
+
+  async handleWeatherData(data) {
+    try {
+      const weatherData = JSON.parse(data.data)
+
+      if (!this.hasUsableTodayData(weatherData)) {
+        return
+      }
+
+      await DataService.saveWeatherData(JSON.stringify(weatherData))
+      showToast({
+        message: MESSAGES.DATA_UPDATED,
+        duration: TOAST_DURATION.SHORT
+      })
+      this.navigateToEntry()
+    } catch (error) {
+      console.error("接收数据解析失败:", error)
+      showToast({
+        message: MESSAGES.DATA_PARSE_ERROR,
+        duration: TOAST_DURATION.NORMAL
+      })
+    } finally {
+      ConnectionService.resetConnectionState()
+    }
+  },
+
+  navigateToEntry() {
+    if (this.hasNavigated) {
+      return
+    }
+    this.hasNavigated = true
+
+    router.replace({
+      uri: "/pages/index"
+    })
+  }
+}
+</script>
+
+<style>
+@import "../../common/css/btn-styles.css";
+
+.no-data {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.no-data__content {
+  width: 100%;
+  height: 100%;
+  padding: 0 8px 48px 8px;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.no-data__header {
+  margin-top: 26px;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.no-data__title {
+  width: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+}
+
+.no-data__subtitle {
+  font-size: 24px;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.no-data__card {
+  width: 100%;
+  margin-top: 12px;
+  padding: 24px 16px;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  box-sizing: border-box;
+}
+
+.no-data__card-content {
+  width: 100%;
+  margin-top: -8px;
+  flex-direction: column;
+}
+
+.no-data__desc {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 24px;
+  line-height: 34px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.no-data__actions {
+  margin-top: 16px;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.no-data__btn--spaced {
+  margin-top: 12px;
+}
+
+/* 针对圆表 */
+@media (shape: circle) {
+  .no-data__content {
+    padding: 0px 8px 88px 8px;
+  }
+
+  .no-data__title {
+    font-size: 36px;
+    font-weight: normal;
+  }
+
+  .no-data__subtitle {
+    font-size: 24px;
+    margin-top: 4px;
+  }
+
+  .no-data__card {
+    width: 90%;
+    border-radius: 32px;
+    padding: 24px;
+  }
+}
+
+/* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 216) {
+  .no-data__content {
+    padding: 0px 8px 32px 8px;
+  }
+
+  .no-data__title {
+    font-size: 36px;
+    font-weight: normal;
+  }
+
+  .no-data__subtitle {
+    font-size: 24px;
+    margin-top: 4px;
+  }
+
+  .no-data__card {
+    border-radius: 32px;
+    padding: 24px;
+  }
+}
+
+/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 160) {
+  .no-data__content {
+    padding: 0px 8px 16px 8px;
+  }
+
+  .no-data__title {
+    font-size: 36px;
+    font-weight: normal;
+  }
+
+  .no-data__subtitle {
+    font-size: 24px;
+    margin-top: 4px;
+  }
+
+  .no-data__card {
+    border-radius: 32px;
+    padding: 24px;
+  }
+}
+</style>

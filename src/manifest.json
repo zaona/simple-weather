@@ -56,6 +56,9 @@
       "pages/index/circle": {
         "component": "circle"
       },
+      "pages/no-data": {
+        "component": "no-data"
+      },
       "pages/detail": {
         "component": "detail"
       },

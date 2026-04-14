@@ -1505,58 +1505,25 @@ export default {
       return
     }
 
-    // 首屏一次性加载今日与逐小时数据
     const result = await this.loadWeatherData(true)
+    this.isLoading = false
+    this.isFirstLoad = false
 
-    // 首次加载完成
-    if (this.isFirstLoad) {
-      if (result.success) {
-        this.isLoading = false
-        const shouldFallbackForHourly =
-          this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
-        if (shouldFallbackForHourly) {
-          await this.UpdateWeather({auto: true, silent: true, showLoading: false})
-        }
-      } else {
-        const shouldAutoUpdate = result.status === "expired" || result.status === "no_data"
-
-        if (shouldAutoUpdate) {
-          const updated = await this.UpdateWeather({auto: true, silent: true, showLoading: false})
-          if (!updated) {
-            const fallbackMessage =
-              result.status === "expired"
-                ? MESSAGES.WAITING_FOR_UPDATE
-                : MESSAGES.WAITING_FOR_FIRST_DATA
-
-            showToast({
-              message: fallbackMessage,
-              duration: TOAST_DURATION.LONG
-            })
-          }
-          // 自动更新成功后也要确保关闭加载态
-          this.isLoading = false
-        } else {
-          let toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
-
-          if (result.status === "expired") {
-            toastMessage = MESSAGES.WAITING_FOR_UPDATE
-          } else if (result.status === "no_data") {
-            toastMessage = MESSAGES.WAITING_FOR_FIRST_DATA
-          }
-
-          showToast({
-            message: toastMessage,
-            duration: TOAST_DURATION.LONG
-          })
-          this.isLoading = false
-        }
-      }
-      this.isFirstLoad = false
+    if (!result.success) {
+      router.replace({
+        uri: "/pages/no-data"
+      })
+      return
     }
 
-    if (result.success) {
-      await this.maybeAutoUpdate(result.weatherData)
+    const shouldFallbackForHourly =
+      this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
+    if (shouldFallbackForHourly) {
+      await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+      return
     }
+
+    await this.maybeAutoUpdate(result.weatherData)
   },
 
   /**
