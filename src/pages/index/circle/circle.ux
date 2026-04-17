@@ -54,7 +54,7 @@
         </div>
       </div>
 
-      <div class="section section--snap" if="{{ showHourlyForecastCard }}">
+      <div class="section section--snap" if="{{ hourlyForecastEnabled && hasHourlyData }}">
         <div class="title-bar" style="align-items: center">
           <div class="title-bar__header" style="width: 480px; position: relative; height: 60px">
             <text class="title-bar__time" style="left: 168px; top: 9px; transform: rotate(-18deg)">
@@ -359,18 +359,12 @@ export default {
     isFirstLoad: true, // 是否是首次加载
     autoUpdateEnabled: false, // 自动更新是否开启
     hourlyForecastEnabled: false, // 逐小时天气是否开启
-    showHourlyForecastCard: false, // 是否显示逐小时卡片
     supportsAdvancedFeatures: false, // 设备是否支持高级功能
     showDebugEntry: false, // 加载态调试入口
     hasHourlyData: false, // 是否有可用的逐小时数据
     autoUpdateInProgress: false, // 自动更新中标记
     isPullRefreshing: false, // 下拉刷新中
     pullRefreshReady: true, // 下拉刷新触发开关
-    location: "__", // 地点
-    updateTime: "__", // 更新时间
-    iconCode: "__", // 天气图标代码
-    textDay: "__", // 白天天气描述
-    tempMinMax: "__°/__°", // 最高/最低温度
     backgroundImage: "", // 背景图片
 
     // 新版界面数据
@@ -994,15 +988,12 @@ export default {
   syncWeather(weatherData, todayData, timeAgo, hourlyEntry = null) {
     RefreshController.recordDailyUpdate(weatherData)
     const baseWeather = this.buildBaseWeather(todayData, timeAgo, hourlyEntry)
-    this.updateTime = baseWeather.updateTime
-    this.iconCode = baseWeather.iconCode
-    this.textDay = baseWeather.textDay
-    this.tempMinMax = baseWeather.tempMinMax
     this.backgroundImage = baseWeather.backgroundImage
-    this.location = DataService.getLocationName(weatherData)
+    const locationName = DataService.getLocationName(weatherData)
+    const currentIconCode = baseWeather.iconCode
 
     this.current = {
-      location: this.location,
+      location: locationName,
       relativeTime: timeAgo,
       weather: baseWeather.textDay || "__",
       temperature: baseWeather.currentTemperature,
@@ -1010,8 +1001,8 @@ export default {
         from: todayData.tempMin || "__",
         to: todayData.tempMax || "__"
       },
-      icon: this.iconCode
-        ? `/common/images/weather-icons/${this.iconCode}.png`
+      icon: currentIconCode
+        ? `/common/images/weather-icons/${currentIconCode}.png`
         : "/common/images/weather-icons/cloudy.png"
     }
     this.forecastDaily = this.buildForecastDaily(DataService.getDailyList(weatherData))
@@ -1326,9 +1317,7 @@ export default {
    * 更新逐小时卡片的可见性
    */
   updateHourlyCardVisibility() {
-    const canShowFeature = this.hourlyForecastEnabled
-    const shouldShow = canShowFeature && this.hasHourlyData
-    this.showHourlyForecastCard = shouldShow
+    const shouldShow = this.hourlyForecastEnabled && this.hasHourlyData
     if (!shouldShow) {
       this.forecastHourly = []
       this.forecastHourlyPages = []
