@@ -4,8 +4,8 @@
  */
 
 import interconnect from "@system.interconnect"
-import {CONNECTION, MESSAGES, TOAST_DURATION} from "./config.js"
-import {showToast} from "@system.prompt"
+import device from "@system.device"
+import {CONNECTION} from "./config.js"
 
 /**
  * 连接服务类
@@ -19,6 +19,8 @@ class ConnectionService {
     this.isConnecting = false
     // 消息处理回调函数
     this.messageHandler = null
+    // manifest缓存，避免每次info请求重复加载
+    this.manifest = null
   }
 
   /**
@@ -76,10 +78,69 @@ class ConnectionService {
       return
     }
 
+    // 检查是否为获取设备信息消息
+    if (data.data === "info") {
+      this.handleInfoRequest()
+      return
+    }
+
     // 处理实际的天气数据消息
     if (this.messageHandler) {
       this.messageHandler(data)
     }
+  }
+
+  getVersionName() {
+    if (this.manifest) {
+      return this.manifest.versionName || "unknown"
+    }
+
+    try {
+      this.manifest = require("../../manifest.json")
+      return this.manifest.versionName || "unknown"
+    } catch (error) {
+      console.warn("读取manifest版本失败:", error.message)
+      return "unknown"
+    }
+  }
+
+  getDeviceId() {
+    return new Promise((resolve) => {
+      if (!device || typeof device.getDeviceId !== "function") {
+        resolve("")
+        return
+      }
+
+      device.getDeviceId({
+        success: (result = {}) => {
+          resolve(result.deviceId || "")
+        },
+        fail: () => {
+          resolve("")
+        }
+      })
+    })
+  }
+
+  async handleInfoRequest() {
+    if (!this.connection) {
+      return
+    }
+
+    const versionName = this.getVersionName()
+    const deviceId = await this.getDeviceId()
+
+    this.connection.send({
+      data: {
+        action: "info",
+        versionName,
+        deviceId,
+        timestamp: Date.now()
+      },
+      fail: (error) => {
+        console.error("发送info响应失败:", error)
+      }
+    })
   }
 
   /**
