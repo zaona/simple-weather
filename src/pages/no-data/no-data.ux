@@ -200,8 +200,6 @@ export default {
         message: MESSAGES.DATA_PARSE_ERROR,
         duration: TOAST_DURATION.NORMAL
       })
-    } finally {
-      ConnectionService.resetConnectionState()
     }
   },
 

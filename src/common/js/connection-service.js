@@ -15,8 +15,6 @@ class ConnectionService {
   constructor() {
     // interconnect 连接实例
     this.connection = null
-    // 是否正在连接中
-    this.isConnecting = false
     // 消息处理回调函数
     this.messageHandler = null
     // manifest缓存，避免每次info请求重复加载
@@ -46,8 +44,6 @@ class ConnectionService {
     // 设置错误处理
     this.connection.onerror = (error) => {
       console.error("Connection error:", error)
-      // 重置连接状态
-      this.isConnecting = false
     }
 
     // 设置关闭处理
@@ -148,57 +144,18 @@ class ConnectionService {
    * 响应App端的start消息，发送ready确认
    */
   handleHandshake() {
-    // 如果已经在连接中，忽略新的连接请求
-    if (this.isConnecting) {
-      return
+    // 构造ready消息，仅发送一次
+    const messageData = {
+      action: "ready",
+      timestamp: Date.now()
     }
 
-    // 设置连接状态为正在连接
-    this.isConnecting = true
-
-    // 发送ready响应的递归函数
-    let retryCount = 0
-
-    const sendReadyResponse = () => {
-      // 检查是否已超过最大重试次数
-      if (retryCount >= CONNECTION.MAX_READY_RETRIES) {
-        console.log("已达到最大重试次数，停止发送ready响应")
-        this.isConnecting = false
-        return
+    this.connection.send({
+      data: messageData,
+      fail: (error) => {
+        console.error("发送ready响应失败:", error)
       }
-
-      retryCount++
-
-      // 构造ready消息
-      const messageData = {
-        action: "ready",
-        timestamp: Date.now()
-      }
-
-      // 发送ready响应
-      this.connection.send({
-        data: messageData,
-        success: () => {
-          // 短暂延迟后继续发送，确保App端能接收到
-          setTimeout(sendReadyResponse, CONNECTION.READY_RETRY_DELAY)
-        },
-        fail: () => {
-          // 发送失败，短暂延迟后重试
-          setTimeout(sendReadyResponse, CONNECTION.READY_RETRY_DELAY)
-        }
-      })
-    }
-
-    // 立即发送第一次ready响应
-    sendReadyResponse()
-  }
-
-  /**
-   * 重置连接状态
-   * 允许新的连接请求
-   */
-  resetConnectionState() {
-    this.isConnecting = false
+    })
   }
 
   /**
@@ -231,9 +188,6 @@ class ConnectionService {
    * 关闭连接
    */
   close() {
-    // 重置连接状态
-    this.isConnecting = false
-
     // 关闭连接
     if (this.connection && typeof this.connection.close === "function") {
       this.connection.close()
@@ -249,7 +203,7 @@ class ConnectionService {
    * @returns {boolean} 是否正在连接中
    */
   isActive() {
-    return this.isConnecting
+    return !!this.connection
   }
 }
 

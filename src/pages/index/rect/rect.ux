@@ -1517,7 +1517,6 @@ export default {
       console.error("数据解析失败:", e)
     } finally {
       this.isLoading = false
-      ConnectionService.resetConnectionState()
     }
   },
   /**
