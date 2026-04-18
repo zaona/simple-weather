@@ -478,8 +478,8 @@ export default {
     return this.calculateAverageTemperature(todayData)
   },
 
-  getPrimaryHourlyEntry(hourlyList = []) {
-    const processed = this.processHourlyList(hourlyList, 1)
+  getPrimaryHourlyEntry(hourlyList = [], todayData = null) {
+    const processed = this.processHourlyList(hourlyList, 1, todayData)
     return processed.length > 0 ? processed[0] : null
   },
 
@@ -623,8 +623,8 @@ export default {
     return {label: "日落", time: sunsetText}
   },
 
-  buildForecastHourly(hourlyList = [], limit = 12) {
-    const processed = this.processHourlyList(hourlyList, limit)
+  buildForecastHourly(hourlyList = [], limit = 12, todayData = null) {
+    const processed = this.processHourlyList(hourlyList, limit, todayData)
     if (processed.length === 0) {
       return []
     }
@@ -668,13 +668,13 @@ export default {
   buildBaseWeather(todayData, timeAgo, hourlyEntry = null) {
     const isNight = WeatherDataUtils.isNightTime(todayData.sunrise, todayData.sunset)
     const hasHourlyEntry = !!hourlyEntry
-    const iconCode = hasHourlyEntry
-      ? hourlyEntry.iconCode
-      : WeatherDataUtils.getMappedIconCode(todayData.iconDay, isNight)
+    const weatherIconSource =
+      hasHourlyEntry && hourlyEntry.iconRaw !== undefined && hourlyEntry.iconRaw !== null
+        ? hourlyEntry.iconRaw
+        : todayData.iconDay
+    const iconCode = WeatherDataUtils.getMappedIconCode(weatherIconSource, isNight)
     const weatherText = hasHourlyEntry ? hourlyEntry.text : todayData.textDay
-    const backgroundImage = hasHourlyEntry
-      ? WeatherDataUtils.getMappedBackgroundImage(hourlyEntry.iconRaw, hourlyEntry.isNight)
-      : WeatherDataUtils.getMappedBackgroundImage(todayData.iconDay, isNight)
+    const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(weatherIconSource, isNight)
     return {
       updateTime: timeAgo,
       iconCode,
@@ -715,13 +715,15 @@ export default {
       })
   },
 
-  processHourlyList(hourlyList = [], limit = 12) {
+  processHourlyList(hourlyList = [], limit = 12, todayData = null) {
     if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
       return []
     }
 
     const now = Date.now()
     const threshold = now - 60 * 60 * 1000
+    const sunrise = todayData?.sunrise || null
+    const sunset = todayData?.sunset || null
 
     const filtered = hourlyList
       .map((item) => {
@@ -754,7 +756,7 @@ export default {
         const hours = parsed.getHours()
         const minutes = parsed.getMinutes()
         displayHour = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
-        isNight = hours >= 18 || hours < 6
+        isNight = WeatherDataUtils.isNightAtTimestamp(parsed, sunrise, sunset)
       }
 
       const tempValue = raw.temp !== undefined ? `${raw.temp}°` : "__°"
@@ -985,11 +987,11 @@ export default {
     let hasDisplayableHourlyData = false
     let primaryHourlyEntry = null
     if (this.hourlyForecastEnabled) {
-      const forecastHourly = this.buildForecastHourly(hourlyList)
+      const forecastHourly = this.buildForecastHourly(hourlyList, 12, todayData)
       hasDisplayableHourlyData = forecastHourly.length > 0
       if (hasDisplayableHourlyData) {
         this.forecastHourly = forecastHourly
-        primaryHourlyEntry = this.getPrimaryHourlyEntry(hourlyList)
+        primaryHourlyEntry = this.getPrimaryHourlyEntry(hourlyList, todayData)
       } else {
         this.forecastHourly = []
         this.forecastHourlyPages = []
@@ -1003,7 +1005,7 @@ export default {
     this.syncWeather(weatherData, todayData, timeAgo, primaryHourlyEntry)
 
     if (this.hourlyForecastEnabled && hasDisplayableHourlyData) {
-      this.applyHourlyForecastList(hourlyList)
+      this.applyHourlyForecastList(hourlyList, todayData)
     } else {
       this.hasHourlyData = false
       this.updateHourlyCardVisibility()
@@ -1324,8 +1326,8 @@ export default {
    * 应用逐小时天气数据
    * @param {Array} hourlyList
    */
-  applyHourlyForecastList(hourlyList = []) {
-    const forecastHourly = this.buildForecastHourly(hourlyList)
+  applyHourlyForecastList(hourlyList = [], todayData = null) {
+    const forecastHourly = this.buildForecastHourly(hourlyList, 12, todayData)
     this.forecastHourly = forecastHourly
 
     // 每 4 个一组进行分组

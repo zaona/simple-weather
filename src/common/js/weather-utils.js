@@ -319,6 +319,35 @@ export const WeatherDataUtils = {
   },
 
   /**
+   * 判断指定时间戳是否为夜晚
+   * @param {number|string|Date} timestamp - 时间戳或可解析时间
+   * @param {string} sunrise - 日出时间，格式：HH:MM
+   * @param {string} sunset - 日落时间，格式：HH:MM
+   * @returns {boolean} 是否为夜晚
+   */
+  isNightAtTimestamp(timestamp, sunrise = null, sunset = null) {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
+    if (Number.isNaN(date.getTime())) {
+      return this.isNightTime(sunrise, sunset)
+    }
+
+    const currentMinutes = date.getHours() * 60 + date.getMinutes()
+
+    if (sunrise && sunset) {
+      try {
+        const sunriseMinutes = this.parseTimeToMinutes(sunrise)
+        const sunsetMinutes = this.parseTimeToMinutes(sunset)
+        return currentMinutes < sunriseMinutes || currentMinutes >= sunsetMinutes
+      } catch (e) {
+        console.error("解析日出日落时间失败:", e)
+      }
+    }
+
+    const hour = date.getHours()
+    return hour >= 18 || hour < 6
+  },
+
+  /**
    * 解析时间字符串为分钟数
    * @param {string} timeStr - 时间字符串，格式：HH:MM
    * @returns {number} 从0点开始的分钟数
