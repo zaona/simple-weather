@@ -425,6 +425,32 @@ export default {
     })
   },
 
+  getSunDisplayInfo(sunriseText, sunsetText) {
+    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
+      return {label: "日出", time: sunriseText || "--"}
+    }
+    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
+      return {label: "日出", time: sunriseText || "--"}
+    }
+    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
+      return {label: "日出", time: sunriseText || "--"}
+    }
+    const [srH, srM] = sunriseText.split(":").map((value) => Number(value))
+    const [ssH, ssM] = sunsetText.split(":").map((value) => Number(value))
+    if ([srH, srM, ssH, ssM].some((value) => Number.isNaN(value))) {
+      return {label: "日出", time: sunriseText || "--"}
+    }
+    const sunriseMinutes = srH * 60 + srM
+    const sunsetMinutes = ssH * 60 + ssM
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+
+    if (nowMinutes >= sunsetMinutes || nowMinutes < sunriseMinutes) {
+      return {label: "日出", time: sunriseText}
+    }
+    return {label: "日落", time: sunsetText}
+  },
+
   buildIndices(todayData) {
     if (!todayData) {
       return [
@@ -436,6 +462,8 @@ export default {
       ]
     }
 
+    const sunInfo = this.getSunDisplayInfo(todayData.sunrise || "--", todayData.sunset || "--")
+
     return [
       {type: "紫外线", value: todayData.uvIndex || "__"},
       {type: "湿度", value: todayData.humidity ? `${todayData.humidity}%` : "__"},
@@ -444,7 +472,7 @@ export default {
         value: todayData.windScaleDay ? `${todayData.windScaleDay}级` : "__"
       },
       {type: "气压", value: todayData.pressure ? `${todayData.pressure}` : "__"},
-      {type: "日出", value: todayData.sunrise || "--"}
+      {type: sunInfo.label, value: sunInfo.time}
     ]
   },
 
