@@ -425,7 +425,7 @@ export default {
     })
   },
 
-  getSunDisplayInfo(sunriseText, sunsetText) {
+  getSunDisplayInfo(sunriseText, sunsetText, nextSunriseText = null) {
     if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
       return {label: "日出", time: sunriseText || "--"}
     }
@@ -445,13 +445,40 @@ export default {
     const now = new Date()
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
 
-    if (nowMinutes >= sunsetMinutes || nowMinutes < sunriseMinutes) {
+    if (nowMinutes >= sunsetMinutes) {
+      return {label: "日出", time: nextSunriseText || sunriseText}
+    }
+
+    if (nowMinutes < sunriseMinutes) {
       return {label: "日出", time: sunriseText}
     }
     return {label: "日落", time: sunsetText}
   },
 
-  buildIndices(todayData) {
+  getNextSunriseValue(weatherData, todayData) {
+    if (!todayData) {
+      return "--"
+    }
+
+    const dailyList = DataService.getDailyList(weatherData)
+    if (!Array.isArray(dailyList) || dailyList.length === 0) {
+      return "--"
+    }
+
+    const referenceDate = todayData.fxDate || DateUtils.getTodayString()
+    const todayIndex = dailyList.findIndex((day) => day && day.fxDate === referenceDate)
+
+    if (todayIndex >= 0) {
+      return dailyList[todayIndex + 1]?.sunrise || "--"
+    }
+
+    const nextDay = dailyList.find(
+      (day) => day && typeof day.fxDate === "string" && day.fxDate > referenceDate
+    )
+    return nextDay?.sunrise || "--"
+  },
+
+  buildIndices(weatherData, todayData) {
     if (!todayData) {
       return [
         {type: "紫外线", value: "__"},
@@ -462,7 +489,12 @@ export default {
       ]
     }
 
-    const sunInfo = this.getSunDisplayInfo(todayData.sunrise || "--", todayData.sunset || "--")
+    const nextSunriseValue = this.getNextSunriseValue(weatherData, todayData)
+    const sunInfo = this.getSunDisplayInfo(
+      todayData.sunrise || "--",
+      todayData.sunset || "--",
+      nextSunriseValue
+    )
 
     return [
       {type: "紫外线", value: todayData.uvIndex || "__"},
@@ -497,7 +529,7 @@ export default {
         : "/common/images/weather-icons/cloudy.png"
     }
     this.forecastDaily = this.buildForecastDaily(DataService.getDailyList(weatherData))
-    this.indices = this.buildIndices(todayData)
+    this.indices = this.buildIndices(weatherData, todayData)
   },
 
   applyWeatherData(weatherData, todayData) {

@@ -641,7 +641,7 @@ export default {
     return Math.round((progress / (sunsetMinutes - sunriseMinutes)) * 100)
   },
 
-  getSunDisplayInfo(sunriseText, sunsetText) {
+  getSunDisplayInfo(sunriseText, sunsetText, nextSunriseText = null) {
     if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
       return {label: "日出", time: sunriseText || "--"}
     }
@@ -661,12 +661,38 @@ export default {
     const now = new Date()
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
 
-    // 如果现在已经过了日落，或者还没到日出，显示日出
-    if (nowMinutes >= sunsetMinutes || nowMinutes < sunriseMinutes) {
+    if (nowMinutes >= sunsetMinutes) {
+      return {label: "日出", time: nextSunriseText || sunriseText}
+    }
+
+    if (nowMinutes < sunriseMinutes) {
       return {label: "日出", time: sunriseText}
     }
-    // 否则显示日落
+
     return {label: "日落", time: sunsetText}
+  },
+
+  getNextSunriseValue(weatherData, todayData) {
+    if (!todayData) {
+      return "--"
+    }
+
+    const dailyList = DataService.getDailyList(weatherData)
+    if (!Array.isArray(dailyList) || dailyList.length === 0) {
+      return "--"
+    }
+
+    const referenceDate = todayData.fxDate || DateUtils.getTodayString()
+    const todayIndex = dailyList.findIndex((day) => day && day.fxDate === referenceDate)
+
+    if (todayIndex >= 0) {
+      return dailyList[todayIndex + 1]?.sunrise || "--"
+    }
+
+    const nextDay = dailyList.find(
+      (day) => day && typeof day.fxDate === "string" && day.fxDate > referenceDate
+    )
+    return nextDay?.sunrise || "--"
   },
 
   buildForecastHourly(hourlyList = [], limit = 12, todayData = null) {
@@ -824,7 +850,7 @@ export default {
     })
   },
 
-  buildIndices(todayData) {
+  buildIndices(weatherData, todayData) {
     if (!todayData) {
       return [
         {
@@ -892,6 +918,7 @@ export default {
     const pressureValue = todayData.pressure ? `${todayData.pressure}` : "__"
     const sunriseValue = todayData.sunrise || "--"
     const sunsetValue = todayData.sunset || "--"
+    const nextSunriseValue = this.getNextSunriseValue(weatherData, todayData)
     const uvNumber = Number(uvValue)
     const uvPercent = Number.isNaN(uvNumber)
       ? 0
@@ -917,7 +944,7 @@ export default {
       sunPercent,
       "/common/images/sunset/sunset20.png"
     )
-    const sunInfo = this.getSunDisplayInfo(sunriseValue, sunsetValue)
+    const sunInfo = this.getSunDisplayInfo(sunriseValue, sunsetValue, nextSunriseValue)
     const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
     const windRotationStyle = {
       transform: JSON.stringify({rotate: `${windRotation}deg`})
@@ -1008,7 +1035,7 @@ export default {
         : "/common/images/weather-icons/cloudy.png"
     }
     this.forecastDaily = this.buildForecastDaily(DataService.getDailyList(weatherData))
-    this.indices = this.buildIndices(todayData)
+    this.indices = this.buildIndices(weatherData, todayData)
   },
 
   applyWeatherData(weatherData, todayData) {
