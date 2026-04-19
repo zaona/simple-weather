@@ -1,6 +1,6 @@
 /**
  * 天气 API 服务
- * 负责请求后端聚合天气接口，并基于本地缓存中的 locationId 拉取新数据
+ * 负责请求后端聚合天气接口，并基于本地天气文件中的 locationId 和模块长度拉取新数据
  */
 
 import fetch from "@system.fetch"
@@ -71,7 +71,8 @@ function buildUrl(base, path) {
 
 class WeatherApiService {
   async fetchWeatherData() {
-    const {locationId, locationName} = await this.deriveLocationInfoFromCache()
+    const localWeatherData = await this.readLocalWeatherData()
+    const {locationId, locationName} = this.deriveLocationInfo(localWeatherData)
 
     if (!locationId) {
       const error = new Error("Location info missing")
@@ -87,11 +88,9 @@ class WeatherApiService {
     ])
     const payload = {
       locationId,
-      modules: {
-        daily: WEATHER_API.DAILY_RANGE,
-        hourly:
-          supportsAdvancedFeatures && hourlyEnabled ? WEATHER_API.HOURLY_RANGE : null
-      }
+      modules: this.buildModulePayload(localWeatherData, {
+        enableHourly: supportsAdvancedFeatures && hourlyEnabled
+      })
     }
 
     const url = buildUrl(WEATHER_API_PRIVATE.HOST, WEATHER_API.SYNC_PATH)
@@ -113,22 +112,41 @@ class WeatherApiService {
     }
   }
 
-  async deriveLocationInfoFromCache() {
+  async readLocalWeatherData() {
     const cachedWeather = await DataService.readWeatherData(true)
-    const currentLocationId = this.extractLocationId(cachedWeather)
-    const currentLocationName = this.extractLocationName(cachedWeather)
-    if (currentLocationId) {
-      return {
-        locationId: currentLocationId,
-        locationName: currentLocationName
-      }
+    if (cachedWeather) {
+      return cachedWeather
     }
 
-    const rawWeather = await DataService.readRawWeatherData()
+    return DataService.readRawWeatherData()
+  }
+
+  deriveLocationInfo(weatherData) {
+    const currentLocationId = this.extractLocationId(weatherData)
+    const currentLocationName = this.extractLocationName(weatherData)
+
     return {
-      locationId: this.extractLocationId(rawWeather),
-      locationName: this.extractLocationName(rawWeather)
+      locationId: currentLocationId,
+      locationName: currentLocationName
     }
+  }
+
+  buildModulePayload(weatherData, options = {}) {
+    const {enableHourly = false} = options
+    const dailyLength = DataService.getDailyList(weatherData).length
+    const hourlyLength = DataService.getHourlyList(weatherData).length
+
+    return {
+      daily: this.buildModuleRange(dailyLength, WEATHER_API.DAILY_RANGE, "d"),
+      hourly: enableHourly
+        ? this.buildModuleRange(hourlyLength, WEATHER_API.HOURLY_RANGE, "h")
+        : null
+    }
+  }
+
+  buildModuleRange(length, fallbackRange, suffix) {
+    const normalizedLength = Number.isFinite(length) ? Math.floor(length) : 0
+    return normalizedLength > 0 ? `${normalizedLength}${suffix}` : fallbackRange
   }
 
   extractLocationName(weatherData) {
