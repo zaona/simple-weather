@@ -280,7 +280,6 @@ export default {
   border-radius: 24px;
   padding: 12px;
   margin-top: 12px;
-  box-sizing: border-box;
 }
 
 .about__app-info {

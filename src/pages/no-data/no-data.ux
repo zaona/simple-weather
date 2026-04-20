@@ -28,6 +28,16 @@
               <text class="btn__text">更新中...</text>
             </div>
           </div>
+
+          <div class="no-data__qr-section">
+            <text class="no-data__qr-tip">扫码查看同步教程</text>
+            <div class="no-data__qr-box">
+              <qrcode
+                class="no-data__qr-code"
+                value="https://www.yuque.com/zaona/weather/syncer"
+              ></qrcode>
+            </div>
+          </div>
         </div>
       </div>
     </scroll>
@@ -265,22 +275,21 @@ export default {
   align-items: center;
   background-color: rgba(255, 255, 255, 0.15);
   border-radius: 24px;
-  box-sizing: border-box;
 }
 
 .no-data__card-content {
   width: 100%;
   margin-top: -8px;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .no-data__desc {
   width: 100%;
   margin-top: 8px;
   font-size: 24px;
-  line-height: 34px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255);
 }
 
 .no-data__actions {
@@ -292,6 +301,35 @@ export default {
 
 .no-data__btn--spaced {
   margin-top: 12px;
+}
+
+.no-data__qr-section {
+  width: 100%;
+  margin-top: 16px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.no-data__qr-tip {
+  width: 100%;
+  font-size: 24px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.no-data__qr-box {
+  width: 100%;
+  margin-top: 16px;
+  padding: 8px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.no-data__qr-code {
+  color: #000000;
+  background-color: #ffffff;
 }
 
 /* 针对圆表 */
@@ -315,6 +353,18 @@ export default {
     border-radius: 32px;
     padding: 24px;
   }
+
+  .no-data__desc {
+    font-size: 30px;
+  }
+
+  .no-data__qr-tip {
+    font-size: 30px;
+  }
+
+  .no-data__qr-box {
+    width: 80%;
+  }
 }
 
 /* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
@@ -337,6 +387,18 @@ export default {
     border-radius: 32px;
     padding: 24px;
   }
+
+  .no-data__desc {
+    font-size: 30px;
+  }
+
+  .no-data__qr-tip {
+    font-size: 30px;
+  }
+
+  .no-data__qr-box {
+    width: 80%;
+  }
 }
 
 /* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
@@ -358,6 +420,20 @@ export default {
   .no-data__card {
     border-radius: 32px;
     padding: 24px;
+  }
+
+  .no-data__desc {
+    font-size: 30px;
+    line-height: 30px;
+  }
+
+  .no-data__qr-tip {
+    font-size: 30px;
+    line-height: 30px;
+  }
+
+  .no-data__qr-box {
+    width: 80%;
   }
 }
 </style>
