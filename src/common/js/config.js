@@ -13,10 +13,6 @@ export const STORAGE = {
 
 // 连接相关配置
 export const CONNECTION = {
-  // 最大重试次数
-  MAX_READY_RETRIES: 5,
-  // ready响应发送间隔（毫秒）
-  READY_RETRY_DELAY: 200,
   // 连接重连延迟（毫秒）
   RECONNECT_DELAY: 5000
 }
@@ -80,11 +76,8 @@ export const CIRCLE_SCREEN_PRODUCTS = [
 export const MESSAGES = {
   // 成功消息
   DATA_UPDATED: "数据已更新",
-  DATA_SAVED: "数据已保存",
-  CONNECTION_SUCCESS: "连接成功",
 
   // 等待消息
-  WAITING_FOR_FIRST_DATA: "本地无数据",
   WAITING_FOR_UPDATE: "数据已过期",
 
   // 错误消息
@@ -97,24 +90,17 @@ export const MESSAGES = {
   NO_LOCAL_DATA: "本地无数据",
   NO_DATE_RECEIVED: "未接收到日期",
   NO_DATA_FOR_DATE: "数据缺失",
-  CANNOT_READ_DATA: "无法读取天气数据",
   NAVIGATION_ERROR: "跳转详情页失败",
   LOCATION_INFO_MISSING: "无法获取本地位置信息",
   SETTINGS_SAVE_ERROR: "设置保存失败",
 
-  // 连接消息
-  CONNECTION_ERROR: "连接错误",
-  CONNECTION_CLOSED: "连接已关闭",
-  SEND_SUCCESS: "消息发送成功",
-  SEND_ERROR: "发送失败",
+  // 设置消息
+  SETTINGS_SAVED: "已保存，重启后生效",
 
   // 调试消息
   DEBUG_MOCK_DATA_LOADED: "模拟数据加载",
   DEBUG_MOCK_DATA_FAILED: "模拟数据失败",
-  DEBUG_DATA_CLEARED: "数据已清除",
-
-  // 手动更新限制
-  MANUAL_UPDATE_TOO_SOON: "请{minutes}分钟后再试"
+  DEBUG_DATA_CLEARED: "数据已清除"
 }
 
 // 提示持续时间（毫秒）

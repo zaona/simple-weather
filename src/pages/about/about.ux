@@ -79,6 +79,7 @@ import SettingsService from "../../common/js/settings-service.js"
 import DeviceService from "../../common/js/device-service.js"
 import {
   ADVANCED_FEATURE_PRODUCT_BLACKLIST,
+  MESSAGES,
   TOAST_DURATION
 } from "../../common/js/config.js"
 
@@ -157,7 +158,7 @@ export default {
       this[fieldKey] = previousValue
       return
     }
-    showToast({ message: "已保存，重启后生效", duration: TOAST_DURATION.SHORT })
+    showToast({ message: MESSAGES.SETTINGS_SAVED, duration: TOAST_DURATION.SHORT })
   },
 
   toggleAutoUpdate(event) {
