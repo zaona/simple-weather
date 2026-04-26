@@ -7,7 +7,7 @@
       <div class="loading__bg"></div>
       <image class="loading__icon" src="/common/images/loading.png" />
       <div class="loading__actions" if="{{ showDebugEntry }}">
-        <div class="btn btn--primary" onclick="About()">
+        <div class="btn btn--primary" onclick="goToAbout()">
           <text class="btn__text">关于</text>
         </div>
       </div>
@@ -31,7 +31,7 @@
               src="/common/images/loading.png"
             />
             <text class="title__time-text" if="{{ !isPullRefreshing }}">
-              {{ current.relativeTime }}
+              {{ current.timeAgo }}
             </text>
           </div>
         </div>
@@ -41,7 +41,7 @@
             <text class="current__temperature">{{ current.temperature }}</text>
             <text class="current__unit">°</text>
           </div>
-          <text class="current__weather">{{ current.weather }}</text>
+          <text class="current__weather">{{ current.weatherText }}</text>
           <text class="current__daily">
             {{ current.temperatureDaily.from }}°/{{ current.temperatureDaily.to }}°
           </text>
@@ -115,7 +115,7 @@
           <div
             class="forecast-daily__item"
             for="{{ item in forecastDaily.slice(0, 7) }}"
-            @click="DetailInfo(item)"
+            @click="goToDetail(item)"
           >
             <text class="forecast-daily__time">{{ item.time }}</text>
             <div class="forecast-daily__detail">
@@ -152,7 +152,7 @@
           <div class="indices__item">
             <div class="indices__content">
               <text class="indices__type">{{ indices[0].type }}</text>
-              <text class="indices__value">{{ indices[0].value }}</text>
+              <text class="indices__value">{{ indices[0].reading }}</text>
             </div>
             <!-- <div class="indices__icon">
               <image src="{{ indices[0].icon }}" />
@@ -169,7 +169,7 @@
                   color: white;
                 "
               >
-                {{ indices[0].desc }}
+                {{ indices[0].badge }}
               </text>
               <text
                 style="
@@ -191,7 +191,7 @@
           <div class="indices__item">
             <div class="indices__content">
               <text class="indices__type">{{ indices[1].type }}</text>
-              <text class="indices__value">{{ indices[1].value }}%</text>
+              <text class="indices__value">{{ indices[1].reading }}%</text>
             </div>
             <!-- <div class="indices__icon">
               <progress
@@ -224,7 +224,7 @@
                   color: rgba(255, 255, 255, 0.75);
                 "
               >
-                {{ indices[1].desc }}
+                {{ indices[1].badge }}
               </text>
             </div> -->
           </div>
@@ -232,7 +232,7 @@
           <div class="indices__item">
             <div class="indices__content">
               <text class="indices__type">{{ indices[2].type }}</text>
-              <text class="indices__value">{{ indices[2].value }}</text>
+              <text class="indices__value">{{ indices[2].reading }}</text>
             </div>
             <!-- <div class="indices__icon">
               <image style="width: 128px; height: 128px" src="/common/images/wind/wind1.png" />
@@ -251,7 +251,7 @@
           <div class="indices__item">
             <div class="indices__content">
               <text class="indices__type">{{ indices[3].type }}</text>
-              <text class="indices__value">{{ indices[3].value }}</text>
+              <text class="indices__value">{{ indices[3].reading }}</text>
             </div>
             <!-- <div class="indices__icon">
               <image src="{{ indices[3].icon }}" />
@@ -288,7 +288,7 @@
           <div class="indices__item">
             <div class="indices__content">
               <text class="indices__type">{{ indices[4].type }}</text>
-              <text class="indices__value">{{ indices[4].value }}</text>
+              <text class="indices__value">{{ indices[4].reading }}</text>
             </div>
             <!-- <div class="indices__icon">
               <image style="margin: -8px" src="{{ indices[4].icon }}" />
@@ -320,7 +320,7 @@
           </div>
 
           <div class="hero mt-lg">
-            <div class="btn btn--primary" onclick="About()">
+            <div class="btn btn--primary" onclick="goToAbout()">
               <text class="btn__text">关于</text>
             </div>
           </div>
@@ -352,26 +352,72 @@ import {
 // 导入工具类
 import {DateUtils, WeatherDataUtils} from "../../../common/js/weather-utils.js"
 
-export default {
-  // 页面私有数据
-  private: {
-    isLoading: true, // 加载状态
-    isFirstLoad: true, // 是否是首次加载
-    autoUpdateEnabled: false, // 自动更新是否开启
-    hourlyForecastEnabled: false, // 逐小时天气是否开启
-    supportsAdvancedFeatures: false, // 设备是否支持高级功能
-    showDebugEntry: false, // 加载态调试入口
-    hasHourlyData: false, // 是否有可用的逐小时数据
-    autoUpdateInProgress: false, // 自动更新中标记
-    isPullRefreshing: false, // 下拉刷新中
-    pullRefreshReady: true, // 下拉刷新触发开关
-    backgroundImage: "", // 背景图片
+function createDefaultIndices() {
+  return [
+    {
+      type: "__",
+      reading: "__",
+      badge: "__",
+      icon: "/common/images/uv/uv1.png",
+      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+    },
+    {
+      type: "__",
+      reading: "__",
+      badge: "__",
+      percent: 0,
+      icon: "",
+      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+    },
+    {
+      type: "__",
+      reading: "__",
+      badge: "",
+      icon: "",
+      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+    },
+    {
+      type: "__",
+      reading: "__",
+      badge: "",
+      icon: "/common/images/air/Air13.png",
+      arrow: "/common/images/uv/uv15.png",
+      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+    },
+    {
+      type: "__",
+      reading: "__",
+      sunrise: "__",
+      sunset: "__",
+      icon: "/common/images/sunset/sunset20.png",
+      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+    }
+  ]
+}
 
-    // 新版界面数据
+export default {
+  private: {
+    // ---- 页面状态 ----
+    isLoading: true,
+    isFirstLoad: true,
+    showDebugEntry: false,
+    backgroundImage: "",
+
+    // ---- 功能开关 ----
+    autoUpdateEnabled: false,
+    hourlyForecastEnabled: false,
+    supportsAdvancedFeatures: false,
+    autoUpdateInProgress: false,
+
+    // ---- 下拉刷新 ----
+    isPullRefreshing: false,
+    pullRefreshReady: true,
+
+    // ---- 展示数据 ----
     current: {
       location: "__",
-      relativeTime: "__",
-      weather: "__",
+      timeAgo: "__",
+      weatherText: "__",
       temperature: "__",
       temperatureDaily: {
         from: "__",
@@ -381,81 +427,22 @@ export default {
     },
     forecastHourly: [],
     forecastHourlyPages: [],
+    hasHourlyData: false,
     forecastDaily: [],
-    indices: [
-      {
-        type: "__",
-        value: "__",
-        desc: "__",
-        percent: 0,
-        icon: "/common/images/uv/uv1.png",
-        arrow: "/common/images/uv/uv15.png",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: "__",
-        value: "__",
-        desc: "__",
-        percent: 0,
-        icon: "",
-        arrow: "",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: "__",
-        value: "__",
-        desc: "__",
-        percent: 0,
-        icon: "",
-        arrow: "",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: "__",
-        value: "__",
-        desc: "__",
-        percent: 0,
-        icon: "/common/images/air/Air13.png",
-        arrow: "/common/images/uv/uv15.png",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      },
-      {
-        type: "__",
-        value: "__",
-        sunrise: "__",
-        sunset: "__",
-        percent: 0,
-        icon: "/common/images/sunset/sunset20.png",
-        arrow: "",
-        rotation: 0,
-        rotationStyle: {
-          transform: JSON.stringify({rotate: "0deg"})
-        }
-      }
-    ],
+    indices: createDefaultIndices(),
+
+    // ---- 辅助 ----
     systemTime: "__:__",
+    timeDigit1: "_",
+    timeDigit2: "_",
+    timeDigit3: "_",
+    timeDigit4: "_",
     hourlyIndicatorStyle: {
       width: "40px",
       transform: JSON.stringify({
         translateX: "0px"
       })
     },
-    timeDigit1: "_",
-    timeDigit2: "_",
-    timeDigit3: "_",
-    timeDigit4: "_"
   },
 
   applyPreloadedData(preloaded) {
@@ -468,24 +455,6 @@ export default {
     this.applyWeatherSnapshot(weatherData, todayData, hourlyList)
 
     return weatherData
-  },
-
-  normalizeTempRange(rangeText) {
-    if (!rangeText || typeof rangeText !== "string") {
-      return {from: "__", to: "__"}
-    }
-    const parts = rangeText.replace("℃", "°").split("/")
-    if (parts.length !== 2) {
-      return {from: "__", to: "__"}
-    }
-    return {
-      from: parts[0].replace("°", "") || "__",
-      to: parts[1].replace("°", "") || "__"
-    }
-  },
-
-  formatTempRange(tempMin, tempMax) {
-    return `${tempMin}°/${tempMax}°`
   },
 
   normalizeTemperatureValue(value) {
@@ -515,7 +484,7 @@ export default {
     if (Array.isArray(hourlyList) && hourlyList.length > 0) {
       const tempText = hourlyList[0].temp || hourlyList[0].temperature
       if (typeof tempText === "string") {
-        return tempText.replace("°", "")
+        return tempText
       }
       if (tempText !== undefined && tempText !== null) {
         return this.normalizeTemperatureValue(tempText)
@@ -524,7 +493,7 @@ export default {
     return this.calculateAverageTemperature(todayData)
   },
 
-  getPrimaryHourlyEntry(hourlyList = [], todayData = null) {
+  firstHourlyEntry(hourlyList = [], todayData = null) {
     const processed = this.processHourlyList(hourlyList, 1, todayData)
     return processed.length > 0 ? processed[0] : null
   },
@@ -702,8 +671,7 @@ export default {
     }
 
     return processed.map((entry, index) => {
-      const tempText = entry.temp !== undefined && entry.temp !== null ? String(entry.temp) : ""
-      const temperature = tempText ? tempText.replace("°", "") : "__"
+      const temperature = entry.temp || "__"
       const icon = entry.iconCode
         ? `/common/images/weather-icons/${entry.iconCode}.png`
         : "/common/images/weather-icons/cloudy.png"
@@ -723,7 +691,7 @@ export default {
 
     const baseList = this.buildForecastBase({daily: dailyList})
     return baseList.map((item) => {
-      const temp = this.normalizeTempRange(item.tempMinMax)
+      const temp = item.tempRange
       const icon = item.iconCode
         ? `/common/images/weather-icons/${item.iconCode}.png`
         : "/common/images/weather-icons/cloudy.png"
@@ -737,7 +705,7 @@ export default {
     })
   },
 
-  buildBaseWeather(todayData, timeAgo, hourlyEntry = null) {
+  buildBaseWeather(todayData, hourlyEntry = null) {
     const isNight = WeatherDataUtils.isNightTime(todayData.sunrise, todayData.sunset)
     const hasHourlyEntry = !!hourlyEntry
     const weatherIconSource =
@@ -748,15 +716,12 @@ export default {
     const weatherText = hasHourlyEntry ? hourlyEntry.text : todayData.textDay
     const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(weatherIconSource, isNight)
     return {
-      updateTime: timeAgo,
       iconCode,
       textDay: weatherText,
-      tempMinMax: this.formatTempRange(todayData.tempMin, todayData.tempMax),
       backgroundImage,
       currentTemperature: hasHourlyEntry
         ? this.getCurrentTemperature(null, [{temp: hourlyEntry.temp}])
-        : this.getCurrentTemperature(todayData, []),
-      isNight
+        : this.getCurrentTemperature(todayData, [])
     }
   },
 
@@ -780,7 +745,7 @@ export default {
         return {
           fxDate: day.fxDate,
           name: displayName,
-          tempMinMax: this.formatTempRange(day.tempMin, day.tempMax),
+          tempRange: { from: day.tempMin || "__", to: day.tempMax || "__" },
           iconCode: WeatherDataUtils.getMappedIconCode(day.iconDay, isNight),
           uniqueId: dayDiff + 1
         }
@@ -831,7 +796,7 @@ export default {
         isNight = WeatherDataUtils.isNightAtTimestamp(parsed, sunrise, sunset)
       }
 
-      const tempValue = raw.temp !== undefined ? `${raw.temp}°` : "__°"
+      const tempValue = raw.temp !== undefined && raw.temp !== null ? String(raw.temp) : "__"
       const iconCodeRaw = Number(raw.icon)
       const mappedIcon = WeatherDataUtils.getMappedIconCode(
         Number.isNaN(iconCodeRaw) ? raw.icon : iconCodeRaw,
@@ -852,58 +817,7 @@ export default {
 
   buildIndices(weatherData, todayData) {
     if (!todayData) {
-      return [
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "/common/images/uv/uv1.png",
-          arrow: "/common/images/uv/uv15.png",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        },
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "",
-          arrow: "",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        },
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "",
-          arrow: "",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        },
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "/common/images/air/Air13.png",
-          arrow: "/common/images/uv/uv15.png",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        },
-        {
-          type: "__",
-          value: "__",
-          desc: "__",
-          percent: 0,
-          icon: "/common/images/sunset/sunset20.png",
-          arrow: "",
-          rotation: 0,
-          rotationClass: "wind-rotate-0"
-        }
-      ]
+      return createDefaultIndices()
     }
 
     const uvValue = todayData.uvIndex || "__"
@@ -954,59 +868,46 @@ export default {
     return [
       {
         type: "紫外线",
-        value: uvDesc,
-        desc: uvValue,
-        percent: uvPercent,
+        reading: uvDesc,
+        badge: uvValue,
         icon: uvIcon,
-        arrow: "/common/images/uv/uv15.png",
-        rotation: 0,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
         }
       },
       {
         type: "湿度",
-        value: humidityValue,
-        desc: humidityDesc,
+        reading: humidityValue,
+        badge: humidityDesc,
         percent: humidityPercent,
         icon: "",
-        arrow: "",
-        rotation: 0,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
         }
       },
       {
         type: windType,
-        value: windValue,
-        desc: "",
-        percent: 0,
+        reading: windValue,
+        badge: "",
         icon: "",
-        arrow: "",
-        rotation: windRotation,
         rotationStyle: windRotationStyle
       },
       {
         type: "气压",
-        value: pressureValue,
-        desc: "",
-        percent: pressurePercent,
+        reading: pressureValue,
+        badge: "",
         icon: airIcon,
         arrow: pressureArrow,
-        rotation: 0,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
         }
       },
       {
         type: sunInfo.label,
-        value: sunInfo.time,
+        reading: sunInfo.time,
         sunrise: sunriseValue,
         sunset: sunsetValue,
-        percent: sunPercent,
         icon: sunIcon,
-        arrow: "",
-        rotation: 0,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
         }
@@ -1016,15 +917,15 @@ export default {
 
   syncWeather(weatherData, todayData, timeAgo, hourlyEntry = null) {
     RefreshController.recordDailyUpdate(weatherData)
-    const baseWeather = this.buildBaseWeather(todayData, timeAgo, hourlyEntry)
+    const baseWeather = this.buildBaseWeather(todayData, hourlyEntry)
     this.backgroundImage = baseWeather.backgroundImage
     const locationName = DataService.getLocationName(weatherData)
     const currentIconCode = baseWeather.iconCode
 
     this.current = {
       location: locationName,
-      relativeTime: timeAgo,
-      weather: baseWeather.textDay || "__",
+      timeAgo: timeAgo,
+      weatherText: baseWeather.textDay || "__",
       temperature: baseWeather.currentTemperature,
       temperatureDaily: {
         from: todayData.tempMin || "__",
@@ -1038,16 +939,12 @@ export default {
     this.indices = this.buildIndices(weatherData, todayData)
   },
 
-  applyWeatherData(weatherData, todayData) {
-    this.applyWeatherSnapshot(weatherData, todayData, [])
-  },
-
   findTodayData(weatherData) {
     const todayStr = DateUtils.getTodayString()
     return DataService.getDailyList(weatherData).find((day) => day.fxDate === todayStr) || null
   },
 
-  getTimeAgoByWeatherData(weatherData) {
+  formatUpdateTime(weatherData) {
     const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
     return DateUtils.formatTimeAgo(updateTime)
   },
@@ -1064,7 +961,7 @@ export default {
       hasDisplayableHourlyData = forecastHourly.length > 0
       if (hasDisplayableHourlyData) {
         this.forecastHourly = forecastHourly
-        primaryHourlyEntry = this.getPrimaryHourlyEntry(hourlyList, todayData)
+        primaryHourlyEntry = this.firstHourlyEntry(hourlyList, todayData)
       } else {
         this.forecastHourly = []
         this.forecastHourlyPages = []
@@ -1074,11 +971,11 @@ export default {
       this.forecastHourlyPages = []
     }
 
-    const timeAgo = this.getTimeAgoByWeatherData(weatherData)
+    const timeAgo = this.formatUpdateTime(weatherData)
     this.syncWeather(weatherData, todayData, timeAgo, primaryHourlyEntry)
 
     if (this.hourlyForecastEnabled && hasDisplayableHourlyData) {
-      this.applyHourlyForecastList(hourlyList, todayData)
+      this.paginateHourly(hourlyList, todayData)
     } else {
       this.hasHourlyData = false
       this.updateHourlyCardVisibility()
@@ -1178,7 +1075,7 @@ export default {
 
     this.isPullRefreshing = true
     try {
-      await this.UpdateWeather({auto: false, silent: true, showLoading: false})
+      await this.updateWeather({auto: false, silent: true, showLoading: false})
     } finally {
       this.isPullRefreshing = false
     }
@@ -1188,7 +1085,7 @@ export default {
    * 跳转到详情页
    * @param {Object} selectedItem - 选中的天气项
    */
-  DetailInfo(selectedItem) {
+  goToDetail(selectedItem) {
     if (selectedItem && selectedItem.fxDate) {
       router.push({
         uri: "/pages/detail",
@@ -1207,7 +1104,7 @@ export default {
   /**
    * 跳转到关于页
    */
-  About() {
+  goToAbout() {
     router.push({
       uri: "/pages/about"
     })
@@ -1218,7 +1115,7 @@ export default {
    * @param {Object|boolean} options - 配置项或是否自动触发
    * @returns {Promise<boolean>}
    */
-  async UpdateWeather(options = {}) {
+  async updateWeather(options = {}) {
     let config = {auto: false, silent: false, showLoading: null}
 
     if (typeof options === "boolean") {
@@ -1413,7 +1310,7 @@ export default {
    * 应用逐小时天气数据
    * @param {Array} hourlyList
    */
-  applyHourlyForecastList(hourlyList = [], todayData = null) {
+  paginateHourly(hourlyList = [], todayData = null) {
     const forecastHourly = this.buildForecastHourly(hourlyList, 6, todayData)
     this.forecastHourly = forecastHourly
 
@@ -1483,7 +1380,7 @@ export default {
     this.autoUpdateInProgress = true
 
     try {
-      await this.UpdateWeather({
+      await this.updateWeather({
         auto: true,
         silent,
         showLoading
@@ -1516,7 +1413,7 @@ export default {
       const shouldFallbackForHourly =
         this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
       if (shouldFallbackForHourly) {
-        await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+        await this.updateWeather({auto: true, silent: true, showLoading: false})
         return
       }
       await this.maybeAutoUpdate(preloadedWeatherData)
@@ -1537,7 +1434,7 @@ export default {
     const shouldFallbackForHourly =
       this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
     if (shouldFallbackForHourly) {
-      await this.UpdateWeather({auto: true, silent: true, showLoading: false})
+      await this.updateWeather({auto: true, silent: true, showLoading: false})
       return
     }
 
