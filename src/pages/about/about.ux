@@ -158,19 +158,25 @@ export default {
       this[fieldKey] = previousValue
       return
     }
-    showToast({ message: MESSAGES.SETTINGS_SAVED, duration: TOAST_DURATION.SHORT })
+    showToast({message: MESSAGES.SETTINGS_SAVED, duration: TOAST_DURATION.SHORT})
   },
 
   toggleAutoUpdate(event) {
-    return this.toggleSetting(event, "autoUpdateEnabled", (v) => SettingsService.setAutoUpdateEnabled(v))
+    return this.toggleSetting(event, "autoUpdateEnabled", (v) =>
+      SettingsService.setAutoUpdateEnabled(v)
+    )
   },
 
   toggleHourlyForecast(event) {
-    return this.toggleSetting(event, "hourlyForecastEnabled", (v) => SettingsService.setHourlyForecastEnabled(v))
+    return this.toggleSetting(event, "hourlyForecastEnabled", (v) =>
+      SettingsService.setHourlyForecastEnabled(v)
+    )
   },
 
   toggleReduceAnimation(event) {
-    return this.toggleSetting(event, "reduceAnimationEnabled", (v) => SettingsService.setReduceAnimationEnabled(v))
+    return this.toggleSetting(event, "reduceAnimationEnabled", (v) =>
+      SettingsService.setReduceAnimationEnabled(v)
+    )
   },
 
   /**

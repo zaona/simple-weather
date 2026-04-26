@@ -146,11 +146,44 @@ import {DateUtils, WeatherDataUtils} from "../../../common/js/weather-utils.js"
 
 function createDefaultIndices() {
   return [
-    { type: "__", reading: "__", badge: "__", icon: "/common/images/uv/uv1.png", rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) } },
-    { type: "__", reading: "__", badge: "__", percent: 0, icon: "", rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) } },
-    { type: "__", reading: "__", badge: "", icon: "", rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) } },
-    { type: "__", reading: "__", badge: "", icon: "/common/images/air/Air13.png", arrow: "/common/images/uv/uv15.png", rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) } },
-    { type: "__", reading: "__", sunrise: "__", sunset: "__", icon: "/common/images/sunset/sunset20.png", rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) } }
+    {
+      type: "__",
+      reading: "__",
+      badge: "__",
+      icon: "/common/images/uv/uv1.png",
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
+    },
+    {
+      type: "__",
+      reading: "__",
+      badge: "__",
+      percent: 0,
+      icon: "",
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
+    },
+    {
+      type: "__",
+      reading: "__",
+      badge: "",
+      icon: "",
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
+    },
+    {
+      type: "__",
+      reading: "__",
+      badge: "",
+      icon: "/common/images/air/Air13.png",
+      arrow: "/common/images/uv/uv15.png",
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
+    },
+    {
+      type: "__",
+      reading: "__",
+      sunrise: "__",
+      sunset: "__",
+      icon: "/common/images/sunset/sunset20.png",
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
+    }
   ]
 }
 
@@ -179,7 +212,7 @@ export default {
       timeAgo: "__",
       weatherText: "__",
       temperature: "__",
-      temperatureDaily: { from: "__", to: "__" },
+      temperatureDaily: {from: "__", to: "__"},
       icon: "/common/images/weather-icons/cloudy.png"
     },
     forecastHourly: [],
@@ -188,7 +221,7 @@ export default {
     hourlyItemsPerPage: 2,
     useHorizontalDailyLayout: false,
     forecastDaily: [],
-    indices: createDefaultIndices(),
+    indices: createDefaultIndices()
   },
 
   applyPreloadedData(preloaded) {
@@ -252,27 +285,49 @@ export default {
   },
 
   getHumidityDesc(percent) {
-    if (typeof percent !== "number" || Number.isNaN(percent)) { return "" }
-    if (percent < 30) { return "干燥" }
-    if (percent < 40) { return "偏干" }
-    if (percent < 60) { return "舒适" }
-    if (percent < 70) { return "偏湿" }
+    if (typeof percent !== "number" || Number.isNaN(percent)) {
+      return ""
+    }
+    if (percent < 30) {
+      return "干燥"
+    }
+    if (percent < 40) {
+      return "偏干"
+    }
+    if (percent < 60) {
+      return "舒适"
+    }
+    if (percent < 70) {
+      return "偏湿"
+    }
     return "潮湿"
   },
 
   getUvDesc(indexValue) {
     const numeric = Number(indexValue)
-    if (Number.isNaN(numeric)) { return "__" }
-    if (numeric <= 2) { return "弱" }
-    if (numeric <= 5) { return "中等" }
-    if (numeric <= 7) { return "强" }
-    if (numeric <= 10) { return "很强" }
+    if (Number.isNaN(numeric)) {
+      return "__"
+    }
+    if (numeric <= 2) {
+      return "弱"
+    }
+    if (numeric <= 5) {
+      return "中等"
+    }
+    if (numeric <= 7) {
+      return "强"
+    }
+    if (numeric <= 10) {
+      return "很强"
+    }
     return "极强"
   },
 
   getPercentByRange(value, min, max) {
     const numeric = Number(value)
-    if (Number.isNaN(numeric)) { return 0 }
+    if (Number.isNaN(numeric)) {
+      return 0
+    }
     const clamped = Math.min(Math.max(numeric, min), max)
     return Math.round(((clamped - min) / (max - min)) * 100)
   },
@@ -280,37 +335,60 @@ export default {
   getImageByPercent(basePath, maxIndex, percent, fallbackPath) {
     const normalized = Math.min(Math.max(Math.round(percent), 0), 100)
     const index = 1 + Math.round((normalized / 100) * (maxIndex - 1))
-    if (!basePath) { return fallbackPath || "" }
+    if (!basePath) {
+      return fallbackPath || ""
+    }
     return `${basePath}${index}.png`
   },
 
   getPressureArrow(pressure) {
     const numeric = Number(pressure)
-    if (Number.isNaN(numeric)) { return "/common/images/uv/uv15.png" }
-    if (numeric > 1008) { return "/common/images/uv/uv14.png" }
-    if (numeric < 1008) { return "/common/images/uv/uv13.png" }
+    if (Number.isNaN(numeric)) {
+      return "/common/images/uv/uv15.png"
+    }
+    if (numeric > 1008) {
+      return "/common/images/uv/uv14.png"
+    }
+    if (numeric < 1008) {
+      return "/common/images/uv/uv13.png"
+    }
     return "/common/images/uv/uv15.png"
   },
 
   getWindRotation(degValue) {
     const numeric = Number(degValue)
-    if (Number.isNaN(numeric) || numeric < 0) { return 0 }
+    if (Number.isNaN(numeric) || numeric < 0) {
+      return 0
+    }
     return Math.round((numeric + 180) % 360)
   },
 
   getSunPercent(sunriseText, sunsetText) {
-    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") { return 0 }
-    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") { return 0 }
-    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) { return 0 }
+    if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
+      return 0
+    }
+    if (typeof sunriseText !== "string" || typeof sunsetText !== "string") {
+      return 0
+    }
+    if (sunriseText.indexOf(":") === -1 || sunsetText.indexOf(":") === -1) {
+      return 0
+    }
     const [srH, srM] = sunriseText.split(":").map(Number)
     const [ssH, ssM] = sunsetText.split(":").map(Number)
-    if ([srH, srM, ssH, ssM].some((v) => Number.isNaN(v))) { return 0 }
+    if ([srH, srM, ssH, ssM].some((v) => Number.isNaN(v))) {
+      return 0
+    }
     const sunriseMinutes = srH * 60 + srM
     const sunsetMinutes = ssH * 60 + ssM
-    if (sunsetMinutes <= sunriseMinutes) { return 0 }
+    if (sunsetMinutes <= sunriseMinutes) {
+      return 0
+    }
     const now = new Date()
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
-    const progress = Math.min(Math.max(nowMinutes - sunriseMinutes, 0), sunsetMinutes - sunriseMinutes)
+    const progress = Math.min(
+      Math.max(nowMinutes - sunriseMinutes, 0),
+      sunsetMinutes - sunriseMinutes
+    )
     return Math.round((progress / (sunsetMinutes - sunriseMinutes)) * 100)
   },
 
@@ -399,7 +477,7 @@ export default {
         return {
           fxDate: day.fxDate,
           name: displayName,
-          tempRange: { from: day.tempMin || "__", to: day.tempMax || "__" },
+          tempRange: {from: day.tempMin || "__", to: day.tempMax || "__"},
           iconCode: WeatherDataUtils.getMappedIconCode(day.iconDay, isNight),
           uniqueId: dayDiff + 1
         }
@@ -532,7 +610,9 @@ export default {
     const uvValue = todayData.uvIndex || "__"
     const humidityValue = todayData.humidity || "__"
     const humidityNumber = Number(humidityValue)
-    const humidityPercent = Number.isNaN(humidityNumber) ? 0 : Math.min(Math.max(Math.round(humidityNumber), 0), 100)
+    const humidityPercent = Number.isNaN(humidityNumber)
+      ? 0
+      : Math.min(Math.max(Math.round(humidityNumber), 0), 100)
     const humidityDesc = this.getHumidityDesc(humidityPercent)
     const windType = todayData.windDirDay || "风向"
     const windValue = todayData.windScaleDay ? `${todayData.windScaleDay}级` : "__"
@@ -541,16 +621,33 @@ export default {
     const sunsetValue = todayData.sunset || "--"
     const nextSunriseValue = this.getNextSunriseValue(weatherData, todayData)
     const uvNumber = Number(uvValue)
-    const uvPercent = Number.isNaN(uvNumber) ? 0 : Math.min(Math.max(Math.round((uvNumber / 11) * 100), 0), 100)
-    const uvIcon = this.getImageByPercent("/common/images/uv/uv", 12, uvPercent, "/common/images/uv/uv1.png")
+    const uvPercent = Number.isNaN(uvNumber)
+      ? 0
+      : Math.min(Math.max(Math.round((uvNumber / 11) * 100), 0), 100)
+    const uvIcon = this.getImageByPercent(
+      "/common/images/uv/uv",
+      12,
+      uvPercent,
+      "/common/images/uv/uv1.png"
+    )
     const pressurePercent = this.getPercentByRange(pressureValue, 980, 1040)
-    const airIcon = this.getImageByPercent("/common/images/air/Air", 21, pressurePercent, "/common/images/air/Air13.png")
+    const airIcon = this.getImageByPercent(
+      "/common/images/air/Air",
+      21,
+      pressurePercent,
+      "/common/images/air/Air13.png"
+    )
     const pressureArrow = this.getPressureArrow(pressureValue)
     const sunPercent = this.getSunPercent(sunriseValue, sunsetValue)
-    const sunIcon = this.getImageByPercent("/common/images/sunset/sunset", 21, sunPercent, "/common/images/sunset/sunset20.png")
+    const sunIcon = this.getImageByPercent(
+      "/common/images/sunset/sunset",
+      21,
+      sunPercent,
+      "/common/images/sunset/sunset20.png"
+    )
     const sunInfo = this.getSunDisplayInfo(sunriseValue, sunsetValue, nextSunriseValue)
     const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
-    const windRotationStyle = { transform: JSON.stringify({rotate: `${windRotation}deg`}) }
+    const windRotationStyle = {transform: JSON.stringify({rotate: `${windRotation}deg`})}
     const uvDesc = this.getUvDesc(uvValue)
 
     return [
@@ -559,7 +656,7 @@ export default {
         reading: uvDesc,
         badge: uvValue,
         icon: uvIcon,
-        rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+        rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
       },
       {
         type: "湿度",
@@ -567,7 +664,7 @@ export default {
         badge: humidityDesc,
         percent: humidityPercent,
         icon: "",
-        rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+        rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
       },
       {
         type: windType,
@@ -582,7 +679,7 @@ export default {
         badge: "",
         icon: airIcon,
         arrow: pressureArrow,
-        rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+        rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
       },
       {
         type: sunInfo.label,
@@ -590,7 +687,7 @@ export default {
         sunrise: sunriseValue,
         sunset: sunsetValue,
         icon: sunIcon,
-        rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+        rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
       }
     ]
   },

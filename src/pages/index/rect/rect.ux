@@ -317,7 +317,7 @@ function createDefaultIndices() {
       reading: "__",
       badge: "__",
       icon: "/common/images/uv/uv1.png",
-      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
       type: "__",
@@ -325,14 +325,14 @@ function createDefaultIndices() {
       badge: "__",
       percent: 0,
       icon: "",
-      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
       type: "__",
       reading: "__",
       badge: "__",
       icon: "",
-      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
       type: "__",
@@ -340,7 +340,7 @@ function createDefaultIndices() {
       badge: "__",
       icon: "/common/images/air/Air13.png",
       arrow: "/common/images/uv/uv15.png",
-      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
       type: "__",
@@ -348,7 +348,7 @@ function createDefaultIndices() {
       sunrise: "__",
       sunset: "__",
       icon: "/common/images/sunset/sunset20.png",
-      rotationStyle: { transform: JSON.stringify({rotate: "0deg"}) }
+      rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     }
   ]
 }
@@ -396,7 +396,7 @@ export default {
       transform: JSON.stringify({
         translateX: "0px"
       })
-    },
+    }
   },
 
   applyPreloadedData(preloaded) {
@@ -699,7 +699,7 @@ export default {
         return {
           fxDate: day.fxDate,
           name: displayName,
-          tempRange: { from: day.tempMin || "__", to: day.tempMax || "__" },
+          tempRange: {from: day.tempMin || "__", to: day.tempMax || "__"},
           iconCode: WeatherDataUtils.getMappedIconCode(day.iconDay, isNight),
           uniqueId: dayDiff + 1
         }

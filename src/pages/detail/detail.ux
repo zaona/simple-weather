@@ -69,7 +69,7 @@ export default {
     // ---- 展示数据 ----
     location: "__",
     selectedDateDisplay: "__",
-    weatherCategories: [],
+    weatherCategories: []
   },
 
   goBack(eve) {
