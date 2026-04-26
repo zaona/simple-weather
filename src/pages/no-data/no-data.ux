@@ -19,7 +19,7 @@
           <div class="no-data__actions" if="{{ mode === 'expired' && supportsAdvancedFeatures }}">
             <div
               class="btn btn--secondary-square"
-              onclick="RequestRefresh()"
+              onclick="requestRefresh()"
               if="{{ !isUpdating }}"
             >
               <text class="btn__text">尝试更新</text>
@@ -62,18 +62,21 @@ import {WEATHER_API_ERRORS} from "../../common/js/weather-api-service.js"
 
 export default {
   private: {
+    // ---- 页面状态 ----
     mode: "no_data",
+    supportsAdvancedFeatures: false,
+
+    // ---- 辅助 ----
     isUpdating: false,
-    hasNavigated: false,
-    supportsAdvancedFeatures: false
+    hasNavigated: false
   },
 
   async onInit() {
-    await this.detectAdvancedFeatureSupport()
-    await this.syncAvailabilityState()
+    await this.detectFeatureSupport()
+    await this.syncState()
   },
 
-  async detectAdvancedFeatureSupport() {
+  async detectFeatureSupport() {
     try {
       this.supportsAdvancedFeatures = !(await DeviceService.isProductBlocked(
         ADVANCED_FEATURE_PRODUCT_BLACKLIST
@@ -86,36 +89,36 @@ export default {
 
   onShow() {
     ConnectionService.init((data) => {
-      this.handleWeatherData(data)
+      this.handleData(data)
     })
   },
 
-  onHide() {
+  closeConnection() {
     try {
       ConnectionService.close()
     } catch (error) {
       console.error("关闭连接失败:", error)
     }
+  },
+
+  onHide() {
+    this.closeConnection()
   },
 
   onDestroy() {
-    try {
-      ConnectionService.close()
-    } catch (error) {
-      console.error("关闭连接失败:", error)
-    }
+    this.closeConnection()
   },
 
-  async syncAvailabilityState() {
-    const state = await this.resolveAvailabilityState()
+  async syncState() {
+    const state = await this.resolveState()
     if (state.usable) {
-      this.navigateToEntry()
+      this.goToHome()
       return
     }
     this.mode = state.mode || "no_data"
   },
 
-  async resolveAvailabilityState() {
+  async resolveState() {
     const todayResult = await DataService.getTodayData(true)
 
     if (todayResult && todayResult.status === "success") {
@@ -143,7 +146,7 @@ export default {
     return DataService.getDailyList(weatherData).find((day) => day.fxDate === todayStr) || null
   },
 
-  hasUsableTodayData(weatherData) {
+  hasTodayData(weatherData) {
     if (!DataService.validateWeatherData(weatherData)) {
       return false
     }
@@ -155,7 +158,7 @@ export default {
     return true
   },
 
-  async RequestRefresh() {
+  async requestRefresh() {
     if (this.mode !== "expired" || this.isUpdating || !this.supportsAdvancedFeatures) {
       return
     }
@@ -163,12 +166,12 @@ export default {
     this.isUpdating = true
     try {
       const weatherData = await RefreshController.refreshWeatherData()
-      if (this.hasUsableTodayData(weatherData)) {
+      if (this.hasTodayData(weatherData)) {
         showToast({
           message: MESSAGES.DATA_UPDATED,
           duration: TOAST_DURATION.SHORT
         })
-        this.navigateToEntry()
+        this.goToHome()
         return
       }
 
@@ -190,11 +193,11 @@ export default {
     }
   },
 
-  async handleWeatherData(data) {
+  async handleData(data) {
     try {
       const weatherData = JSON.parse(data.data)
 
-      if (!this.hasUsableTodayData(weatherData)) {
+      if (!this.hasTodayData(weatherData)) {
         return
       }
 
@@ -203,7 +206,7 @@ export default {
         message: MESSAGES.DATA_UPDATED,
         duration: TOAST_DURATION.SHORT
       })
-      this.navigateToEntry()
+      this.goToHome()
     } catch (error) {
       console.error("接收数据解析失败:", error)
       showToast({
@@ -213,7 +216,7 @@ export default {
     }
   },
 
-  navigateToEntry() {
+  goToHome() {
     if (this.hasNavigated) {
       return
     }

@@ -1,5 +1,5 @@
 <template>
-  <div class="about" @swipe="toHomePage">
+  <div class="about" @swipe="goBack">
     <scroll class="about__content" scroll-y="true" bounces="true">
       <div class="about__header">
         <text class="about__title">关于</text>
@@ -25,7 +25,7 @@
           <switch
             class="about__switch"
             checked="{{ reduceAnimationEnabled }}"
-            @change="handleReduceAnimationToggle"
+            @change="toggleReduceAnimation"
           />
         </div>
       </div>
@@ -39,7 +39,7 @@
           <switch
             class="about__switch"
             checked="{{ hourlyForecastEnabled }}"
-            @change="handleHourlyForecastToggle"
+            @change="toggleHourlyForecast"
           />
         </div>
       </div>
@@ -53,17 +53,17 @@
           <switch
             class="about__switch"
             checked="{{ autoUpdateEnabled }}"
-            @change="handleAutoUpdateToggle"
+            @change="toggleAutoUpdate"
           />
         </div>
       </div>
 
       <!-- 调试面板（仅在调试模式下显示） -->
       <div class="about__card" if="{{ showDebugPanel }}">
-        <div class="btn btn--secondary-square" @click="handleInjectMockData">
+        <div class="btn btn--secondary-square" @click="injectMockData">
           <text class="btn__text">模拟数据</text>
         </div>
-        <div class="btn btn--secondary-square about__btn--spaced" @click="handleClearData">
+        <div class="btn btn--secondary-square about__btn--spaced" @click="clearData">
           <text class="btn__text">清除数据</text>
         </div>
       </div>
@@ -83,13 +83,15 @@ import {
 } from "../../common/js/config.js"
 
 export default {
-  // 页面私有数据
   private: {
-    showDebugPanel: false, // 是否显示调试面板
-    autoUpdateEnabled: false, // 自动更新开关
-    hourlyForecastEnabled: false, // 逐小时天气开关
-    reduceAnimationEnabled: false, // 减弱动画开关
+    // ---- 功能开关 ----
+    autoUpdateEnabled: false,
+    hourlyForecastEnabled: false,
+    reduceAnimationEnabled: false,
     showAutoUpdateCard: false,
+
+    // ---- 调试 ----
+    showDebugPanel: false,
     versionName: "unknown"
   },
 
@@ -99,16 +101,16 @@ export default {
   async onInit() {
     // 根据调试模式决定是否显示调试面板
     this.showDebugPanel = DebugService.isDebugMode()
-    this.loadManifestVersion()
-    await this.setupAutoUpdatePanel()
+    this.loadVersion()
+    await this.setupAutoUpdate()
   },
 
   /**
    * 初始化自动更新面板（检测设备信息后再决定是否展示）
    */
-  async setupAutoUpdatePanel() {
+  async setupAutoUpdate() {
     try {
-      await this.loadFeatureSettings()
+      await this.loadSettings()
 
       const isSupportedDevice = !(await DeviceService.isProductBlocked(
         ADVANCED_FEATURE_PRODUCT_BLACKLIST
@@ -126,7 +128,7 @@ export default {
   /**
    * 右滑返回index页面
    */
-  toHomePage(eve) {
+  goBack(eve) {
     if (eve.direction === "right") {
       router.back()
     }
@@ -135,7 +137,7 @@ export default {
   /**
    * 加载高级功能配置
    */
-  async loadFeatureSettings() {
+  async loadSettings() {
     try {
       const settings = await SettingsService.getSettings()
       this.autoUpdateEnabled = !!settings.autoUpdateEnabled
@@ -146,84 +148,48 @@ export default {
     }
   },
 
-  /**
-   * 切换自动更新
-   */
-  async handleAutoUpdateToggle(event) {
+  async toggleSetting(event, fieldKey, setterFn) {
     const nextValue = typeof event.checked === "boolean" ? event.checked : !!event.detail?.checked
-    const previousValue = this.autoUpdateEnabled
-    this.autoUpdateEnabled = nextValue
-
-    const saved = await SettingsService.setAutoUpdateEnabled(nextValue)
+    const previousValue = this[fieldKey]
+    this[fieldKey] = nextValue
+    const saved = await setterFn(nextValue)
     if (!saved) {
-      this.autoUpdateEnabled = previousValue
+      this[fieldKey] = previousValue
       return
     }
-
-    showToast({
-      message: "已保存，重启后生效",
-      duration: TOAST_DURATION.SHORT
-    })
+    showToast({ message: "已保存，重启后生效", duration: TOAST_DURATION.SHORT })
   },
 
-  /**
-   * 切换逐小时天气展示
-   */
-  async handleHourlyForecastToggle(event) {
-    const nextValue = typeof event.checked === "boolean" ? event.checked : !!event.detail?.checked
-    const previousValue = this.hourlyForecastEnabled
-    this.hourlyForecastEnabled = nextValue
-
-    const saved = await SettingsService.setHourlyForecastEnabled(nextValue)
-    if (!saved) {
-      this.hourlyForecastEnabled = previousValue
-      return
-    }
-
-    showToast({
-      message: "已保存，重启后生效",
-      duration: TOAST_DURATION.SHORT
-    })
+  toggleAutoUpdate(event) {
+    return this.toggleSetting(event, "autoUpdateEnabled", (v) => SettingsService.setAutoUpdateEnabled(v))
   },
 
-  /**
-   * 切换减弱动画展示
-   */
-  async handleReduceAnimationToggle(event) {
-    const nextValue = typeof event.checked === "boolean" ? event.checked : !!event.detail?.checked
-    const previousValue = this.reduceAnimationEnabled
-    this.reduceAnimationEnabled = nextValue
+  toggleHourlyForecast(event) {
+    return this.toggleSetting(event, "hourlyForecastEnabled", (v) => SettingsService.setHourlyForecastEnabled(v))
+  },
 
-    const saved = await SettingsService.setReduceAnimationEnabled(nextValue)
-    if (!saved) {
-      this.reduceAnimationEnabled = previousValue
-      return
-    }
-
-    showToast({
-      message: "已保存，重启后生效",
-      duration: TOAST_DURATION.SHORT
-    })
+  toggleReduceAnimation(event) {
+    return this.toggleSetting(event, "reduceAnimationEnabled", (v) => SettingsService.setReduceAnimationEnabled(v))
   },
 
   /**
    * 注入模拟数据
    */
-  async handleInjectMockData() {
+  async injectMockData() {
     await DebugService.injectMockData()
   },
 
   /**
    * 清除本地数据
    */
-  async handleClearData() {
+  async clearData() {
     await DebugService.clearLocalData()
   },
 
   /**
    * 获取版本信息（从manifest.json）
    */
-  loadManifestVersion() {
+  loadVersion() {
     try {
       const manifest = require("../../manifest.json")
       this.versionName = manifest.versionName || "unknown"

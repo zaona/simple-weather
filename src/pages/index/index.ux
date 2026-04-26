@@ -3,7 +3,7 @@
     <div class="loading">
       <div class="loading__bg"></div>
       <div class="loading__actions" if="{{ showDebugEntry }}">
-        <div class="btn btn--primary" onclick="About()">
+        <div class="btn btn--primary" onclick="goToAbout()">
           <text class="btn__text">关于</text>
         </div>
       </div>
@@ -29,7 +29,7 @@ export default {
     hasRouted: false
   },
 
-  About() {
+  goToAbout() {
     router.push({
       uri: "/pages/about"
     })

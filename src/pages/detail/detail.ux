@@ -1,6 +1,6 @@
 <template>
   <!-- 页面容器，支持右滑返回 -->
-  <div class="detail" @swipe="toHomePageSwipe">
+  <div class="detail" @swipe="goBack">
     <!-- 背景图片 -->
     <image
       class="page__bg"
@@ -17,7 +17,7 @@
       <!-- 头部信息：地点和选中日期 -->
       <div class="detail__header">
         <text class="detail__title">详情</text>
-        <text class="detail__subtitle">{{ updateTime }}</text>
+        <text class="detail__subtitle">{{ selectedDateDisplay }}</text>
       </div>
 
       <!-- 按类别组织的详细天气数据 -->
@@ -60,38 +60,31 @@ export default {
     selectedDate: "" // 接收字符串格式的日期，例如 "2025-08-30"
   },
 
-  // 页面私有数据
   private: {
-    isLoading: true, // 加载状态
-    location: "__", // 地点
-    updateTime: "__", // 选中的日期或加载状态
-    backgroundImage: "", // 背景图片
-    backgroundFolder: "default", // 背景图片目录
+    // ---- 页面状态 ----
+    isLoading: true,
+    backgroundImage: "",
+    backgroundFolder: "default",
 
-    // 按类别组织的天气指标数据
+    // ---- 展示数据 ----
+    location: "__",
+    selectedDateDisplay: "__",
     weatherCategories: [],
+  },
 
-    /**
-     * 右滑返回index页面
-     */
-    toHomePageSwipe(eve) {
-      if (eve.direction === "right") {
-        router.back()
-      }
+  goBack(eve) {
+    if (eve.direction === "right") {
+      router.back()
     }
   },
 
-  /**
-   * 更新天气指标数据
-   * @param {Object} selectedData - 选中日期的天气数据
-   */
-  updateWeatherFigures(selectedData) {
-    this.weatherCategories = this.buildWeatherCategories(selectedData)
+  updateCategories(selectedData) {
+    this.weatherCategories = this.buildCategories(selectedData)
   },
 
-  applyDetailData(selectedData, product) {
-    this.updateDetailCurrentWeather(selectedData, product)
-    this.updateWeatherFigures(selectedData)
+  applyData(selectedData, product) {
+    this.syncCurrentWeather(selectedData, product)
+    this.updateCategories(selectedData)
     this.isLoading = false
   },
 
@@ -126,14 +119,13 @@ export default {
       return
     }
 
-    this.applyDetailData(selectedData, product)
+    this.applyData(selectedData, product)
   },
 
-  updateDetailCurrentWeather(selectedData, product) {
-    this.updateTime = this.selectedDate || ""
+  syncCurrentWeather(selectedData, product) {
+    this.selectedDateDisplay = this.selectedDate || ""
 
-    const isNight = WeatherDataUtils.isNightTime(selectedData.sunrise, selectedData.sunset)
-    const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay, isNight)
+    const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay)
 
     const productLower = (product || "").toLowerCase()
     const isRect = RECT_SCREEN_PRODUCTS.includes(productLower)
@@ -144,7 +136,7 @@ export default {
     this.backgroundFolder = isRect || isNarrowRect || isCircle ? "rect" : "default"
   },
 
-  buildWeatherCategories(selectedData = {}) {
+  buildCategories(selectedData = {}) {
     const readValue = (value) =>
       value === undefined || value === null || value === "" ? "__" : value
 
@@ -156,8 +148,6 @@ export default {
           {name: "最低温度", value: readValue(selectedData.tempMin), unit: "°"},
           {name: "白天天气", value: readValue(selectedData.textDay), unit: ""},
           {name: "夜间天气", value: readValue(selectedData.textNight), unit: ""},
-          // {name: "白天图标代码", value: readValue(selectedData.iconDay), unit: ""},
-          // {name: "夜间图标代码", value: readValue(selectedData.iconNight), unit: ""},
           {name: "紫外线指数", value: readValue(selectedData.uvIndex), unit: ""},
           {name: "总降水量", value: readValue(selectedData.precip), unit: "mm"}
         ]
@@ -197,7 +187,6 @@ export default {
           {name: "月升时间", value: readValue(selectedData.moonrise), unit: ""},
           {name: "月落时间", value: readValue(selectedData.moonset), unit: ""},
           {name: "月相名称", value: readValue(selectedData.moonPhase), unit: ""}
-          // {name: "月相图标代码", value: readValue(selectedData.moonPhaseIcon), unit: ""}
         ]
       }
     ]

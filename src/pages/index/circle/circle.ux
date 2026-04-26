@@ -1215,7 +1215,7 @@ export default {
   /**
    * 检测设备是否支持高级功能
    */
-  async detectAdvancedFeatureSupport() {
+  async detectFeatureSupport() {
     try {
       this.supportsAdvancedFeatures = !(await DeviceService.isProductBlocked(
         ADVANCED_FEATURE_PRODUCT_BLACKLIST
@@ -1355,7 +1355,7 @@ export default {
   async onInit() {
     this.showDebugEntry = DebugService.isDebugMode()
 
-    await this.detectAdvancedFeatureSupport()
+    await this.detectFeatureSupport()
     await this.syncFeatureSettings()
 
     let preloadedWeatherData = null
@@ -1407,7 +1407,7 @@ export default {
     this.updateTimeDigits()
     // 初始化连接并注册消息处理
     ConnectionService.init((data) => {
-      this.handleWeatherData(data)
+      this.handleData(data)
     })
   },
 
@@ -1415,7 +1415,7 @@ export default {
    * 处理接收到的天气数据
    * @param {Object} data - 接收到的数据
    */
-  async handleWeatherData(data) {
+  async handleData(data) {
     try {
       // 解析数据
       const weatherData = JSON.parse(data.data)
