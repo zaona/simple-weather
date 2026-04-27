@@ -74,15 +74,15 @@
 <script>
 import router from "@system.router"
 import {showToast} from "@system.prompt"
-import DebugService from "../../common/js/debug-service.js"
-import SettingsService from "../../common/js/settings-service.js"
-import DeviceService from "../../common/js/device-service.js"
-import ConnectionService from "../../common/js/connection-service.js"
-import {
+const {
+  DebugService,
+  SettingsService,
+  DeviceService,
+  ConnectionService,
   ADVANCED_FEATURE_PRODUCT_BLACKLIST,
   MESSAGES,
   TOAST_DURATION
-} from "../../common/js/config.js"
+} = global
 
 export default {
   private: {

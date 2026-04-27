@@ -57,19 +57,18 @@
 <script>
 import router from "@system.router"
 import {showToast} from "@system.prompt"
-
-import ConnectionService from "../../common/js/connection-service.js"
-import DataService from "../../common/js/data-service.js"
-import RefreshController from "../../common/js/refresh-controller.js"
-import DeviceService from "../../common/js/device-service.js"
-import DebugService from "../../common/js/debug-service.js"
-import {DateUtils} from "../../common/js/weather-utils.js"
-import {
+const {
+  ConnectionService,
+  DataService,
+  RefreshController,
+  DeviceService,
+  DebugService,
+  DateUtils,
   MESSAGES,
   TOAST_DURATION,
-  ADVANCED_FEATURE_PRODUCT_BLACKLIST
-} from "../../common/js/config.js"
-import {WEATHER_API_ERRORS} from "../../common/js/weather-api-service.js"
+  ADVANCED_FEATURE_PRODUCT_BLACKLIST,
+  WEATHER_API_ERRORS
+} = global
 
 export default {
   private: {

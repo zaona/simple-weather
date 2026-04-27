@@ -1,4 +1,6 @@
 <script>
+import "./common/js/global"
+
 export default {
   onCreate() {
     console.log("app created")

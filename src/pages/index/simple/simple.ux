@@ -118,25 +118,22 @@
 // 导入系统模块
 import router from "@system.router"
 import {showToast} from "@system.prompt"
-
-// 导入服务层
-import DataService from "../../../common/js/data-service.js"
-import ConnectionService from "../../../common/js/connection-service.js"
-import SettingsService from "../../../common/js/settings-service.js"
-import DeviceService from "../../../common/js/device-service.js"
-import {WEATHER_API_ERRORS} from "../../../common/js/weather-api-service.js"
-import RefreshController from "../../../common/js/refresh-controller.js"
-import {
+const {
+  DataService,
+  ConnectionService,
+  SettingsService,
+  DeviceService,
+  WEATHER_API_ERRORS,
+  RefreshController,
   MESSAGES,
   TOAST_DURATION,
   ADVANCED_FEATURE_PRODUCT_BLACKLIST,
   RECT_SCREEN_PRODUCTS,
   NARROW_RECT_SCREEN_PRODUCTS,
-  CIRCLE_SCREEN_PRODUCTS
-} from "../../../common/js/config.js"
-
-// 导入工具类
-import {DateUtils, WeatherDataUtils} from "../../../common/js/weather-utils.js"
+  CIRCLE_SCREEN_PRODUCTS,
+  DateUtils,
+  WeatherDataUtils
+} = global
 
 function createDefaultIndices() {
   return [

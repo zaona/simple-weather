@@ -40,19 +40,16 @@
 // 导入系统模块
 import router from "@system.router"
 import {showToast} from "@system.prompt"
-
-// 导入服务层
-import DataService from "../../common/js/data-service.js"
-import {MESSAGES, TOAST_DURATION} from "../../common/js/config.js"
-
-// 导入工具类
-import {WeatherDataUtils} from "../../common/js/weather-utils.js"
-import DeviceService from "../../common/js/device-service.js"
-import {
+const {
+  DataService,
+  MESSAGES,
+  TOAST_DURATION,
+  WeatherDataUtils,
+  DeviceService,
   RECT_SCREEN_PRODUCTS,
   CIRCLE_SCREEN_PRODUCTS,
   NARROW_RECT_SCREEN_PRODUCTS
-} from "../../common/js/config.js"
+} = global
 
 export default {
   // 接收来自 index 页面的 selectedDate 参数

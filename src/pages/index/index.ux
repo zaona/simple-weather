@@ -8,14 +8,14 @@
 
 <script>
 import router from "@system.router"
-import DeviceService from "../../common/js/device-service.js"
-import SettingsService from "../../common/js/settings-service.js"
-import DataService from "../../common/js/data-service.js"
-import {
+const {
+  DeviceService,
+  SettingsService,
+  DataService,
   RECT_SCREEN_PRODUCTS,
   CIRCLE_SCREEN_PRODUCTS,
   NARROW_RECT_SCREEN_PRODUCTS
-} from "../../common/js/config.js"
+} = global
 
 export default {
   private: {
