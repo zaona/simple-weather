@@ -191,7 +191,7 @@ export default {
       }
 
       showToast({
-        message: MESSAGES.WAITING_FOR_UPDATE,
+        message: MESSAGES.DATA_EXPIRED,
         duration: TOAST_DURATION.NORMAL
       })
     } catch (error) {

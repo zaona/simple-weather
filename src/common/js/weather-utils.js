@@ -76,10 +76,10 @@ export const WeatherIconMap = {
   514: "fog", // 大雾
   515: "fog", // 特强浓雾
 
-  // 风
-  900: 99, // 热
-  901: 99, // 冷
-  999: 99 // 未知
+  // 特殊
+  900: "sunny", // 热
+  901: "sunny", // 冷
+  999: "cloudy" // 未知
 }
 
 /**
@@ -88,7 +88,7 @@ export const WeatherIconMap = {
  * @type {Object.<number, string>}
  */
 export const WeatherBackgroundImageMap = {
-  // 多云 - 白天11，夜晚12
+  // 晴天
   100: "21", // 晴天白天
   101: "11", // 多云白天
   102: "11", // 少云白天
@@ -100,7 +100,7 @@ export const WeatherBackgroundImageMap = {
   153: "12", // 晴间多云夜晚
   154: "12", // 阴天夜晚
 
-  // 雨天 - 白天51，夜晚52
+  // 雨天
   300: "51", // 阵雨白天
   301: "51", // 强阵雨白天
   302: "51", // 雷阵雨白天
@@ -124,7 +124,7 @@ export const WeatherBackgroundImageMap = {
   351: "52", // 强阵雨夜晚
   399: "51", // 雨白天
 
-  // 雪天 - 白天61，夜晚62
+  // 雪天
   400: "61", // 小雪白天
   401: "61", // 中雪白天
   402: "61", // 大雪白天
@@ -140,7 +140,7 @@ export const WeatherBackgroundImageMap = {
   457: "62", // 阵雪夜晚
   499: "61", // 雪白天
 
-  // 雾霾 - 沙尘白天41，夜晚42
+  // 雾霾
   500: "41", // 薄雾白天
   501: "41", // 雾白天
   502: "41", // 霾白天
@@ -168,15 +168,23 @@ export const WeatherBackgroundImageMap = {
  */
 export const DateUtils = {
   /**
+   * 格式化日期为 YYYY-MM-DD 字符串
+   * @param {Date} date
+   * @returns {string}
+   */
+  formatDate(date) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  },
+
+  /**
    * 获取今天的日期字符串
    * @returns {string} 格式为 YYYY-MM-DD 的日期字符串
    */
   getTodayString() {
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = String(today.getMonth() + 1).padStart(2, "0")
-    const day = String(today.getDate()).padStart(2, "0")
-    return `${year}-${month}-${day}`
+    return this.formatDate(new Date())
   },
 
   /**
@@ -244,7 +252,7 @@ export const DateUtils = {
       return "明天"
     } else if (dayDiff === 2) {
       return "后天"
-    } else if (dayDiff > 7) {
+    } else if (Math.abs(dayDiff) > 7) {
       return `${dateParts[1]}/${dateParts[2]}`
     } else {
       return weekdays[date.getDay()]
@@ -287,64 +295,33 @@ export const WeatherDataUtils = {
     return mappedIcon
   },
 
-  /**
-   * 判断当前时间是否为夜晚
-   * 如果提供了日出日落时间，则根据实际时间判断；否则使用默认时间（18:00-6:00）
-   * @param {string} sunrise - 日出时间，格式：HH:MM（如 "06:30"）
-   * @param {string} sunset - 日落时间，格式：HH:MM（如 "18:45"）
-   * @returns {boolean} 是否为夜晚
-   */
-  isNightTime(sunrise = null, sunset = null) {
-    const now = new Date()
-    const hour = now.getHours()
-    const minute = now.getMinutes()
+  isNightByMinutes(hour, minute, sunrise, sunset) {
     const currentMinutes = hour * 60 + minute
 
-    // 如果提供了日出日落时间，使用实际时间判断
     if (sunrise && sunset) {
       try {
         const sunriseMinutes = this.parseTimeToMinutes(sunrise)
         const sunsetMinutes = this.parseTimeToMinutes(sunset)
-
-        // 在日落之后或日出之前是夜晚
         return currentMinutes < sunriseMinutes || currentMinutes >= sunsetMinutes
       } catch (e) {
         console.error("解析日出日落时间失败:", e)
-        // 解析失败，使用默认判断
       }
     }
 
-    // 默认：晚6点到早6点是夜晚时间
     return hour >= 18 || hour < 6
   },
 
-  /**
-   * 判断指定时间戳是否为夜晚
-   * @param {number|string|Date} timestamp - 时间戳或可解析时间
-   * @param {string} sunrise - 日出时间，格式：HH:MM
-   * @param {string} sunset - 日落时间，格式：HH:MM
-   * @returns {boolean} 是否为夜晚
-   */
+  isNightTime(sunrise = null, sunset = null) {
+    const now = new Date()
+    return this.isNightByMinutes(now.getHours(), now.getMinutes(), sunrise, sunset)
+  },
+
   isNightAtTimestamp(timestamp, sunrise = null, sunset = null) {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
     if (Number.isNaN(date.getTime())) {
       return this.isNightTime(sunrise, sunset)
     }
-
-    const currentMinutes = date.getHours() * 60 + date.getMinutes()
-
-    if (sunrise && sunset) {
-      try {
-        const sunriseMinutes = this.parseTimeToMinutes(sunrise)
-        const sunsetMinutes = this.parseTimeToMinutes(sunset)
-        return currentMinutes < sunriseMinutes || currentMinutes >= sunsetMinutes
-      } catch (e) {
-        console.error("解析日出日落时间失败:", e)
-      }
-    }
-
-    const hour = date.getHours()
-    return hour >= 18 || hour < 6
+    return this.isNightByMinutes(date.getHours(), date.getMinutes(), sunrise, sunset)
   },
 
   /**

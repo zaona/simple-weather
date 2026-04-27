@@ -6,6 +6,7 @@
 import file from "@system.file"
 import {STORAGE, DATA, MESSAGES, TOAST_DURATION} from "./config.js"
 import {showToast} from "@system.prompt"
+import {DateUtils} from "./weather-utils.js"
 
 class DataService {
   constructor() {
@@ -118,51 +119,32 @@ class DataService {
     })
   }
 
-  getDailyModule(weatherData) {
-    if (!weatherData || !weatherData.daily) {
+  getModule(weatherData, name) {
+    if (!weatherData || !weatherData[name]) {
       return null
     }
 
-    if (Array.isArray(weatherData.daily)) {
+    if (Array.isArray(weatherData[name])) {
       return {
-        daily: weatherData.daily,
+        [name]: weatherData[name],
         updateTime: weatherData.updateTime || ""
       }
     }
 
-    if (typeof weatherData.daily === "object") {
-      return weatherData.daily
-    }
-
-    return null
-  }
-
-  getHourlyModule(weatherData) {
-    if (!weatherData || weatherData.hourly === null || weatherData.hourly === undefined) {
-      return null
-    }
-
-    if (Array.isArray(weatherData.hourly)) {
-      return {
-        hourly: weatherData.hourly,
-        updateTime: weatherData.updateTime || ""
-      }
-    }
-
-    if (typeof weatherData.hourly === "object") {
-      return weatherData.hourly
+    if (typeof weatherData[name] === "object") {
+      return weatherData[name]
     }
 
     return null
   }
 
   getDailyList(weatherData) {
-    const dailyModule = this.getDailyModule(weatherData)
+    const dailyModule = this.getModule(weatherData, "daily")
     return Array.isArray(dailyModule?.daily) ? dailyModule.daily : []
   }
 
   getHourlyList(weatherData) {
-    const hourlyModule = this.getHourlyModule(weatherData)
+    const hourlyModule = this.getModule(weatherData, "hourly")
     return Array.isArray(hourlyModule?.hourly) ? hourlyModule.hourly : []
   }
 
@@ -179,7 +161,8 @@ class DataService {
       return "未知地点"
     }
 
-    return weatherData.location || weatherData.name || "未知地点"
+    const rawName = weatherData.location || weatherData.name || ""
+    return typeof rawName === "string" ? rawName.trim() || "未知地点" : "未知地点"
   }
 
   async getDataByDate(date, silent = false) {
@@ -193,19 +176,6 @@ class DataService {
     return dayData || null
   }
 
-  getDataByDateFromCache(date) {
-    if (!date || !this.cache) {
-      return null
-    }
-
-    const dailyList = this.getDailyList(this.cache)
-    if (dailyList.length === 0) {
-      return null
-    }
-
-    return dailyList.find((day) => day.fxDate === date) || null
-  }
-
   async getTodayData(silent = false) {
     const weatherData = await this.readWeatherData(silent)
     const dailyList = this.getDailyList(weatherData)
@@ -214,11 +184,7 @@ class DataService {
       return {status: "no_data"}
     }
 
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = String(today.getMonth() + 1).padStart(2, "0")
-    const day = String(today.getDate()).padStart(2, "0")
-    const todayStr = `${year}-${month}-${day}`
+    const todayStr = DateUtils.getTodayString()
     const dayData = dailyList.find((item) => item.fxDate === todayStr)
 
     if (!dayData) {

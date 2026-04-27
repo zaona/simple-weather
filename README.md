@@ -49,9 +49,7 @@ com.application.zaona.weather
 在 `src/common/js/config.js` 中开启：
 
 ```javascript
-export const DEBUG = {
-  ENABLED: true
-}
+export const DEBUG_ENABLED = true
 ```
 
 开启后：
@@ -61,6 +59,20 @@ export const DEBUG = {
 ## 天气接口
 
 手表端主动拉取统一使用后端聚合接口：
+
+在 `/common/js` 目录下新建 `weather-api-config.js` 文件
+
+```js
+export const WEATHER_API_PRIVATE = {
+  HOST: "",
+  AUTH: {
+    CLIENT_TYPE: "",
+    API_KEY: ""
+  }
+}
+
+export default WEATHER_API_PRIVATE
+```json
 
 请求体结构示例：
 

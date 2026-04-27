@@ -63,12 +63,6 @@ function buildAuthHeaders(extraHeaders = {}) {
   }
 }
 
-function buildUrl(base, path) {
-  const trimmedBase = base.endsWith("/") ? base.slice(0, -1) : base
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`
-  return `${trimmedBase}${normalizedPath}`
-}
-
 class WeatherApiService {
   async fetchWeatherData() {
     const localWeatherData = await this.readLocalWeatherData()
@@ -93,7 +87,7 @@ class WeatherApiService {
       })
     }
 
-    const url = buildUrl(WEATHER_API_PRIVATE.HOST, WEATHER_API.SYNC_PATH)
+    const url = `${WEATHER_API_PRIVATE.HOST}${WEATHER_API.SYNC_PATH}`
     const weatherData = await fetchJson(url, {
       method: "POST",
       data: JSON.stringify(payload),
@@ -123,7 +117,7 @@ class WeatherApiService {
 
   deriveLocationInfo(weatherData) {
     const currentLocationId = this.extractLocationId(weatherData)
-    const currentLocationName = this.extractLocationName(weatherData)
+    const currentLocationName = DataService.getLocationName(weatherData)
 
     return {
       locationId: currentLocationId,
@@ -149,59 +143,39 @@ class WeatherApiService {
     return normalizedLength > 0 ? `${normalizedLength}${suffix}` : fallbackRange
   }
 
-  extractLocationName(weatherData) {
-    if (!weatherData) {
-      return ""
-    }
-
-    const rawName = weatherData.location || weatherData.name || ""
-    return typeof rawName === "string" ? rawName.trim() : ""
-  }
-
   extractLocationId(weatherData) {
-    if (!weatherData) {
-      return null
-    }
+    if (!weatherData) return null
 
     const rawId = weatherData.locationId || weatherData.locationID
     if (rawId) {
       const parsedId = String(rawId).trim()
-      if (parsedId) {
-        return parsedId
-      }
+      if (parsedId) return parsedId
     }
 
-    let fxLink = ""
+    const fxLink = this.resolveFxLink(weatherData)
+    if (!fxLink) return null
 
-    if (typeof weatherData.fxLink === "string") {
-      fxLink = weatherData.fxLink
-    } else if (weatherData.daily && typeof weatherData.daily === "object") {
-      if (typeof weatherData.daily.fxLink === "string") {
-        fxLink = weatherData.daily.fxLink
-      } else if (Array.isArray(weatherData.daily.daily) && weatherData.daily.daily.length > 0) {
-        const firstDay = weatherData.daily.daily.find((day) => typeof day.fxLink === "string")
-        fxLink = firstDay?.fxLink || ""
-      }
-    } else if (Array.isArray(weatherData.daily) && weatherData.daily.length > 0) {
-      const firstDay = weatherData.daily.find((day) => typeof day.fxLink === "string")
-      fxLink = firstDay?.fxLink || ""
+    const match = fxLink.match(/-(\d+)(?:\.html)?$/i)
+    return match ? match[1] : null
+  }
+
+  resolveFxLink(weatherData) {
+    if (typeof weatherData.fxLink === "string") return weatherData.fxLink
+
+    const daily = weatherData.daily
+    if (!daily) return ""
+
+    if (typeof daily === "object" && !Array.isArray(daily)) {
+      if (typeof daily.fxLink === "string") return daily.fxLink
+      const nested = Array.isArray(daily.daily) ? daily.daily : []
+      return nested.find((d) => typeof d.fxLink === "string")?.fxLink || ""
     }
 
-    if (!fxLink) {
-      return null
+    if (Array.isArray(daily)) {
+      return daily.find((d) => typeof d.fxLink === "string")?.fxLink || ""
     }
 
-    const suffixMatch = fxLink.match(/-(\d+)(?:\.html)?$/i)
-    if (suffixMatch && suffixMatch[1]) {
-      return suffixMatch[1]
-    }
-
-    const allDigits = fxLink.match(/(\d+)/g)
-    if (allDigits && allDigits.length > 0) {
-      return allDigits[allDigits.length - 1]
-    }
-
-    return null
+    return ""
   }
 }
 

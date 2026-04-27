@@ -1020,7 +1020,7 @@ export default {
    */
   async detectHourlyItemsPerPage() {
     try {
-      const isNarrowRect = await DeviceService.isProductSupported(NARROW_RECT_SCREEN_PRODUCTS)
+      const isNarrowRect = await DeviceService.isProductInList(NARROW_RECT_SCREEN_PRODUCTS)
       if (isNarrowRect) {
         this.hourlyItemsPerPage = 3
         this.useHorizontalDailyLayout = true
@@ -1028,7 +1028,7 @@ export default {
         return
       }
 
-      const isRect = await DeviceService.isProductSupported(RECT_SCREEN_PRODUCTS)
+      const isRect = await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)
       if (isRect) {
         this.hourlyItemsPerPage = 4
         this.useHorizontalDailyLayout = true
@@ -1036,7 +1036,7 @@ export default {
         return
       }
 
-      const isCircle = await DeviceService.isProductSupported(CIRCLE_SCREEN_PRODUCTS)
+      const isCircle = await DeviceService.isProductInList(CIRCLE_SCREEN_PRODUCTS)
       if (isCircle) {
         this.hourlyItemsPerPage = 4
         this.useHorizontalDailyLayout = true

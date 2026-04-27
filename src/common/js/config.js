@@ -74,9 +74,6 @@ export const MESSAGES = {
   // 成功消息
   DATA_UPDATED: "数据已更新",
 
-  // 等待消息
-  WAITING_FOR_UPDATE: "数据已过期",
-
   // 错误消息
   DATA_EXPIRED: "数据已过期",
   DATA_MISSING: "数据存在缺失",
@@ -107,8 +104,5 @@ export const TOAST_DURATION = {
   LONG: 3000
 }
 
-// 调试配置
-export const DEBUG = {
-  // true: 启用调试功能；false: 禁用调试功能（发版时使用）
-  ENABLED: false
-}
+// 调试开关（发版时设为 false）
+export const DEBUG_ENABLED = false

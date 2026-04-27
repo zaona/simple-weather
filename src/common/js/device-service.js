@@ -66,15 +66,6 @@ class DeviceService {
   }
 
   /**
-   * 判断当前设备是否在白名单中
-   * @param {string[]} whitelist
-   * @returns {Promise<boolean>}
-   */
-  async isProductSupported(whitelist = []) {
-    return this.isProductInList(whitelist)
-  }
-
-  /**
    * 判断当前设备是否在黑名单中
    * @param {string[]} blacklist
    * @returns {Promise<boolean>}

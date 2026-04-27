@@ -13,12 +13,10 @@ import {CONNECTION} from "./config.js"
  */
 class ConnectionService {
   constructor() {
-    // interconnect 连接实例
     this.connection = null
-    // 消息处理回调函数
     this.messageHandler = null
-    // manifest缓存，避免每次info请求重复加载
     this.manifest = null
+    this.autoReconnect = false
   }
 
   /**
@@ -33,6 +31,7 @@ class ConnectionService {
     }
 
     // 创建新的连接实例
+    this.autoReconnect = true
     this.connection = interconnect.instance()
     this.messageHandler = onMessageCallback
 
@@ -51,7 +50,7 @@ class ConnectionService {
       console.log("Connection closed")
       // 延迟重连
       setTimeout(() => {
-        if (this.connection) {
+        if (this.autoReconnect && this.connection) {
           this.connection.open()
         }
       }, CONNECTION.RECONNECT_DELAY)
@@ -159,52 +158,19 @@ class ConnectionService {
   }
 
   /**
-   * 发送消息
-   * @param {Object} data - 要发送的数据对象
-   * @returns {Promise<boolean>} 发送成功返回true
-   */
-  send(data) {
-    return new Promise((resolve, reject) => {
-      if (!this.connection) {
-        reject(new Error("连接未初始化"))
-        return
-      }
-
-      this.connection.send({
-        data: data,
-        success: () => {
-          console.log("消息发送成功")
-          resolve(true)
-        },
-        fail: (error) => {
-          console.error("消息发送失败:", error)
-          reject(error)
-        }
-      })
-    })
-  }
-
-  /**
    * 关闭连接
    */
   close() {
-    // 关闭连接
+    this.autoReconnect = false
+
     if (this.connection && typeof this.connection.close === "function") {
       this.connection.close()
       this.connection = null
     }
 
-    // 清除消息处理器
     this.messageHandler = null
   }
 
-  /**
-   * 获取连接状态
-   * @returns {boolean} 是否正在连接中
-   */
-  isActive() {
-    return !!this.connection
-  }
 }
 
 // 导出单例

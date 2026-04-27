@@ -74,82 +74,43 @@ class SettingsService {
    * @returns {Promise<Object>}
    */
   async getSettings() {
-    const settings = await this.readSettings()
-    return {...DEFAULT_SETTINGS, ...settings}
+    return this.readSettings()
   }
 
-  /**
-   * 检查自动更新是否开启
-   * @returns {Promise<boolean>}
-   */
-  async isAutoUpdateEnabled() {
+  async getSetting(key) {
     const settings = await this.getSettings()
-    return !!settings.autoUpdateEnabled
+    return !!settings[key]
   }
 
-  /**
-   * 检查逐小时天气是否开启
-   * @returns {Promise<boolean>}
-   */
-  async isHourlyForecastEnabled() {
+  async setSetting(key, enabled) {
     const settings = await this.getSettings()
-    return !!settings.hourlyForecastEnabled
+    return this.saveSettings({...settings, [key]: !!enabled})
   }
 
-  /**
-   * 检查减弱动画是否开启
-   * @returns {Promise<boolean>}
-   */
-  async isReduceAnimationEnabled() {
-    const settings = await this.getSettings()
-    return !!settings.reduceAnimationEnabled
+  isAutoUpdateEnabled() {
+    return this.getSetting("autoUpdateEnabled")
   }
 
-  /**
-   * 更新自动更新配置
-   * @param {boolean} enabled
-   * @returns {Promise<boolean>}
-   */
-  async setAutoUpdateEnabled(enabled) {
-    const settings = await this.getSettings()
-    const nextSettings = {
-      ...settings,
-      autoUpdateEnabled: !!enabled
-    }
-    return this.saveSettings(nextSettings)
+  isHourlyForecastEnabled() {
+    return this.getSetting("hourlyForecastEnabled")
   }
 
-  /**
-   * 更新逐小时天气配置
-   * @param {boolean} enabled
-   * @returns {Promise<boolean>}
-   */
-  async setHourlyForecastEnabled(enabled) {
-    const settings = await this.getSettings()
-    const nextSettings = {
-      ...settings,
-      hourlyForecastEnabled: !!enabled
-    }
-    return this.saveSettings(nextSettings)
+  isReduceAnimationEnabled() {
+    return this.getSetting("reduceAnimationEnabled")
   }
 
-  /**
-   * 更新减弱动画配置
-   * @param {boolean} enabled
-   * @returns {Promise<boolean>}
-   */
-  async setReduceAnimationEnabled(enabled) {
-    const settings = await this.getSettings()
-    const nextSettings = {
-      ...settings,
-      reduceAnimationEnabled: !!enabled
-    }
-    return this.saveSettings(nextSettings)
+  setAutoUpdateEnabled(enabled) {
+    return this.setSetting("autoUpdateEnabled", enabled)
   }
 
-  /**
-   * 清除缓存
-   */
+  setHourlyForecastEnabled(enabled) {
+    return this.setSetting("hourlyForecastEnabled", enabled)
+  }
+
+  setReduceAnimationEnabled(enabled) {
+    return this.setSetting("reduceAnimationEnabled", enabled)
+  }
+
   clearCache() {
     this.cache = null
   }
