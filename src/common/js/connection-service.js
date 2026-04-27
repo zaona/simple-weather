@@ -1,65 +1,95 @@
 /**
  * 连接管理服务
  * 统一管理 interconnect 连接、握手协议和消息传递
+ * 连接由框架自动管理，本服务仅负责事件监听和消息收发
  */
 
 import interconnect from "@system.interconnect"
 import device from "@system.device"
 import {CONNECTION} from "./config.js"
 
-/**
- * 连接服务类
- * 提供连接初始化、消息处理、握手协议等功能
- */
 class ConnectionService {
   constructor() {
     this.connection = null
     this.messageHandler = null
     this.manifest = null
-    this.autoReconnect = false
   }
 
   /**
-   * 初始化并打开连接
+   * 初始化连接监听
+   * 连接由框架自动建立/销毁，此处只注册事件处理器
    * @param {Function} onMessageCallback - 接收到数据消息时的回调函数
    * @returns {Object} 连接实例
    */
   init(onMessageCallback) {
-    // 如果已有连接，先关闭
+    // 已初始化则仅更新消息处理器，避免重复创建
     if (this.connection) {
-      this.close()
+      this.messageHandler = onMessageCallback
+      return this.connection
     }
 
-    // 创建新的连接实例
-    this.autoReconnect = true
     this.connection = interconnect.instance()
     this.messageHandler = onMessageCallback
 
-    // 设置消息接收处理
+    // 连接打开回调（含重连）
+    this.connection.onopen = (data) => {
+      console.log(`连接已打开, 是否重连: ${data.isReconnected}`)
+      if (data.isReconnected) {
+        this.handleHandshake()
+      }
+    }
+
+    // 消息接收
     this.connection.onmessage = (data) => {
       this.handleMessage(data)
     }
 
-    // 设置错误处理
+    // 错误处理（区分错误码）
     this.connection.onerror = (error) => {
-      console.error("Connection error:", error)
+      if (error.code === 1001) {
+        console.warn("手机端App未安装，无法建立连接")
+      } else if (error.code === 1006) {
+        console.warn("连接丢失")
+      } else {
+        console.error(`连接错误, code: ${error.code}, msg: ${error.data}`)
+      }
     }
 
-    // 设置关闭处理
-    this.connection.onclose = () => {
-      console.log("Connection closed")
-      // 延迟重连
-      setTimeout(() => {
-        if (this.autoReconnect && this.connection) {
-          this.connection.open()
-        }
-      }, CONNECTION.RECONNECT_DELAY)
+    // 关闭处理
+    this.connection.onclose = (data) => {
+      console.log(`连接关闭, code: ${data.code}, reason: ${data.data}`)
     }
 
-    // 打开连接
-    this.connection.open()
+    // 连接建立后进行诊断
+    this.diagnosis()
 
     return this.connection
+  }
+
+  /**
+   * 诊断连接状态
+   * @param {Number} timeout - 诊断超时时间（毫秒）
+   */
+  diagnosis(timeout = CONNECTION.DIAGNOSIS_TIMEOUT) {
+    if (!this.connection) return
+
+    this.connection.diagnosis({
+      timeout,
+      success: (data) => {
+        if (data.status === 0) {
+          console.log("连接诊断: 正常")
+        } else if (data.status === 204) {
+          console.warn("连接诊断: 超时")
+        } else if (data.status === 1001) {
+          console.warn("连接诊断: 手机端App未安装")
+        } else {
+          console.warn(`连接诊断: 异常, status: ${data.status}`)
+        }
+      },
+      fail: (data, code) => {
+        console.error(`连接诊断失败, code: ${code}, msg: ${data}`)
+      }
+    })
   }
 
   /**
@@ -67,19 +97,19 @@ class ConnectionService {
    * @param {Object} data - 接收到的消息数据
    */
   handleMessage(data) {
-    // 检查是否为握手预检消息
+    // 握手预检
     if (data.data === "start") {
       this.handleHandshake()
       return
     }
 
-    // 检查是否为获取设备信息消息
+    // 设备信息请求
     if (data.data === "info") {
       this.handleInfoRequest()
       return
     }
 
-    // 处理实际的天气数据消息
+    // 转发业务数据消息
     if (this.messageHandler) {
       this.messageHandler(data)
     }
@@ -118,22 +148,32 @@ class ConnectionService {
   }
 
   async handleInfoRequest() {
-    if (!this.connection) {
-      return
-    }
+    if (!this.connection) return
 
-    const versionName = this.getVersionName()
-    const deviceId = await this.getDeviceId()
+    this.connection.getReadyState({
+      success: async (res) => {
+        if (res.status !== 1) {
+          console.warn("连接未就绪，无法发送info响应")
+          return
+        }
 
-    this.connection.send({
-      data: {
-        action: "info",
-        versionName,
-        deviceId,
-        timestamp: Date.now()
+        const versionName = this.getVersionName()
+        const deviceId = await this.getDeviceId()
+
+        this.connection.send({
+          data: {
+            action: "info",
+            versionName,
+            deviceId,
+            timestamp: Date.now()
+          },
+          fail: (error) => {
+            console.error("发送info响应失败:", error)
+          }
+        })
       },
-      fail: (error) => {
-        console.error("发送info响应失败:", error)
+      fail: () => {
+        console.warn("getReadyState 失败，无法发送info响应")
       }
     })
   }
@@ -143,32 +183,38 @@ class ConnectionService {
    * 响应App端的start消息，发送ready确认
    */
   handleHandshake() {
-    // 构造ready消息，仅发送一次
-    const messageData = {
-      action: "ready",
-      timestamp: Date.now()
-    }
+    if (!this.connection) return
 
-    this.connection.send({
-      data: messageData,
-      fail: (error) => {
-        console.error("发送ready响应失败:", error)
+    this.connection.getReadyState({
+      success: (res) => {
+        if (res.status !== 1) {
+          console.warn("连接未就绪，无法发送握手")
+          return
+        }
+
+        this.connection.send({
+          data: {
+            action: "ready",
+            timestamp: Date.now()
+          },
+          fail: (error) => {
+            console.error("发送ready响应失败:", error)
+          }
+        })
+      },
+      fail: () => {
+        console.warn("getReadyState 失败，无法发送握手")
       }
     })
   }
 
   /**
    * 关闭连接
+   * 连接由框架自动管理，此处仅清理本地引用
    */
   close() {
-    this.autoReconnect = false
-
-    if (this.connection && typeof this.connection.close === "function") {
-      this.connection.close()
-      this.connection = null
-    }
-
     this.messageHandler = null
+    this.connection = null
   }
 }
 

@@ -1430,27 +1430,9 @@ export default {
       this.isLoading = false
     }
   },
-  /**
-   * 页面隐藏时关闭连接
-   */
-  onHide() {
-    try {
-      ConnectionService.close()
-    } catch (error) {
-      console.error("关闭连接失败:", error)
-    }
-  },
+  onHide() {},
 
-  /**
-   * 页面销毁时关闭连接
-   */
-  onDestroy() {
-    try {
-      ConnectionService.close()
-    } catch (error) {
-      console.error("关闭连接失败:", error)
-    }
-  }
+  onDestroy() {}
 }
 </script>
 

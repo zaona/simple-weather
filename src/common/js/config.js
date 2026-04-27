@@ -13,8 +13,8 @@ export const STORAGE = {
 
 // 连接相关配置
 export const CONNECTION = {
-  // 连接重连延迟（毫秒）
-  RECONNECT_DELAY: 5000
+  // 连接诊断超时（毫秒）
+  DIAGNOSIS_TIMEOUT: 10000
 }
 
 // 数据操作配置

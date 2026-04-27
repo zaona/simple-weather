@@ -107,21 +107,9 @@ export default {
     })
   },
 
-  closeConnection() {
-    try {
-      ConnectionService.close()
-    } catch (error) {
-      console.error("关闭连接失败:", error)
-    }
-  },
+  onHide() {},
 
-  onHide() {
-    this.closeConnection()
-  },
-
-  onDestroy() {
-    this.closeConnection()
-  },
+  onDestroy() {},
 
   async syncState() {
     const state = await this.resolveState()
