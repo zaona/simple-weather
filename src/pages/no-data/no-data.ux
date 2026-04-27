@@ -40,6 +40,16 @@
           </div>
         </div>
       </div>
+
+      <!-- 调试面板（仅在调试模式下显示） -->
+      <div class="no-data__card" if="{{ showDebugPanel }}">
+        <div class="btn btn--secondary-square" @click="injectMockData">
+          <text class="btn__text">模拟数据</text>
+        </div>
+        <div class="btn btn--secondary-square no-data__btn--spaced" @click="clearData">
+          <text class="btn__text">清除数据</text>
+        </div>
+      </div>
     </scroll>
   </div>
 </template>
@@ -52,6 +62,7 @@ import ConnectionService from "../../common/js/connection-service.js"
 import DataService from "../../common/js/data-service.js"
 import RefreshController from "../../common/js/refresh-controller.js"
 import DeviceService from "../../common/js/device-service.js"
+import DebugService from "../../common/js/debug-service.js"
 import {DateUtils} from "../../common/js/weather-utils.js"
 import {
   MESSAGES,
@@ -66,12 +77,16 @@ export default {
     mode: "no_data",
     supportsAdvancedFeatures: false,
 
+    // ---- 调试 ----
+    showDebugPanel: false,
+
     // ---- 辅助 ----
     isUpdating: false,
     hasNavigated: false
   },
 
   async onInit() {
+    this.showDebugPanel = DebugService.isDebugMode()
     await this.detectFeatureSupport()
     await this.syncState()
   },
@@ -214,6 +229,14 @@ export default {
         duration: TOAST_DURATION.NORMAL
       })
     }
+  },
+
+  async injectMockData() {
+    await DebugService.injectMockData()
+  },
+
+  async clearData() {
+    await DebugService.clearLocalData()
   },
 
   goToHome() {

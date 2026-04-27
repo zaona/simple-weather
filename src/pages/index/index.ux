@@ -2,11 +2,6 @@
   <div class="page">
     <div class="loading">
       <div class="loading__bg"></div>
-      <div class="loading__actions" if="{{ showDebugEntry }}">
-        <div class="btn btn--primary" onclick="goToAbout()">
-          <text class="btn__text">关于</text>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -21,22 +16,13 @@ import {
   CIRCLE_SCREEN_PRODUCTS,
   NARROW_RECT_SCREEN_PRODUCTS
 } from "../../common/js/config.js"
-import DebugService from "../../common/js/debug-service.js"
 
 export default {
   private: {
-    showDebugEntry: false,
     hasRouted: false
   },
 
-  goToAbout() {
-    router.push({
-      uri: "/pages/about"
-    })
-  },
-
   async onInit() {
-    this.showDebugEntry = DebugService.isDebugMode()
     const preloadTask = this.preloadTodaySnapshot()
 
     try {

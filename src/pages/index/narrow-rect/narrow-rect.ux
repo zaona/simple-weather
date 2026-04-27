@@ -6,11 +6,6 @@
     <div class="loading" if="{{ isLoading }}">
       <div class="loading__bg"></div>
       <image class="loading__icon" src="/common/images/loading.png" />
-      <div class="loading__actions" if="{{ showDebugEntry }}">
-        <div class="btn btn--primary" onclick="goToAbout()">
-          <text class="btn__text">关于</text>
-        </div>
-      </div>
     </div>
 
     <scroll
@@ -299,7 +294,6 @@ import DataService from "../../../common/js/data-service.js"
 import ConnectionService from "../../../common/js/connection-service.js"
 import SettingsService from "../../../common/js/settings-service.js"
 import DeviceService from "../../../common/js/device-service.js"
-import DebugService from "../../../common/js/debug-service.js"
 import {WEATHER_API_ERRORS} from "../../../common/js/weather-api-service.js"
 import RefreshController from "../../../common/js/refresh-controller.js"
 import {
@@ -359,7 +353,6 @@ export default {
     // ---- 页面状态 ----
     isLoading: true,
     isFirstLoad: true,
-    showDebugEntry: false,
     backgroundImage: "",
 
     // ---- 功能开关 ----
@@ -1039,9 +1032,6 @@ export default {
     }
   },
 
-  /**
-   * 跳转到关于页
-   */
   goToAbout() {
     router.push({
       uri: "/pages/about"
@@ -1330,8 +1320,6 @@ export default {
    * 页面初始化
    */
   async onInit() {
-    this.showDebugEntry = DebugService.isDebugMode()
-
     await this.detectFeatureSupport()
     await this.syncFeatureSettings()
 
