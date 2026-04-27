@@ -42,7 +42,7 @@
       </div>
 
       <!-- 调试面板（仅在调试模式下显示） -->
-      <div class="no-data__card" if="{{ showDebugPanel }}">
+      <div class="no-data__card no-data__card--debug" if="{{ showDebugPanel }}">
         <div class="btn btn--secondary-square" @click="injectMockData">
           <text class="btn__text">模拟数据</text>
         </div>
@@ -301,6 +301,10 @@ export default {
   align-items: center;
   background-color: rgba(255, 255, 255, 0.15);
   border-radius: 24px;
+}
+
+.no-data__card--debug {
+  align-items: stretch;
 }
 
 .no-data__card-content {

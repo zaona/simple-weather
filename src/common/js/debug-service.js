@@ -15,39 +15,116 @@ import {DateUtils} from "./weather-utils.js"
  */
 const MOCK_DAILY_TEMPLATES = [
   {
-    tempMax: "25", tempMin: "15", textDay: "晴", textNight: "晴",
-    iconDay: 100, iconNight: 150, windDirDay: "西北风", windScaleDay: "3-4",
-    humidity: "45", precip: "0.0", uvIndex: "5", sunrise: "06:30", sunset: "18:45", moonPhase: "上弦月"
+    tempMax: "25",
+    tempMin: "15",
+    textDay: "晴",
+    textNight: "晴",
+    iconDay: 100,
+    iconNight: 150,
+    windDirDay: "西北风",
+    windScaleDay: "3-4",
+    humidity: "45",
+    precip: "0.0",
+    uvIndex: "5",
+    sunrise: "06:30",
+    sunset: "18:45",
+    moonPhase: "上弦月"
   },
   {
-    tempMax: "26", tempMin: "16", textDay: "多云", textNight: "多云",
-    iconDay: 101, iconNight: 151, windDirDay: "西风", windScaleDay: "2-3",
-    humidity: "50", precip: "0.0", uvIndex: "4", sunrise: "06:31", sunset: "18:44", moonPhase: "满月"
+    tempMax: "26",
+    tempMin: "16",
+    textDay: "多云",
+    textNight: "多云",
+    iconDay: 101,
+    iconNight: 151,
+    windDirDay: "西风",
+    windScaleDay: "2-3",
+    humidity: "50",
+    precip: "0.0",
+    uvIndex: "4",
+    sunrise: "06:31",
+    sunset: "18:44",
+    moonPhase: "满月"
   },
   {
-    tempMax: "24", tempMin: "14", textDay: "小雨", textNight: "阴",
-    iconDay: 305, iconNight: 104, windDirDay: "东风", windScaleDay: "3-4",
-    humidity: "75", precip: "5.2", uvIndex: "2", sunrise: "06:32", sunset: "18:43", moonPhase: "满月"
+    tempMax: "24",
+    tempMin: "14",
+    textDay: "小雨",
+    textNight: "阴",
+    iconDay: 305,
+    iconNight: 104,
+    windDirDay: "东风",
+    windScaleDay: "3-4",
+    humidity: "75",
+    precip: "5.2",
+    uvIndex: "2",
+    sunrise: "06:32",
+    sunset: "18:43",
+    moonPhase: "满月"
   },
   {
-    tempMax: "22", tempMin: "13", textDay: "阴", textNight: "晴",
-    iconDay: 104, iconNight: 150, windDirDay: "北风", windScaleDay: "4-5",
-    humidity: "60", precip: "0.0", uvIndex: "3", sunrise: "06:33", sunset: "18:42", moonPhase: "亏凸月"
+    tempMax: "22",
+    tempMin: "13",
+    textDay: "阴",
+    textNight: "晴",
+    iconDay: 104,
+    iconNight: 150,
+    windDirDay: "北风",
+    windScaleDay: "4-5",
+    humidity: "60",
+    precip: "0.0",
+    uvIndex: "3",
+    sunrise: "06:33",
+    sunset: "18:42",
+    moonPhase: "亏凸月"
   },
   {
-    tempMax: "23", tempMin: "12", textDay: "晴", textNight: "晴",
-    iconDay: 100, iconNight: 150, windDirDay: "南风", windScaleDay: "2-3",
-    humidity: "42", precip: "0.0", uvIndex: "6", sunrise: "06:34", sunset: "18:41", moonPhase: "下弦月"
+    tempMax: "23",
+    tempMin: "12",
+    textDay: "晴",
+    textNight: "晴",
+    iconDay: 100,
+    iconNight: 150,
+    windDirDay: "南风",
+    windScaleDay: "2-3",
+    humidity: "42",
+    precip: "0.0",
+    uvIndex: "6",
+    sunrise: "06:34",
+    sunset: "18:41",
+    moonPhase: "下弦月"
   },
   {
-    tempMax: "25", tempMin: "14", textDay: "晴", textNight: "多云",
-    iconDay: 100, iconNight: 151, windDirDay: "西南风", windScaleDay: "2-3",
-    humidity: "38", precip: "0.0", uvIndex: "7", sunrise: "06:35", sunset: "18:40", moonPhase: "残月"
+    tempMax: "25",
+    tempMin: "14",
+    textDay: "晴",
+    textNight: "多云",
+    iconDay: 100,
+    iconNight: 151,
+    windDirDay: "西南风",
+    windScaleDay: "2-3",
+    humidity: "38",
+    precip: "0.0",
+    uvIndex: "7",
+    sunrise: "06:35",
+    sunset: "18:40",
+    moonPhase: "残月"
   },
   {
-    tempMax: "27", tempMin: "15", textDay: "多云", textNight: "晴",
-    iconDay: 101, iconNight: 150, windDirDay: "南风", windScaleDay: "3-4",
-    humidity: "35", precip: "0.0", uvIndex: "5", sunrise: "06:36", sunset: "18:39", moonPhase: "新月"
+    tempMax: "27",
+    tempMin: "15",
+    textDay: "多云",
+    textNight: "晴",
+    iconDay: 101,
+    iconNight: 150,
+    windDirDay: "南风",
+    windScaleDay: "3-4",
+    humidity: "35",
+    precip: "0.0",
+    uvIndex: "5",
+    sunrise: "06:36",
+    sunset: "18:39",
+    moonPhase: "新月"
   }
 ]
 
@@ -149,7 +226,6 @@ class DebugService {
       })
     })
   }
-
 }
 
 // 导出单例

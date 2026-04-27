@@ -170,7 +170,6 @@ class ConnectionService {
 
     this.messageHandler = null
   }
-
 }
 
 // 导出单例

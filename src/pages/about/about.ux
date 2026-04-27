@@ -192,8 +192,7 @@ export default {
    */
   async clearData() {
     await DebugService.clearLocalData()
-  },
-
+  }
 }
 </script>
 
