@@ -128,7 +128,7 @@ class WeatherApiService {
   extractLocationId(weatherData) {
     if (!weatherData) return null
 
-    const rawId = weatherData.locationId || weatherData.locationID
+    const rawId = weatherData.locationId
     if (rawId) {
       const parsedId = String(rawId).trim()
       if (parsedId) return parsedId
@@ -137,26 +137,15 @@ class WeatherApiService {
     const fxLink = this.resolveFxLink(weatherData)
     if (!fxLink) return null
 
-    const match = fxLink.match(/-(\d+)(?:\.html)?$/i)
-    return match ? match[1] : null
+    // 优先匹配 -数字.html 结尾的标准格式
+    const suffixMatch = fxLink.match(/-(\d+)(?:\.html)?$/i)
+    if (suffixMatch && suffixMatch[1]) return suffixMatch[1]
+
+    return null
   }
 
   resolveFxLink(weatherData) {
     if (typeof weatherData.fxLink === "string") return weatherData.fxLink
-
-    const daily = weatherData.daily
-    if (!daily) return ""
-
-    if (typeof daily === "object" && !Array.isArray(daily)) {
-      if (typeof daily.fxLink === "string") return daily.fxLink
-      const nested = Array.isArray(daily.daily) ? daily.daily : []
-      return nested.find((d) => typeof d.fxLink === "string")?.fxLink || ""
-    }
-
-    if (Array.isArray(daily)) {
-      return daily.find((d) => typeof d.fxLink === "string")?.fxLink || ""
-    }
-
     return ""
   }
 }
