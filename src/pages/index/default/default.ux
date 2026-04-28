@@ -945,8 +945,9 @@ export default {
 
     let hasDisplayableHourlyData = false
     let primaryHourlyEntry = null
+    let forecastHourly = []
     if (this.hourlyForecastEnabled) {
-      const forecastHourly = this.buildForecastHourly(hourlyList, 6, todayData)
+      forecastHourly = this.buildForecastHourly(hourlyList, 6, todayData)
       hasDisplayableHourlyData = forecastHourly.length > 0
       if (hasDisplayableHourlyData) {
         this.forecastHourly = forecastHourly
