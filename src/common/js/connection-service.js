@@ -126,30 +126,18 @@ class ConnectionService {
   async handleInfoRequest() {
     if (!this.connection) return
 
-    this.connection.getReadyState({
-      success: async (res) => {
-        if (res.status !== 1) {
-          console.warn("连接未就绪，无法发送info响应")
-          return
-        }
+    const versionName = this.getVersionName()
+    const deviceId = await this.getDeviceId()
 
-        const versionName = this.getVersionName()
-        const deviceId = await this.getDeviceId()
-
-        this.connection.send({
-          data: {
-            action: "info",
-            versionName,
-            deviceId,
-            timestamp: Date.now()
-          },
-          fail: (error) => {
-            console.error("发送info响应失败:", error)
-          }
-        })
+    this.connection.send({
+      data: {
+        action: "info",
+        versionName,
+        deviceId,
+        timestamp: Date.now()
       },
-      fail: () => {
-        console.warn("getReadyState 失败，无法发送info响应")
+      fail: (error) => {
+        console.error("发送info响应失败:", error)
       }
     })
   }
@@ -157,32 +145,20 @@ class ConnectionService {
   async handleStorageRequest() {
     if (!this.connection) return
 
-    this.connection.getReadyState({
-      success: async (res) => {
-        if (res.status !== 1) {
-          console.warn("连接未就绪，无法发送storage响应")
-          return
-        }
+    const [totalStorage, availableStorage] = await Promise.all([
+      this.getTotalStorage(),
+      this.getAvailableStorage()
+    ])
 
-        const [totalStorage, availableStorage] = await Promise.all([
-          this.getTotalStorage(),
-          this.getAvailableStorage()
-        ])
-
-        this.connection.send({
-          data: {
-            action: "storage",
-            totalStorage,
-            availableStorage,
-            timestamp: Date.now()
-          },
-          fail: (error) => {
-            console.error("发送storage响应失败:", error)
-          }
-        })
+    this.connection.send({
+      data: {
+        action: "storage",
+        totalStorage,
+        availableStorage,
+        timestamp: Date.now()
       },
-      fail: () => {
-        console.warn("getReadyState 失败，无法发送storage响应")
+      fail: (error) => {
+        console.error("发送storage响应失败:", error)
       }
     })
   }
@@ -220,25 +196,13 @@ class ConnectionService {
   handleHandshake() {
     if (!this.connection) return
 
-    this.connection.getReadyState({
-      success: (res) => {
-        if (res.status !== 1) {
-          console.warn("连接未就绪，无法发送握手")
-          return
-        }
-
-        this.connection.send({
-          data: {
-            action: "ready",
-            timestamp: Date.now()
-          },
-          fail: (error) => {
-            console.error("发送ready响应失败:", error)
-          }
-        })
+    this.connection.send({
+      data: {
+        action: "ready",
+        timestamp: Date.now()
       },
-      fail: () => {
-        console.warn("getReadyState 失败，无法发送握手")
+      fail: (error) => {
+        console.error("发送ready响应失败:", error)
       }
     })
   }
