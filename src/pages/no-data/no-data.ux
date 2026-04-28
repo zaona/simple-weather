@@ -92,7 +92,7 @@ export default {
 
   async detectFeatureSupport() {
     try {
-      this.supportsAdvancedFeatures = !(await DeviceService.isProductBlocked(
+      this.supportsAdvancedFeatures = !(await DeviceService.isProductInList(
         ADVANCED_FEATURE_PRODUCT_BLACKLIST
       ))
     } catch (error) {

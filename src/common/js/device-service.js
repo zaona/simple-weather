@@ -66,15 +66,6 @@ class DeviceService {
   }
 
   /**
-   * 判断当前设备是否在黑名单中
-   * @param {string[]} blacklist
-   * @returns {Promise<boolean>}
-   */
-  async isProductBlocked(blacklist = []) {
-    return this.isProductInList(blacklist)
-  }
-
-  /**
    * 清除缓存，通常用于调试或切换设备
    */
   clearCache() {

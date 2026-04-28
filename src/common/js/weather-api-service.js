@@ -76,7 +76,7 @@ class WeatherApiService {
 
     const [hourlyEnabled, supportsAdvancedFeatures] = await Promise.all([
       SettingsService.isHourlyForecastEnabled(),
-      DeviceService.isProductBlocked(ADVANCED_FEATURE_PRODUCT_BLACKLIST).then(
+      DeviceService.isProductInList(ADVANCED_FEATURE_PRODUCT_BLACKLIST).then(
         (isBlocked) => !isBlocked
       )
     ])
@@ -112,7 +112,7 @@ class WeatherApiService {
       return cachedWeather
     }
 
-    return DataService.readRawWeatherData()
+    return DataService.readWeatherData(true, {skipCache: true})
   }
 
   deriveLocationInfo(weatherData) {

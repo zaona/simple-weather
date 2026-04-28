@@ -14,9 +14,9 @@ class DataService {
     this.cacheTime = null
   }
 
-  readWeatherData(silent = false) {
+  readWeatherData(silent = false, {skipCache = false} = {}) {
     return new Promise((resolve) => {
-      if (this.cache && this.cacheTime) {
+      if (!skipCache && this.cache && this.cacheTime) {
         const now = Date.now()
         if (now - this.cacheTime < DATA.CACHE_EXPIRY) {
           console.log("使用缓存数据")
@@ -34,8 +34,10 @@ class DataService {
               throw new Error("INVALID_WEATHER_DATA")
             }
 
-            this.cache = weatherData
-            this.cacheTime = Date.now()
+            if (!skipCache) {
+              this.cache = weatherData
+              this.cacheTime = Date.now()
+            }
             resolve(weatherData)
           } catch (error) {
             console.error("数据解析失败:", error)
@@ -56,25 +58,6 @@ class DataService {
               duration: TOAST_DURATION.NORMAL
             })
           }
-          resolve(null)
-        }
-      })
-    })
-  }
-
-  readRawWeatherData() {
-    return new Promise((resolve) => {
-      file.readText({
-        uri: STORAGE.WEATHER_FILE,
-        success: (data) => {
-          try {
-            resolve(JSON.parse(data.text))
-          } catch (error) {
-            console.error("原始数据解析失败:", error)
-            resolve(null)
-          }
-        },
-        fail: () => {
           resolve(null)
         }
       })

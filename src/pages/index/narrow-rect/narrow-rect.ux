@@ -349,7 +349,6 @@ export default {
   private: {
     // ---- 页面状态 ----
     isLoading: true,
-    isFirstLoad: true,
     backgroundImage: "",
 
     // ---- 功能开关 ----
@@ -1155,7 +1154,7 @@ export default {
    */
   async syncFeatureSettings() {
     try {
-      const settings = await SettingsService.getSettings()
+      const settings = await SettingsService.readSettings()
       this.autoUpdateEnabled = this.supportsAdvancedFeatures && !!settings.autoUpdateEnabled
       this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
     } catch (error) {
@@ -1181,7 +1180,7 @@ export default {
    */
   async detectFeatureSupport() {
     try {
-      this.supportsAdvancedFeatures = !(await DeviceService.isProductBlocked(
+      this.supportsAdvancedFeatures = !(await DeviceService.isProductInList(
         ADVANCED_FEATURE_PRODUCT_BLACKLIST
       ))
     } catch (error) {
@@ -1192,43 +1191,6 @@ export default {
     }
   },
 
-  /**
-   * 读取或拉取逐小时天气数据
-   * @param {Object} options
-   */
-  async loadHourlyForecastData(options = {}) {
-    try {
-      const {silent = true, forceRefresh = false} = options
-      const baseWeatherData = forceRefresh
-        ? (await RefreshController.ensureDailyData({forceRefresh})).weatherData
-        : await DataService.readWeatherData(true)
-
-      if (!baseWeatherData) {
-        this.hasHourlyData = false
-        this.updateHourlyCardVisibility()
-        return
-      }
-
-      const todayData = this.findTodayData(baseWeatherData)
-      if (!todayData) {
-        this.hasHourlyData = false
-        this.updateHourlyCardVisibility()
-        return
-      }
-
-      const resolved = await this.resolveHourlyData(baseWeatherData, {
-        silent,
-        forceRefresh
-      })
-      const weatherData = resolved.weatherData || baseWeatherData
-      const latestTodayData = this.findTodayData(weatherData) || todayData
-      this.applyWeatherSnapshot(weatherData, latestTodayData, resolved.hourlyList || [])
-    } catch (error) {
-      console.error("读取逐小时天气失败:", error)
-      this.hasHourlyData = false
-      this.updateHourlyCardVisibility()
-    }
-  },
   /**
    * 应用逐小时天气数据
    * @param {Array} hourlyList
@@ -1327,10 +1289,7 @@ export default {
     }
 
     if (preloadedWeatherData) {
-      if (this.isFirstLoad) {
-        this.isLoading = false
-        this.isFirstLoad = false
-      }
+      this.isLoading = false
       const shouldFallbackForHourly =
         this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
       if (shouldFallbackForHourly) {
@@ -1343,7 +1302,6 @@ export default {
 
     const result = await this.loadWeatherData(true)
     this.isLoading = false
-    this.isFirstLoad = false
 
     if (!result.success) {
       router.replace({

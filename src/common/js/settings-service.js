@@ -73,17 +73,13 @@ class SettingsService {
    * 获取完整设置
    * @returns {Promise<Object>}
    */
-  async getSettings() {
-    return this.readSettings()
-  }
-
   async getSetting(key) {
-    const settings = await this.getSettings()
+    const settings = await this.readSettings()
     return !!settings[key]
   }
 
   async setSetting(key, enabled) {
-    const settings = await this.getSettings()
+    const settings = await this.readSettings()
     return this.saveSettings({...settings, [key]: !!enabled})
   }
 

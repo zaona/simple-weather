@@ -114,7 +114,7 @@ export default {
     try {
       await this.loadSettings()
 
-      const isSupportedDevice = !(await DeviceService.isProductBlocked(
+      const isSupportedDevice = !(await DeviceService.isProductInList(
         ADVANCED_FEATURE_PRODUCT_BLACKLIST
       ))
       this.showAutoUpdateCard = isSupportedDevice
@@ -141,7 +141,7 @@ export default {
    */
   async loadSettings() {
     try {
-      const settings = await SettingsService.getSettings()
+      const settings = await SettingsService.readSettings()
       this.autoUpdateEnabled = !!settings.autoUpdateEnabled
       this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
       this.reduceAnimationEnabled = !!settings.reduceAnimationEnabled
