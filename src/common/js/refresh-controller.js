@@ -53,11 +53,6 @@ class RefreshController {
     return elapsed >= minInterval ? 0 : minInterval - elapsed
   }
 
-  async canTriggerManualRefresh() {
-    const remainingTime = await this.getManualRefreshRemainingTime()
-    return remainingTime === 0
-  }
-
   extractDailyTimestamp(weatherData) {
     const updateTime = DataService.getPrimaryUpdateTime(weatherData)
     if (!updateTime) {
@@ -82,7 +77,7 @@ class RefreshController {
     if (!this.refreshPromise) {
       this.refreshPromise = (async () => {
         const weatherData = await WeatherApiService.fetchWeatherData()
-        const saved = await DataService.saveWeatherData(JSON.stringify(weatherData))
+        const saved = await DataService.saveWeatherData(JSON.stringify(weatherData), 0, weatherData)
 
         if (!saved) {
           const error = new Error("DATA_SAVE_FAILED")
@@ -100,24 +95,6 @@ class RefreshController {
     return this.refreshPromise
   }
 
-  async ensureDailyData(options = {}) {
-    const {forceRefresh = false} = options
-
-    if (forceRefresh) {
-      DataService.clearCache()
-    }
-
-    const weatherData = await DataService.readWeatherData(true)
-    const isValid = weatherData && DataService.validateWeatherData(weatherData)
-
-    if (!isValid || forceRefresh || this.isDailyExpired(weatherData)) {
-      const refreshed = await this.refreshWeatherData()
-      return {weatherData: refreshed, fromCache: false}
-    }
-
-    this.recordDailyUpdate(weatherData)
-    return {weatherData, fromCache: true}
-  }
 }
 
 export default new RefreshController()

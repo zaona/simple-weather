@@ -65,8 +65,9 @@ function buildAuthHeaders(extraHeaders = {}) {
 
 class WeatherApiService {
   async fetchWeatherData() {
-    const localWeatherData = await this.readLocalWeatherData()
-    const {locationId, locationName} = this.deriveLocationInfo(localWeatherData)
+    const localWeatherData = await DataService.readWeatherData(true)
+    const locationId = this.extractLocationId(localWeatherData)
+    const locationName = DataService.getLocationName(localWeatherData)
 
     if (!locationId) {
       const error = new Error("Location info missing")
@@ -103,25 +104,6 @@ class WeatherApiService {
     return {
       ...weatherData,
       location: weatherData.location || locationName || ""
-    }
-  }
-
-  async readLocalWeatherData() {
-    const cachedWeather = await DataService.readWeatherData(true)
-    if (cachedWeather) {
-      return cachedWeather
-    }
-
-    return DataService.readWeatherData(true, {skipCache: true})
-  }
-
-  deriveLocationInfo(weatherData) {
-    const currentLocationId = this.extractLocationId(weatherData)
-    const currentLocationName = DataService.getLocationName(weatherData)
-
-    return {
-      locationId: currentLocationId,
-      locationName: currentLocationName
     }
   }
 

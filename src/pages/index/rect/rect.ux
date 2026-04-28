@@ -918,7 +918,7 @@ export default {
     this.syncWeather(weatherData, todayData, timeAgo, primaryHourlyEntry)
 
     if (this.hourlyForecastEnabled && hasDisplayableHourlyData) {
-      this.paginateHourly(hourlyList, todayData)
+      this.paginateHourly(forecastHourly)
     } else {
       this.hasHourlyData = false
       this.updateHourlyCardVisibility()
@@ -932,20 +932,14 @@ export default {
       return {weatherData, hourlyList: []}
     }
 
-    const {silent = true, forceRefresh = false} = options
+    const {silent = true} = options
 
     try {
-      let nextWeatherData = weatherData
-
-      if (forceRefresh) {
-        nextWeatherData = (await RefreshController.ensureDailyData({forceRefresh})).weatherData
-      }
-
-      let hourlyList = DataService.getHourlyList(nextWeatherData)
-      let hasDisplayableHourlyData = this.buildForecastHourly(hourlyList).length > 0
+      const hourlyList = DataService.getHourlyList(weatherData)
+      const hasDisplayableHourlyData = Array.isArray(hourlyList) && hourlyList.length > 0
 
       return {
-        weatherData: nextWeatherData,
+        weatherData,
         hourlyList: hasDisplayableHourlyData ? hourlyList : []
       }
     } catch (error) {
@@ -1063,15 +1057,10 @@ export default {
     }
 
     try {
-      await RefreshController.refreshWeatherData()
+      const weatherData = await RefreshController.refreshWeatherData()
 
-      const result = await this.loadWeatherData(true, {
-        hourly: {
-          silent: config.silent
-        }
-      })
-
-      if (!result || !result.success) {
+      const todayData = this.findTodayData(weatherData)
+      if (!todayData) {
         if (!config.silent) {
           showToast({
             message: MESSAGES.DATA_PARSE_ERROR,
@@ -1080,6 +1069,13 @@ export default {
         }
         return false
       }
+
+      const resolved = await this.resolveHourlyData(weatherData, {
+        silent: config.silent
+      })
+      const finalData = resolved.weatherData || weatherData
+      const finalToday = this.findTodayData(finalData) || todayData
+      this.applyWeatherSnapshot(finalData, finalToday, resolved.hourlyList || [])
 
       if (!config.silent) {
         showToast({
@@ -1199,8 +1195,7 @@ export default {
    * 应用逐小时天气数据
    * @param {Array} hourlyList
    */
-  paginateHourly(hourlyList = [], todayData = null) {
-    const forecastHourly = this.buildForecastHourly(hourlyList, 12, todayData)
+  paginateHourly(forecastHourly = []) {
     this.forecastHourly = forecastHourly
 
     // 每 4 个一组进行分组
@@ -1372,7 +1367,7 @@ export default {
       this.applyWeatherSnapshot(latestWeatherData, latestTodayData, resolved.hourlyList || [])
 
       // 保存数据到本地
-      await DataService.saveWeatherData(JSON.stringify(latestWeatherData))
+      await DataService.saveWeatherData(JSON.stringify(latestWeatherData), 0, latestWeatherData)
 
       showToast({
         message: MESSAGES.DATA_UPDATED,

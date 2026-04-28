@@ -64,7 +64,7 @@ class DataService {
     })
   }
 
-  saveWeatherData(dataText, retryCount = 0) {
+  saveWeatherData(dataText, retryCount = 0, parsedData = null) {
     return new Promise((resolve) => {
       file.writeText({
         uri: STORAGE.WEATHER_FILE,
@@ -73,7 +73,7 @@ class DataService {
           console.log("数据已保存到本地")
 
           try {
-            const weatherData = JSON.parse(dataText)
+            const weatherData = parsedData || JSON.parse(dataText)
             this.cache = this.validateWeatherData(weatherData) ? weatherData : null
             this.cacheTime = this.cache ? Date.now() : null
           } catch (error) {
@@ -87,7 +87,7 @@ class DataService {
         fail: () => {
           if (retryCount < DATA.MAX_SAVE_RETRIES) {
             setTimeout(() => {
-              this.saveWeatherData(dataText, retryCount + 1).then(resolve)
+              this.saveWeatherData(dataText, retryCount + 1, parsedData).then(resolve)
             }, DATA.SAVE_RETRY_DELAY)
           } else {
             console.error("数据保存失败，已达最大重试次数")
