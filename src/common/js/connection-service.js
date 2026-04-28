@@ -6,7 +6,6 @@
 
 import interconnect from "@system.interconnect"
 import device from "@system.device"
-import {CONNECTION} from "./config.js"
 
 class ConnectionService {
   constructor() {
@@ -60,36 +59,7 @@ class ConnectionService {
       console.log(`连接关闭, code: ${data.code}, reason: ${data.data}`)
     }
 
-    // 连接建立后进行诊断
-    this.diagnosis()
-
     return this.connection
-  }
-
-  /**
-   * 诊断连接状态
-   * @param {Number} timeout - 诊断超时时间（毫秒）
-   */
-  diagnosis(timeout = CONNECTION.DIAGNOSIS_TIMEOUT) {
-    if (!this.connection) return
-
-    this.connection.diagnosis({
-      timeout,
-      success: (data) => {
-        if (data.status === 0) {
-          console.log("连接诊断: 正常")
-        } else if (data.status === 204) {
-          console.warn("连接诊断: 超时")
-        } else if (data.status === 1001) {
-          console.warn("连接诊断: 手机端App未安装")
-        } else {
-          console.warn(`连接诊断: 异常, status: ${data.status}`)
-        }
-      },
-      fail: (data, code) => {
-        console.error(`连接诊断失败, code: ${code}, msg: ${data}`)
-      }
-    })
   }
 
   /**
@@ -106,6 +76,12 @@ class ConnectionService {
     // 设备信息请求
     if (data.data === "info") {
       this.handleInfoRequest()
+      return
+    }
+
+    // 存储信息请求
+    if (data.data === "storage") {
+      this.handleStorageRequest()
       return
     }
 
@@ -175,6 +151,65 @@ class ConnectionService {
       fail: () => {
         console.warn("getReadyState 失败，无法发送info响应")
       }
+    })
+  }
+
+  async handleStorageRequest() {
+    if (!this.connection) return
+
+    this.connection.getReadyState({
+      success: async (res) => {
+        if (res.status !== 1) {
+          console.warn("连接未就绪，无法发送storage响应")
+          return
+        }
+
+        const [totalStorage, availableStorage] = await Promise.all([
+          this.getTotalStorage(),
+          this.getAvailableStorage()
+        ])
+
+        this.connection.send({
+          data: {
+            action: "storage",
+            totalStorage,
+            availableStorage,
+            timestamp: Date.now()
+          },
+          fail: (error) => {
+            console.error("发送storage响应失败:", error)
+          }
+        })
+      },
+      fail: () => {
+        console.warn("getReadyState 失败，无法发送storage响应")
+      }
+    })
+  }
+
+  getTotalStorage() {
+    return new Promise((resolve) => {
+      device.getTotalStorage({
+        success: (result = {}) => {
+          resolve(result.totalStorage ?? 0)
+        },
+        fail: () => {
+          resolve(0)
+        }
+      })
+    })
+  }
+
+  getAvailableStorage() {
+    return new Promise((resolve) => {
+      device.getAvailableStorage({
+        success: (result = {}) => {
+          resolve(result.availableStorage ?? 0)
+        },
+        fail: () => {
+          resolve(0)
+        }
+      })
     })
   }
 

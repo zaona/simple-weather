@@ -11,12 +11,6 @@ export const STORAGE = {
   SETTINGS_FILE: "internal://files/settings.txt"
 }
 
-// 连接相关配置
-export const CONNECTION = {
-  // 连接诊断超时（毫秒）
-  DIAGNOSIS_TIMEOUT: 10000
-}
-
 // 数据操作配置
 export const DATA = {
   // 文件保存最大重试次数
