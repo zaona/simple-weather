@@ -441,12 +441,10 @@ export default {
 
   .no-data__desc {
     font-size: 30px;
-    line-height: 30px;
   }
 
   .no-data__qr-tip {
     font-size: 30px;
-    line-height: 30px;
   }
 
   .no-data__qr-box {

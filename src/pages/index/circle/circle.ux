@@ -43,8 +43,12 @@
         </div>
 
         <div class="alert">
-          <div class="alert__card">
+          <div class="alert__card" if="{{ !(alertEnabled && hasAlertData) }}">
             <image class="alert__icon" src="{{ current.icon }}" />
+          </div>
+          <div class="alert__card" if="{{ alertEnabled && hasAlertData }}" @click="goToAlerts">
+            <image class="alert__icon" src="/common/images/war.png" />
+            <text class="alert__text">{{ alertTitle }}</text>
           </div>
         </div>
       </div>
@@ -395,6 +399,7 @@ export default {
     // ---- 功能开关 ----
     autoUpdateEnabled: false,
     hourlyForecastEnabled: false,
+    alertEnabled: false,
     supportsAdvancedFeatures: false,
     autoUpdateInProgress: false,
 
@@ -414,6 +419,8 @@ export default {
     forecastHourly: [],
     forecastHourlyPages: [],
     hasHourlyData: false,
+    hasAlertData: false,
+    alertTitle: "",
     forecastDaily: [],
     indices: createDefaultIndices(),
 
@@ -966,7 +973,40 @@ export default {
       this.updateHourlyCardVisibility()
     }
 
+    this.resolveAlertData(weatherData)
+
     return true
+  },
+
+  resolveAlertData(weatherData) {
+    if (!this.alertEnabled) {
+      this.hasAlertData = false
+      this.alertTitle = ""
+      return
+    }
+
+    const now = Date.now()
+    const alerts = DataService.getAlertsList(weatherData).filter((item) => {
+      if (!item.expireTime) return true
+      const expireTs = Date.parse(item.expireTime)
+      return Number.isNaN(expireTs) || expireTs > now
+    })
+    if (alerts.length > 0) {
+      this.hasAlertData = true
+      this.alertTitle = alerts.length > 1 ? "天气预警" : (alerts[0].title || "")
+    } else {
+      this.hasAlertData = false
+      this.alertTitle = ""
+    }
+  },
+
+  goToAlerts() {
+    router.push({
+      uri: "/pages/alert",
+      params: {
+        backgroundImage: this.backgroundImage
+      }
+    })
   },
 
   async resolveHourlyData(weatherData, options = {}) {
@@ -1210,6 +1250,7 @@ export default {
       const settings = await SettingsService.readSettings()
       this.autoUpdateEnabled = this.supportsAdvancedFeatures && !!settings.autoUpdateEnabled
       this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
+      this.alertEnabled = !!settings.alertEnabled
     } catch (error) {
       console.error("同步设置失败:", error)
     } finally {
@@ -1342,9 +1383,10 @@ export default {
 
     if (preloadedWeatherData) {
       this.isLoading = false
-      const shouldFallbackForHourly =
-        this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
-      if (shouldFallbackForHourly) {
+      const needsFallback =
+        (this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData) ||
+        (this.supportsAdvancedFeatures && this.alertEnabled && !this.hasAlertData)
+      if (needsFallback) {
         await this.updateWeather({auto: true, silent: true, showLoading: false})
         return
       }
@@ -1362,9 +1404,10 @@ export default {
       return
     }
 
-    const shouldFallbackForHourly =
-      this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData
-    if (shouldFallbackForHourly) {
+    const needsFallback =
+      (this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData) ||
+      (this.supportsAdvancedFeatures && this.alertEnabled && !this.hasAlertData)
+    if (needsFallback) {
       await this.updateWeather({auto: true, silent: true, showLoading: false})
       return
     }
@@ -1588,16 +1631,23 @@ export default {
 }
 
 .alert__card {
-  padding: 8px 12px 8px 12px;
+  padding: 8px 12px;
   background-color: rgba(255, 255, 255, 0.25);
   border-radius: 50%;
   align-items: center;
-  justify-content: center;
 }
 
 .alert__icon {
   width: 32px;
   height: 32px;
+}
+
+.alert__text {
+  margin-left: 5px;
+  line-height: 25px;
+  font-size: 25px;
+  font-weight: bold;
+  color: white;
 }
 
 .title-bar {

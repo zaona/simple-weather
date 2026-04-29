@@ -75,8 +75,9 @@ class WeatherApiService {
       throw error
     }
 
-    const [hourlyEnabled, supportsAdvancedFeatures] = await Promise.all([
+    const [hourlyEnabled, alertEnabled, supportsAdvancedFeatures] = await Promise.all([
       SettingsService.isHourlyForecastEnabled(),
+      SettingsService.isAlertEnabled(),
       DeviceService.isProductInList(ADVANCED_FEATURE_PRODUCT_BLACKLIST).then(
         (isBlocked) => !isBlocked
       )
@@ -84,7 +85,8 @@ class WeatherApiService {
     const payload = {
       locationId,
       modules: this.buildModulePayload(localWeatherData, {
-        enableHourly: supportsAdvancedFeatures && hourlyEnabled
+        enableHourly: supportsAdvancedFeatures && hourlyEnabled,
+        enableAlerts: supportsAdvancedFeatures && alertEnabled
       })
     }
 
@@ -108,7 +110,7 @@ class WeatherApiService {
   }
 
   buildModulePayload(weatherData, options = {}) {
-    const {enableHourly = false} = options
+    const {enableHourly = false, enableAlerts = false} = options
     const dailyLength = DataService.getDailyList(weatherData).length
     const hourlyLength = DataService.getHourlyList(weatherData).length
 
@@ -116,7 +118,8 @@ class WeatherApiService {
       daily: this.buildModuleRange(dailyLength, WEATHER_API.DAILY_RANGE, "d"),
       hourly: enableHourly
         ? this.buildModuleRange(hourlyLength, WEATHER_API.HOURLY_RANGE, "h")
-        : null
+        : null,
+      alerts: enableAlerts || false
     }
   }
 

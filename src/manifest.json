@@ -64,6 +64,9 @@
       },
       "pages/about": {
         "component": "about"
+      },
+      "pages/alert": {
+        "component": "alert"
       }
     }
   }

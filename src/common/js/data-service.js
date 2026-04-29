@@ -131,6 +131,13 @@ class DataService {
     return Array.isArray(hourlyModule?.hourly) ? hourlyModule.hourly : []
   }
 
+  getAlertsList(weatherData) {
+    if (!weatherData || !Array.isArray(weatherData.alerts)) {
+      return []
+    }
+    return weatherData.alerts
+  }
+
   getPrimaryUpdateTime(weatherData) {
     if (typeof weatherData?.updateTime === "string" && weatherData.updateTime) {
       return weatherData.updateTime

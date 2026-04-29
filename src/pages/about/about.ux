@@ -44,11 +44,25 @@
         </div>
       </div>
 
+      <div class="about__card">
+        <div class="about__setting-row">
+          <div class="about__setting-text">
+            <text class="about__setting-title">天气预警</text>
+            <text class="about__setting-subtitle">灾害预警</text>
+          </div>
+          <switch
+            class="about__switch"
+            checked="{{ alertEnabled }}"
+            @change="toggleAlert"
+          />
+        </div>
+      </div>
+
       <div class="about__card" if="{{ showAutoUpdateCard }}">
         <div class="about__setting-row">
           <div class="about__setting-text">
             <text class="about__setting-title">自动更新</text>
-            <text class="about__setting-subtitle">过期1h自动更新</text>
+            <text class="about__setting-subtitle">每小时更新</text>
           </div>
           <switch
             class="about__switch"
@@ -89,6 +103,7 @@ export default {
     // ---- 功能开关 ----
     autoUpdateEnabled: false,
     hourlyForecastEnabled: false,
+    alertEnabled: false,
     reduceAnimationEnabled: false,
     showAutoUpdateCard: false,
 
@@ -144,6 +159,7 @@ export default {
       const settings = await SettingsService.readSettings()
       this.autoUpdateEnabled = !!settings.autoUpdateEnabled
       this.hourlyForecastEnabled = !!settings.hourlyForecastEnabled
+      this.alertEnabled = !!settings.alertEnabled
       this.reduceAnimationEnabled = !!settings.reduceAnimationEnabled
     } catch (error) {
       console.error("加载设置失败:", error)
@@ -171,6 +187,12 @@ export default {
   toggleHourlyForecast(event) {
     return this.toggleSetting(event, "hourlyForecastEnabled", (v) =>
       SettingsService.setHourlyForecastEnabled(v)
+    )
+  },
+
+  toggleAlert(event) {
+    return this.toggleSetting(event, "alertEnabled", (v) =>
+      SettingsService.setAlertEnabled(v)
     )
   },
 
@@ -326,11 +348,11 @@ export default {
   }
 
   .about__setting-title {
-    font-size: 30px;
+    font-size: 32px;
   }
 
   .about__setting-subtitle {
-    font-size: 24px;
+    font-size: 30px;
     margin-top: 4px;
   }
 
@@ -376,11 +398,11 @@ export default {
   }
 
   .about__setting-title {
-    font-size: 30px;
+    font-size: 32px;
   }
 
   .about__setting-subtitle {
-    font-size: 24px;
+    font-size: 30px;
     margin-top: 4px;
   }
 
@@ -440,11 +462,11 @@ export default {
   }
 
   .about__setting-title {
-    font-size: 30px;
+    font-size: 32px;
   }
 
   .about__setting-subtitle {
-    font-size: 24px;
+    font-size: 30px;
     margin-top: 4px;
   }
 

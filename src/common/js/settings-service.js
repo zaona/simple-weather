@@ -5,6 +5,7 @@ import {STORAGE, MESSAGES, TOAST_DURATION} from "./config.js"
 const DEFAULT_SETTINGS = {
   autoUpdateEnabled: false,
   hourlyForecastEnabled: false,
+  alertEnabled: false,
   reduceAnimationEnabled: false
 }
 
@@ -101,6 +102,14 @@ class SettingsService {
 
   setHourlyForecastEnabled(enabled) {
     return this.setSetting("hourlyForecastEnabled", enabled)
+  }
+
+  isAlertEnabled() {
+    return this.getSetting("alertEnabled")
+  }
+
+  setAlertEnabled(enabled) {
+    return this.setSetting("alertEnabled", enabled)
   }
 
   setReduceAnimationEnabled(enabled) {
