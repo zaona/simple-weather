@@ -1076,7 +1076,7 @@ export default {
       const isCircle = await DeviceService.isProductInList(CIRCLE_SCREEN_PRODUCTS)
       if (isCircle) {
         this.hourlyItemsPerPage = 4
-        this.showAlertText = true
+        this.showAlertText = false
         this.useHorizontalDailyLayout = true
         this.backgroundFolder = "rect"
         return

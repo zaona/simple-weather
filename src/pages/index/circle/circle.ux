@@ -48,7 +48,6 @@
           </div>
           <div class="alert__card" if="{{ alertEnabled && hasAlertData }}" @click="goToAlerts">
             <image class="alert__icon" src="/common/images/war.png" />
-            <text class="alert__text">{{ alertTitle }}</text>
           </div>
         </div>
       </div>
