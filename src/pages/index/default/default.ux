@@ -43,7 +43,7 @@
         </div>
 
         <div class="alert">
-          <div class="alert__card" if="{{ !(alertEnabled && hasAlertData) }}">
+          <div class="alert__card" if="{{ !(alertEnabled && hasAlertData) }}" @click="goToTodayDetail">
             <image class="alert__icon" src="{{ current.icon }}" />
           </div>
           <div class="alert__card" if="{{ alertEnabled && hasAlertData }}" @click="goToAlerts">
@@ -1002,6 +1002,15 @@ export default {
       this.hasAlertData = false
       this.alertTitle = ""
     }
+  },
+
+  goToTodayDetail() {
+    router.push({
+      uri: "/pages/detail",
+      params: {
+        selectedDate: DateUtils.getTodayString()
+      }
+    })
   },
 
   goToAlerts() {
