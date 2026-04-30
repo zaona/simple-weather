@@ -278,7 +278,7 @@ export default {
     if (Number.isFinite(limit) && limit > 0) {
       return Math.floor(limit)
     }
-    return (this.hourlyItemsPerPage || 2) * 2
+    return 12
   },
 
   getHumidityDesc(percent) {

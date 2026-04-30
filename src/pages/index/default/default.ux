@@ -659,7 +659,7 @@ export default {
     return nextDay?.sunrise || "--"
   },
 
-  buildForecastHourly(hourlyList = [], limit = 6, todayData = null) {
+  buildForecastHourly(hourlyList = [], limit = 12, todayData = null) {
     const processed = this.processHourlyList(hourlyList, limit, todayData)
     if (processed.length === 0) {
       return []
@@ -953,7 +953,7 @@ export default {
     let primaryHourlyEntry = null
     let forecastHourly = []
     if (this.hourlyForecastEnabled) {
-      forecastHourly = this.buildForecastHourly(hourlyList, 6, todayData)
+      forecastHourly = this.buildForecastHourly(hourlyList, 12, todayData)
       hasDisplayableHourlyData = forecastHourly.length > 0
       if (hasDisplayableHourlyData) {
         this.forecastHourly = forecastHourly
