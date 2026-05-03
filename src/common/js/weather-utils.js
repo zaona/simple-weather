@@ -250,6 +250,12 @@ export const DateUtils = {
 }
 
 /**
+ * 日落时段范围（日落前后各N分钟）
+ * @type {number}
+ */
+const SUNSET_PERIOD_MINUTES = 30
+
+/**
  * 天气数据工具类
  * 提供天气数据处理、图标映射、背景图片选择等功能
  */
@@ -262,10 +268,8 @@ export const WeatherDataUtils = {
    * @returns {string} 图标文件名
    */
   getMappedIconCode(iconCode, isNight = false) {
-    // 获取基础图标代码
     let mappedIcon = WeatherIconMap[iconCode] || iconCode
 
-    // 如果是夜晚，根据具体的天气类型转换图标代码
     if (isNight) {
       if (mappedIcon === "sunny") {
         mappedIcon = "sunny-night"
@@ -279,33 +283,63 @@ export const WeatherDataUtils = {
     return mappedIcon
   },
 
-  isNightByMinutes(hour, minute, sunrise, sunset) {
+  /**
+   * 根据小时、分钟和日出日落时间判断当前时段
+   * @param {number} hour - 当前小时
+   * @param {number} minute - 当前分钟
+   * @param {string} sunrise - 日出时间字符串，格式：HH:MM
+   * @param {string} sunset - 日落时间字符串，格式：HH:MM
+   * @returns {'day'|'sunset'|'night'} 时段标识
+   */
+  getDayPeriod(hour, minute, sunrise, sunset) {
     const currentMinutes = hour * 60 + minute
 
     if (sunrise && sunset) {
       try {
         const sunriseMinutes = this.parseTimeToMinutes(sunrise)
         const sunsetMinutes = this.parseTimeToMinutes(sunset)
-        return currentMinutes < sunriseMinutes || currentMinutes >= sunsetMinutes
+        const sunsetStart = sunsetMinutes - SUNSET_PERIOD_MINUTES
+        const sunsetEnd = sunsetMinutes + SUNSET_PERIOD_MINUTES
+
+        if (currentMinutes >= sunsetStart && currentMinutes < sunsetEnd) {
+          return "sunset"
+        }
+        if (currentMinutes < sunriseMinutes || currentMinutes >= sunsetMinutes) {
+          return "night"
+        }
+        return "day"
       } catch (e) {
         console.error("解析日出日落时间失败:", e)
       }
     }
 
-    return hour >= 18 || hour < 6
+    return hour >= 18 || hour < 6 ? "night" : "day"
   },
 
-  isNightTime(sunrise = null, sunset = null) {
+  /**
+   * 获取当前时段
+   * @param {string} sunrise - 日出时间字符串
+   * @param {string} sunset - 日落时间字符串
+   * @returns {'day'|'sunset'|'night'}
+   */
+  getCurrentDayPeriod(sunrise = null, sunset = null) {
     const now = new Date()
-    return this.isNightByMinutes(now.getHours(), now.getMinutes(), sunrise, sunset)
+    return this.getDayPeriod(now.getHours(), now.getMinutes(), sunrise, sunset)
   },
 
-  isNightAtTimestamp(timestamp, sunrise = null, sunset = null) {
+  /**
+   * 根据时间戳获取时段
+   * @param {Date|number} timestamp - 时间戳
+   * @param {string} sunrise - 日出时间字符串
+   * @param {string} sunset - 日落时间字符串
+   * @returns {'day'|'sunset'|'night'}
+   */
+  getDayPeriodAtTimestamp(timestamp, sunrise = null, sunset = null) {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
     if (Number.isNaN(date.getTime())) {
-      return this.isNightTime(sunrise, sunset)
+      return this.getCurrentDayPeriod(sunrise, sunset)
     }
-    return this.isNightByMinutes(date.getHours(), date.getMinutes(), sunrise, sunset)
+    return this.getDayPeriod(date.getHours(), date.getMinutes(), sunrise, sunset)
   },
 
   /**
@@ -320,30 +354,49 @@ export const WeatherDataUtils = {
 
   /**
    * 获取映射后的背景图片
-   * 根据天气代码和时间选择合适的背景图片
+   * 根据天气代码和时段选择合适的背景图片
    * @param {number} iconCode - 天气图标代码
-   * @param {boolean} isNight - 是否为夜晚
+   * @param {'day'|'sunset'|'night'} dayPeriod - 时段
    * @returns {string} 背景图片文件名
    */
-  getMappedBackgroundImage(iconCode, isNight = false) {
-    // 获取基础背景图片
+  getMappedBackgroundImage(iconCode, dayPeriod = "day") {
     let backgroundImage = WeatherBackgroundImageMap[iconCode] || WeatherBackgroundImageMap[999]
 
-    // 如果是夜晚，根据具体的天气类型转换背景图片
-    if (isNight) {
-      if (backgroundImage === "11") {
-        backgroundImage = "12"
-      } else if (backgroundImage === "21") {
-        backgroundImage = "22"
-      } else if (backgroundImage === "31") {
-        backgroundImage = "12"
-      } else if (backgroundImage === "41") {
-        backgroundImage = "42"
-      } else if (backgroundImage === "51") {
-        backgroundImage = "52"
-      } else if (backgroundImage === "61") {
-        backgroundImage = "62"
+    if (dayPeriod === "day") {
+      return backgroundImage
+    }
+
+    if (dayPeriod === "sunset") {
+      if (backgroundImage === "21") {
+        return "23"
       }
+      if (backgroundImage === "11") {
+        return "12"
+      } else if (backgroundImage === "31") {
+        return "12"
+      } else if (backgroundImage === "41") {
+        return "42"
+      } else if (backgroundImage === "51") {
+        return "52"
+      } else if (backgroundImage === "61") {
+        return "62"
+      }
+      return backgroundImage
+    }
+
+    // night
+    if (backgroundImage === "11") {
+      backgroundImage = "12"
+    } else if (backgroundImage === "21") {
+      backgroundImage = "22"
+    } else if (backgroundImage === "31") {
+      backgroundImage = "12"
+    } else if (backgroundImage === "41") {
+      backgroundImage = "42"
+    } else if (backgroundImage === "51") {
+      backgroundImage = "52"
+    } else if (backgroundImage === "61") {
+      backgroundImage = "62"
     }
 
     return backgroundImage
