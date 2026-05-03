@@ -701,7 +701,8 @@ export default {
   },
 
   buildBaseWeather(todayData, hourlyEntry = null) {
-    const isNight = WeatherDataUtils.isNightTime(todayData.sunrise, todayData.sunset)
+    const dayPeriod = WeatherDataUtils.getCurrentDayPeriod(todayData.sunrise, todayData.sunset)
+    const isNight = dayPeriod !== "day"
     const hasHourlyEntry = !!hourlyEntry
     const weatherIconSource =
       hasHourlyEntry && hourlyEntry.iconRaw !== undefined && hourlyEntry.iconRaw !== null
@@ -709,7 +710,7 @@ export default {
         : todayData.iconDay
     const iconCode = WeatherDataUtils.getMappedIconCode(weatherIconSource, isNight)
     const weatherText = hasHourlyEntry ? hourlyEntry.text : todayData.textDay
-    const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(weatherIconSource, isNight)
+    const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(weatherIconSource, dayPeriod)
     return {
       iconCode,
       textDay: weatherText,
@@ -735,7 +736,7 @@ export default {
       .map((day) => {
         const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
         const displayName = DateUtils.getDisplayName(day.fxDate, dayDiff)
-        const isNight = WeatherDataUtils.isNightTime(todaySunrise, todaySunset)
+        const isNight = WeatherDataUtils.getCurrentDayPeriod(todaySunrise, todaySunset) !== "day"
 
         return {
           fxDate: day.fxDate,
@@ -788,7 +789,7 @@ export default {
         const hours = parsed.getHours()
         const minutes = parsed.getMinutes()
         displayHour = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
-        isNight = WeatherDataUtils.isNightAtTimestamp(parsed, sunrise, sunset)
+        isNight = WeatherDataUtils.getDayPeriodAtTimestamp(parsed, sunrise, sunset) !== "day"
       }
 
       const tempValue = raw.temp !== undefined && raw.temp !== null ? String(raw.temp) : "__"
