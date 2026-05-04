@@ -1400,7 +1400,7 @@ export default {
       this.isLoading = false
       const needsFallback =
         (this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData) ||
-        (this.alertEnabled && !this.hasAlertData)
+        (this.supportsAdvancedFeatures && this.alertEnabled && !this.hasAlertData)
       if (needsFallback) {
         await this.updateWeather({auto: true, silent: true, showLoading: false})
         return
