@@ -250,7 +250,7 @@ export const DateUtils = {
 }
 
 /**
- * 日落时段范围（日落前后各N分钟）
+ * 日落过渡时段的分钟数（日落前N分钟使用日落背景）
  * @type {number}
  */
 const SUNSET_PERIOD_MINUTES = 30
@@ -285,6 +285,7 @@ export const WeatherDataUtils = {
 
   /**
    * 根据小时、分钟和日出日落时间判断当前时段
+   * sunset 时段为日落前30分钟到日落时刻，日落时刻之后即进入 night
    * @param {number} hour - 当前小时
    * @param {number} minute - 当前分钟
    * @param {string} sunrise - 日出时间字符串，格式：HH:MM
@@ -299,9 +300,8 @@ export const WeatherDataUtils = {
         const sunriseMinutes = this.parseTimeToMinutes(sunrise)
         const sunsetMinutes = this.parseTimeToMinutes(sunset)
         const sunsetStart = sunsetMinutes - SUNSET_PERIOD_MINUTES
-        const sunsetEnd = sunsetMinutes + SUNSET_PERIOD_MINUTES
 
-        if (currentMinutes >= sunsetStart && currentMinutes < sunsetEnd) {
+        if (currentMinutes >= sunsetStart && currentMinutes < sunsetMinutes) {
           return "sunset"
         }
         if (currentMinutes < sunriseMinutes || currentMinutes >= sunsetMinutes) {
