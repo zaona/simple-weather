@@ -143,8 +143,14 @@ export default {
   syncCurrentWeather(selectedData, product) {
     this.selectedDateDisplay = this.selectedDate || ""
 
-    const dayPeriod = WeatherDataUtils.getCurrentDayPeriod(selectedData.sunrise, selectedData.sunset)
-    const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(selectedData.iconDay, dayPeriod)
+    const dayPeriod = WeatherDataUtils.getCurrentDayPeriod(
+      selectedData.sunrise,
+      selectedData.sunset
+    )
+    const backgroundImage = WeatherDataUtils.getMappedBackgroundImage(
+      selectedData.iconDay,
+      dayPeriod
+    )
 
     const productLower = (product || "").toLowerCase()
     const isRect = RECT_SCREEN_PRODUCTS.includes(productLower)

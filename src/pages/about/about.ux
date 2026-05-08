@@ -50,11 +50,7 @@
             <text class="about__setting-title">天气预警</text>
             <text class="about__setting-subtitle">灾害预警</text>
           </div>
-          <switch
-            class="about__switch"
-            checked="{{ alertEnabled }}"
-            @change="toggleAlert"
-          />
+          <switch class="about__switch" checked="{{ alertEnabled }}" @change="toggleAlert" />
         </div>
       </div>
 
@@ -208,9 +204,7 @@ export default {
    * 切换天气预警开关
    */
   toggleAlert(event) {
-    return this.toggleSetting(event, "alertEnabled", (v) =>
-      SettingsService.setAlertEnabled(v)
-    )
+    return this.toggleSetting(event, "alertEnabled", (v) => SettingsService.setAlertEnabled(v))
   },
 
   /**
