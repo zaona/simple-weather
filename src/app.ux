@@ -1,4 +1,8 @@
 <script>
+/**
+ * 应用入口
+ * 初始化全局服务注册，生命周期由框架管理
+ */
 import "./common/js/global"
 
 export default {

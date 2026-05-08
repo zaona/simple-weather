@@ -91,6 +91,10 @@ class ConnectionService {
     }
   }
 
+  /**
+   * 获取应用版本号
+   * @returns {string}
+   */
   getVersionName() {
     if (this.manifest) {
       return this.manifest.versionName || "unknown"
@@ -105,6 +109,10 @@ class ConnectionService {
     }
   }
 
+  /**
+   * 获取设备唯一标识
+   * @returns {Promise<string>}
+   */
   getDeviceId() {
     return new Promise((resolve) => {
       if (!device || typeof device.getDeviceId !== "function") {
@@ -123,6 +131,10 @@ class ConnectionService {
     })
   }
 
+  /**
+   * 处理 info 请求
+   * 返回应用版本号、设备ID等信息
+   */
   async handleInfoRequest() {
     if (!this.connection) return
 
@@ -142,6 +154,10 @@ class ConnectionService {
     })
   }
 
+  /**
+   * 处理 storage 请求
+   * 返回设备存储空间信息
+   */
   async handleStorageRequest() {
     if (!this.connection) return
 
@@ -163,6 +179,10 @@ class ConnectionService {
     })
   }
 
+  /**
+   * 获取设备总存储空间
+   * @returns {Promise<number>}
+   */
   getTotalStorage() {
     return new Promise((resolve) => {
       device.getTotalStorage({
@@ -176,6 +196,10 @@ class ConnectionService {
     })
   }
 
+  /**
+   * 获取设备可用存储空间
+   * @returns {Promise<number>}
+   */
   getAvailableStorage() {
     return new Promise((resolve) => {
       device.getAvailableStorage({

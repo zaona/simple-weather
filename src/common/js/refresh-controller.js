@@ -1,17 +1,21 @@
-import DataService from "./data-service.js"
-import WeatherApiService from "./weather-api-service.js"
-import {AUTO_UPDATE, MANUAL_UPDATE} from "./config.js"
-
 /**
  * 刷新调度器
  * 负责统一处理聚合天气数据的过期判断、并发控制以及数据刷新
  */
+import DataService from "./data-service.js"
+import WeatherApiService from "./weather-api-service.js"
+import {AUTO_UPDATE, MANUAL_UPDATE} from "./config.js"
+
 class RefreshController {
   constructor() {
     this.refreshPromise = null
     this.dailyTimestamp = null
   }
 
+  /**
+   * 记录每日更新的时间戳
+   * @param {Object} weatherData - 天气数据
+   */
   recordDailyUpdate(weatherData) {
     const timestamp = this.extractDailyTimestamp(weatherData)
     if (timestamp) {
@@ -19,6 +23,11 @@ class RefreshController {
     }
   }
 
+  /**
+   * 获取最近一次每日更新的时间戳
+   * 优先返回内存缓存的时间戳，其次从本地文件读取
+   * @returns {Promise<number|null>} 毫秒时间戳，不存在返回 null
+   */
   async getLastDailyUpdateTimestamp() {
     if (this.dailyTimestamp) {
       return this.dailyTimestamp
@@ -38,6 +47,10 @@ class RefreshController {
     return null
   }
 
+  /**
+   * 获取手动刷新的剩余冷却时间
+   * @returns {Promise<number>} 剩余毫秒数，0 表示可以刷新
+   */
   async getManualRefreshRemainingTime() {
     const minInterval = MANUAL_UPDATE?.MIN_INTERVAL
     if (!minInterval) {
@@ -53,6 +66,11 @@ class RefreshController {
     return elapsed >= minInterval ? 0 : minInterval - elapsed
   }
 
+  /**
+   * 从天气数据中提取每日更新时间戳
+   * @param {Object} weatherData - 天气数据
+   * @returns {number|null} 毫秒时间戳，解析失败返回 null
+   */
   extractDailyTimestamp(weatherData) {
     const updateTime = DataService.getPrimaryUpdateTime(weatherData)
     if (!updateTime) {
@@ -63,6 +81,11 @@ class RefreshController {
     return Number.isNaN(parsed) ? null : parsed
   }
 
+  /**
+   * 判断每日数据是否已过期
+   * @param {Object} weatherData - 天气数据
+   * @returns {boolean} 是否超过过期阈值
+   */
   isDailyExpired(weatherData) {
     const timestamp = this.extractDailyTimestamp(weatherData)
     if (!timestamp) {
@@ -73,6 +96,13 @@ class RefreshController {
     return Date.now() - timestamp >= AUTO_UPDATE.EXPIRY_THRESHOLD
   }
 
+  /**
+   * 刷新天气数据
+   * 使用 refreshPromise 保证并发调用只发一次网络请求。
+   * 在 API 请求返回后检查同步器是否已写入更新数据，避免竞态覆盖。
+   * @returns {Promise<Object>} 最新的天气数据
+   * @throws {Error} 数据保存失败，code = DATA_SAVE_FAILED
+   */
   async refreshWeatherData() {
     if (!this.refreshPromise) {
       this.refreshPromise = (async () => {

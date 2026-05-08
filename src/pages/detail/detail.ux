@@ -37,7 +37,10 @@
 </template>
 
 <script>
-// 导入系统模块
+/**
+ * 单日天气详情页面
+ * 展示指定日期的详细天气信息，包含温度、风力、空气、天文五大类
+ */
 import router from "@system.router"
 import {showToast} from "@system.prompt"
 const {
@@ -52,9 +55,8 @@ const {
 } = global
 
 export default {
-  // 接收来自 index 页面的 selectedDate 参数
   protected: {
-    selectedDate: "" // 接收字符串格式的日期，例如 "2025-08-30"
+    selectedDate: ""
   },
 
   private: {
@@ -69,16 +71,29 @@ export default {
     weatherCategories: []
   },
 
+  /**
+   * 返回上一页，支持右滑手势
+   * @param {Object} eve - 手势事件
+   */
   goBack(eve) {
     if (eve.direction === "right") {
       router.back()
     }
   },
 
+  /**
+   * 更新天气分类展示数据
+   * @param {Object} selectedData - 选中日期的天气数据
+   */
   updateCategories(selectedData) {
     this.weatherCategories = this.buildCategories(selectedData)
   },
 
+  /**
+   * 应用选中日期的天气数据到页面
+   * @param {Object} selectedData - 选中日期的天气数据
+   * @param {string} product - 设备产品名称
+   */
   applyData(selectedData, product) {
     this.syncCurrentWeather(selectedData, product)
     this.updateCategories(selectedData)
@@ -119,6 +134,12 @@ export default {
     this.applyData(selectedData, product)
   },
 
+  /**
+   * 同步当前天气显示信息
+   * 根据设备类型和时段确定背景图
+   * @param {Object} selectedData - 天气数据
+   * @param {string} product - 设备产品名称
+   */
   syncCurrentWeather(selectedData, product) {
     this.selectedDateDisplay = this.selectedDate || ""
 
@@ -134,6 +155,12 @@ export default {
     this.backgroundFolder = isRect || isNarrowRect || isCircle ? "rect" : "default"
   },
 
+  /**
+   * 构建五大类天气详细数据
+   * 包含温度与天气、白天风力、夜间风力、空气与能见度、天文信息
+   * @param {Object} selectedData - 天气数据
+   * @returns {Array<Object>} 分类数组，每项包含 title 和 items
+   */
   buildCategories(selectedData = {}) {
     const readValue = (value) =>
       value === undefined || value === null || value === "" ? "__" : value

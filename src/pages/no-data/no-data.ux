@@ -55,6 +55,10 @@
 </template>
 
 <script>
+/**
+ * 无数据页面
+ * 处理本地无数据和数据过期两种状态，提供手动刷新和同步教程
+ */
 import router from "@system.router"
 import {showToast} from "@system.prompt"
 const {
@@ -84,12 +88,19 @@ export default {
     hasNavigated: false
   },
 
+  /**
+   * 页面初始化
+   * 检测设备能力并同步数据状态
+   */
   async onInit() {
     this.showDebugPanel = DebugService.isDebugMode()
     await this.detectFeatureSupport()
     await this.syncState()
   },
 
+  /**
+   * 检测设备是否支持高级功能（逐小时预报、预警等）
+   */
   async detectFeatureSupport() {
     try {
       this.supportsAdvancedFeatures = !(await DeviceService.isProductInList(
@@ -101,6 +112,9 @@ export default {
     }
   },
 
+  /**
+   * 页面显示时初始化连接，注册消息处理器
+   */
   onShow() {
     ConnectionService.init((data) => {
       this.handleData(data)
@@ -111,6 +125,10 @@ export default {
 
   onDestroy() {},
 
+  /**
+   * 同步数据状态
+   * 如果本地有可用数据则自动跳转到首页
+   */
   async syncState() {
     const state = await this.resolveState()
     if (state.usable) {
@@ -120,6 +138,10 @@ export default {
     this.mode = state.mode || "no_data"
   },
 
+  /**
+   * 解析当前数据状态
+   * @returns {Promise<Object>} { usable, mode }
+   */
   async resolveState() {
     const todayResult = await DataService.getTodayData(true)
 
@@ -143,11 +165,21 @@ export default {
     }
   },
 
+  /**
+   * 在每日列表中查找今日数据
+   * @param {Object} weatherData - 天气数据
+   * @returns {Object|null}
+   */
   findTodayData(weatherData) {
     const todayStr = DateUtils.getTodayString()
     return DataService.getDailyList(weatherData).find((day) => day.fxDate === todayStr) || null
   },
 
+  /**
+   * 检查天气数据中是否包含今日数据
+   * @param {Object} weatherData - 天气数据
+   * @returns {boolean}
+   */
   hasTodayData(weatherData) {
     if (!DataService.validateWeatherData(weatherData)) {
       return false
@@ -160,6 +192,10 @@ export default {
     return true
   },
 
+  /**
+   * 手动请求刷新天气数据
+   * 仅在数据过期且设备支持时可用，成功则跳转首页
+   */
   async requestRefresh() {
     if (this.mode !== "expired" || this.isUpdating || !this.supportsAdvancedFeatures) {
       return
@@ -195,6 +231,10 @@ export default {
     }
   },
 
+  /**
+   * 处理来自连接服务的实时数据
+   * @param {Object} data - 接收到的消息数据
+   */
   async handleData(data) {
     try {
       const weatherData = JSON.parse(data.data)
@@ -226,6 +266,10 @@ export default {
     await DebugService.clearLocalData()
   },
 
+  /**
+   * 跳转到首页
+   * 使用 hasNavigated 标志防止重复跳转
+   */
   goToHome() {
     if (this.hasNavigated) {
       return

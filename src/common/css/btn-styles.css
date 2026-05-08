@@ -2,28 +2,33 @@
  * 按钮公共样式
  */
 
+/* ---- 基础按钮 ---- */
 .btn {
   flex-direction: column;
   align-items: center;
 }
 
+/* ---- 按钮文本 ---- */
 .btn__text {
   font-size: 28px;
   color: #ffffff;
 }
 
+/* ---- 主按钮 ---- */
 .btn--primary {
   background-color: rgba(255, 255, 255, 0.2);
   padding: 18px 30px;
   border-radius: 50%;
 }
 
+/* ---- 次要按钮 ---- */
 .btn--secondary {
   border: 2px solid rgba(255, 255, 255, 0.2);
   padding: 18px 30px;
   border-radius: 50%;
 }
 
+/* ---- 方形次要按钮 ---- */
 .btn--secondary-square {
   border: 2px solid rgba(255, 255, 255, 0.2);
   padding: 18px 30px;

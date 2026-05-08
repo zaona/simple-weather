@@ -2,6 +2,10 @@ import file from "@system.file"
 import {showToast} from "@system.prompt"
 import {STORAGE, MESSAGES, TOAST_DURATION} from "./config.js"
 
+/**
+ * 默认设置
+ * @type {{ autoUpdateEnabled: boolean, hourlyForecastEnabled: boolean, alertEnabled: boolean, reduceAnimationEnabled: boolean }}
+ */
 const DEFAULT_SETTINGS = {
   autoUpdateEnabled: false,
   hourlyForecastEnabled: false,
@@ -79,43 +83,60 @@ class SettingsService {
     return !!settings[key]
   }
 
+  /**
+   * 设置单个配置项
+   * @param {string} key - 配置键名
+   * @param {boolean} enabled - 是否启用
+   * @returns {Promise<boolean>}
+   */
   async setSetting(key, enabled) {
     const settings = await this.readSettings()
     return this.saveSettings({...settings, [key]: !!enabled})
   }
 
+  /** @returns {Promise<boolean>} */
   isAutoUpdateEnabled() {
     return this.getSetting("autoUpdateEnabled")
   }
 
+  /** @returns {Promise<boolean>} */
   isHourlyForecastEnabled() {
     return this.getSetting("hourlyForecastEnabled")
   }
 
+  /** @returns {Promise<boolean>} */
   isReduceAnimationEnabled() {
     return this.getSetting("reduceAnimationEnabled")
   }
 
+  /** @param {boolean} enabled @returns {Promise<boolean>} */
   setAutoUpdateEnabled(enabled) {
     return this.setSetting("autoUpdateEnabled", enabled)
   }
 
+  /** @param {boolean} enabled @returns {Promise<boolean>} */
   setHourlyForecastEnabled(enabled) {
     return this.setSetting("hourlyForecastEnabled", enabled)
   }
 
+  /** @returns {Promise<boolean>} */
   isAlertEnabled() {
     return this.getSetting("alertEnabled")
   }
 
+  /** @param {boolean} enabled @returns {Promise<boolean>} */
   setAlertEnabled(enabled) {
     return this.setSetting("alertEnabled", enabled)
   }
 
+  /** @param {boolean} enabled @returns {Promise<boolean>} */
   setReduceAnimationEnabled(enabled) {
     return this.setSetting("reduceAnimationEnabled", enabled)
   }
 
+  /**
+   * 清除设置缓存
+   */
   clearCache() {
     this.cache = null
   }

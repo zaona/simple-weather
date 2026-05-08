@@ -289,7 +289,10 @@
 </template>
 
 <script>
-// 导入系统模块
+/**
+ * 窄矩形屏布局主页面
+ * 适用于窄矩形屏幕设备（小米手环9 Pro 等），展示当前天气和预报信息
+ */
 import router from "@system.router"
 import {showToast} from "@system.prompt"
 const {
@@ -306,6 +309,10 @@ const {
   WeatherDataUtils
 } = global
 
+/**
+ * 创建默认天气指数数据
+ * @returns {Array} 包含5项默认指数（紫外线、湿度、风向风力、气压、日出日落）的数组
+ */
 function createDefaultIndices() {
   return [
     {
@@ -391,6 +398,11 @@ export default {
     }
   },
 
+  /**
+   * 应用预加载的天气数据
+   * @param {Object} preloaded - 预加载数据对象（含 weatherData 和 todayData）
+   * @returns {Object|null} 天气数据对象，无效则返回 null
+   */
   applyPreloadedData(preloaded) {
     if (!preloaded || !preloaded.weatherData || !preloaded.todayData) {
       return null
@@ -403,6 +415,11 @@ export default {
     return weatherData
   },
 
+  /**
+   * 标准化温度值为取整字符串
+   * @param {*} value - 原始温度值
+   * @returns {string} 取整后的温度字符串，无效值返回 "__"
+   */
   normalizeTemperatureValue(value) {
     if (value === null || value === undefined) {
       return "__"
@@ -414,6 +431,11 @@ export default {
     return String(Math.round(numeric))
   },
 
+  /**
+   * 计算当日平均温度
+   * @param {Object} todayData - 今日天气数据
+   * @returns {string} 平均温度字符串
+   */
   calculateAverageTemperature(todayData) {
     if (!todayData) {
       return "__"
@@ -426,6 +448,12 @@ export default {
     return this.normalizeTemperatureValue((min + max) / 2)
   },
 
+  /**
+   * 获取当前显示温度（优先使用逐小时数据，其次计算日平均温度）
+   * @param {Object} todayData - 今日天气数据
+   * @param {Array} hourlyList - 逐小时预报列表
+   * @returns {string} 温度字符串
+   */
   getCurrentTemperature(todayData, hourlyList = []) {
     if (Array.isArray(hourlyList) && hourlyList.length > 0) {
       const tempText = hourlyList[0].temp || hourlyList[0].temperature
@@ -439,11 +467,22 @@ export default {
     return this.calculateAverageTemperature(todayData)
   },
 
+  /**
+   * 获取逐小时预报中的第一条有效数据
+   * @param {Array} hourlyList - 逐小时预报列表
+   * @param {Object|null} todayData - 今日天气数据
+   * @returns {Object|null} 首条预报对象或 null
+   */
   firstHourlyEntry(hourlyList = [], todayData = null) {
     const processed = this.processHourlyList(hourlyList, 1, todayData)
     return processed.length > 0 ? processed[0] : null
   },
 
+  /**
+   * 根据湿度百分比获取中文描述
+   * @param {number} percent - 湿度百分比
+   * @returns {string} 湿度描述文字（干燥/偏干/舒适/偏湿/潮湿）
+   */
   getHumidityDesc(percent) {
     if (typeof percent !== "number" || Number.isNaN(percent)) {
       return ""
@@ -463,6 +502,11 @@ export default {
     return "潮湿"
   },
 
+  /**
+   * 根据紫外线指数获取等级描述
+   * @param {number|string} indexValue - 紫外线指数
+   * @returns {string} 紫外线等级（弱/中等/强/很强/极强）
+   */
   getUvDesc(indexValue) {
     const numeric = Number(indexValue)
     if (Number.isNaN(numeric)) {
@@ -483,6 +527,13 @@ export default {
     return "极强"
   },
 
+  /**
+   * 将数值映射到指定区间内的百分比
+   * @param {number} value - 原始值
+   * @param {number} min - 区间最小值
+   * @param {number} max - 区间最大值
+   * @returns {number} 百分比（0-100）
+   */
   getPercentByRange(value, min, max) {
     const numeric = Number(value)
     if (Number.isNaN(numeric)) {
@@ -492,6 +543,14 @@ export default {
     return Math.round(((clamped - min) / (max - min)) * 100)
   },
 
+  /**
+   * 根据百分比获取对应索引的图片路径
+   * @param {string} basePath - 图片基础路径
+   * @param {number} maxIndex - 最大图片索引
+   * @param {number} percent - 百分比
+   * @param {string} fallbackPath - 备用图片路径
+   * @returns {string} 图片完整路径
+   */
   getImageByPercent(basePath, maxIndex, percent, fallbackPath) {
     const normalized = Math.min(Math.max(Math.round(percent), 0), 100)
     const index = 1 + Math.round((normalized / 100) * (maxIndex - 1))
@@ -501,6 +560,11 @@ export default {
     return `${basePath}${index}.png`
   },
 
+  /**
+   * 根据气压值获取对应箭头图标
+   * @param {number|string} pressure - 气压值
+   * @returns {string} 箭头图标路径
+   */
   getPressureArrow(pressure) {
     const numeric = Number(pressure)
     if (Number.isNaN(numeric)) {
@@ -515,6 +579,11 @@ export default {
     return "/common/images/uv/uv15.png"
   },
 
+  /**
+   * 计算风向旋转角度（偏移180度以对齐显示）
+   * @param {number|string} degValue - 风向角度
+   * @returns {number} 旋转角度
+   */
   getWindRotation(degValue) {
     const numeric = Number(degValue)
     if (Number.isNaN(numeric)) {
@@ -527,6 +596,13 @@ export default {
     return Math.round(normalized)
   },
 
+  /**
+   * 计算日出到日落之间的白天进度百分比
+   * 基于当前时间在日出-日落时间区间内的位置计算进度
+   * @param {string} sunriseText - 日出时间 (HH:mm)
+   * @param {string} sunsetText - 日落时间 (HH:mm)
+   * @returns {number} 白天进度百分比（0-100）
+   */
   getSunPercent(sunriseText, sunsetText) {
     if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
       return 0
@@ -556,6 +632,14 @@ export default {
     return Math.round((progress / (sunsetMinutes - sunriseMinutes)) * 100)
   },
 
+  /**
+   * 获取日出日落展示信息（标签和时间）
+   * 根据当前时间与日出日落时间对比，自动选择显示"日出"或"日落"及对应时间
+   * @param {string} sunriseText - 日出时间
+   * @param {string} sunsetText - 日落时间
+   * @param {string|null} nextSunriseText - 次日日出时间
+   * @returns {{label: string, time: string}} 显示标签和时间
+   */
   getSunDisplayInfo(sunriseText, sunsetText, nextSunriseText = null) {
     if (!sunriseText || !sunsetText || sunriseText === "--" || sunsetText === "--") {
       return {label: "日出", time: sunriseText || "--"}
@@ -587,6 +671,12 @@ export default {
     return {label: "日落", time: sunsetText}
   },
 
+  /**
+   * 获取次日日出时间（用于日落后展示）
+   * @param {Object} weatherData - 完整天气数据
+   * @param {Object} todayData - 今日天气数据
+   * @returns {string} 次日日出时间字符串
+   */
   getNextSunriseValue(weatherData, todayData) {
     if (!todayData) {
       return "--"
@@ -610,6 +700,13 @@ export default {
     return nextDay?.sunrise || "--"
   },
 
+  /**
+   * 构建逐小时预报展示数据
+   * @param {Array} hourlyList - 原始逐小时数据
+   * @param {number} limit - 最大返回条数
+   * @param {Object|null} todayData - 今日天气数据
+   * @returns {Array} 格式化后的逐小时列表
+   */
   buildForecastHourly(hourlyList = [], limit = 12, todayData = null) {
     const processed = this.processHourlyList(hourlyList, limit, todayData)
     if (processed.length === 0) {
@@ -630,6 +727,11 @@ export default {
     })
   },
 
+  /**
+   * 构建未来天气预报展示数据
+   * @param {Array} dailyList - 原始每日预报数据
+   * @returns {Array} 格式化后的预报列表
+   */
   buildForecastDaily(dailyList = []) {
     if (!Array.isArray(dailyList) || dailyList.length === 0) {
       return []
@@ -651,6 +753,12 @@ export default {
     })
   },
 
+  /**
+   * 构建当前天气基础数据（图标、文字描述、背景图、温度）
+   * @param {Object} todayData - 今日天气数据
+   * @param {Object|null} hourlyEntry - 当前逐小时数据
+   * @returns {{iconCode: string, textDay: string, backgroundImage: string, currentTemperature: string}}
+   */
   buildBaseWeather(todayData, hourlyEntry = null) {
     const dayPeriod = WeatherDataUtils.getCurrentDayPeriod(todayData.sunrise, todayData.sunset)
     const isNight = dayPeriod === "night"
@@ -672,6 +780,11 @@ export default {
     }
   },
 
+  /**
+   * 构建预报基础数据（名称、温度范围、图标代码）
+   * @param {Object} weatherData - 天气数据
+   * @returns {Array} 基础预报列表
+   */
   buildForecastBase(weatherData) {
     const dailyList = DataService.getDailyList(weatherData)
     const todayStr = DateUtils.getTodayString()
@@ -699,6 +812,14 @@ export default {
       })
   },
 
+  /**
+   * 处理和过滤逐小时预报列表
+   * 按时间阈值（距今1小时内）过滤过期数据，并按指定数量截取返回
+   * @param {Array} hourlyList - 原始逐小时数据
+   * @param {number} limit - 最大返回条数
+   * @param {Object|null} todayData - 今日天气数据（用于判断昼夜）
+   * @returns {Array} 处理后的有效逐小时列表
+   */
   processHourlyList(hourlyList = [], limit = 6, todayData = null) {
     if (!Array.isArray(hourlyList) || hourlyList.length === 0) {
       return []
@@ -762,6 +883,13 @@ export default {
     })
   },
 
+  /**
+   * 构建5项天气指数卡片数据（紫外线、湿度、风向风力、气压、日出日落）
+   * 每项指数包含对应图标、数值和展示样式
+   * @param {Object} weatherData - 完整天气数据
+   * @param {Object} todayData - 今日天气数据
+   * @returns {Array} 5项指数数据数组
+   */
   buildIndices(weatherData, todayData) {
     if (!todayData) {
       return createDefaultIndices()
@@ -862,6 +990,13 @@ export default {
     ]
   },
 
+  /**
+   * 同步天气数据到页面状态
+   * @param {Object} weatherData - 完整天气数据
+   * @param {Object} todayData - 今日天气数据
+   * @param {string} timeAgo - 相对更新时间描述
+   * @param {Object|null} hourlyEntry - 当前逐小时数据
+   */
   syncWeather(weatherData, todayData, timeAgo, hourlyEntry = null) {
     RefreshController.recordDailyUpdate(weatherData)
     const baseWeather = this.buildBaseWeather(todayData, hourlyEntry)
@@ -886,16 +1021,34 @@ export default {
     this.indices = this.buildIndices(weatherData, todayData)
   },
 
+  /**
+   * 从天气数据中查找当日数据
+   * @param {Object} weatherData - 天气数据
+   * @returns {Object|null} 当日数据对象或 null
+   */
   findTodayData(weatherData) {
     const todayStr = DateUtils.getTodayString()
     return DataService.getDailyList(weatherData).find((day) => day.fxDate === todayStr) || null
   },
 
+  /**
+   * 格式化天气数据更新时间为相对时间描述
+   * @param {Object} weatherData - 天气数据
+   * @returns {string} 相对时间描述（如"刚刚"、"5分钟前"）
+   */
   formatUpdateTime(weatherData) {
     const updateTime = new Date(DataService.getPrimaryUpdateTime(weatherData))
     return DateUtils.formatTimeAgo(updateTime)
   },
 
+  /**
+   * 应用天气数据快照到页面（主数据刷新入口）
+   * 更新逐小时、每日预报、指数卡片及预警数据
+   * @param {Object} weatherData - 天气数据
+   * @param {Object} todayData - 今日天气数据
+   * @param {Array} hourlyList - 逐小时预报列表
+   * @returns {boolean} 是否成功应用
+   */
   applyWeatherSnapshot(weatherData, todayData, hourlyList = []) {
     if (!weatherData || !todayData) {
       return false
@@ -934,6 +1087,11 @@ export default {
     return true
   },
 
+  /**
+   * 解析并处理天气预警数据
+   * 过滤已过期的预警，更新预警显示状态
+   * @param {Object} weatherData - 天气数据
+   */
   resolveAlertData(weatherData) {
     if (!this.alertEnabled) {
       this.hasAlertData = false
@@ -956,6 +1114,9 @@ export default {
     }
   },
 
+  /**
+   * 跳转到今日天气详情页
+   */
   goToTodayDetail() {
     router.push({
       uri: "/pages/detail",
@@ -965,6 +1126,9 @@ export default {
     })
   },
 
+  /**
+   * 跳转到天气预警列表页
+   */
   goToAlerts() {
     router.push({
       uri: "/pages/alert",
@@ -974,6 +1138,13 @@ export default {
     })
   },
 
+  /**
+   * 解析逐小时天气数据
+   * @param {Object} weatherData - 天气数据
+   * @param {Object} options - 配置项
+   * @param {boolean} options.silent - 静默模式，不显示错误提示
+   * @returns {Promise<{weatherData: Object, hourlyList: Array}>}
+   */
   async resolveHourlyData(weatherData, options = {}) {
     if (!this.hourlyForecastEnabled) {
       return {weatherData, hourlyList: []}
@@ -1006,6 +1177,11 @@ export default {
 
     return {weatherData, hourlyList: []}
   },
+  /**
+   * 格式化日期对象为 HH:mm 时间字符串
+   * @param {Date} dateValue - 日期对象
+   * @returns {string} 格式化时间字符串
+   */
   formatTime(dateValue) {
     if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) {
       return "__:__"
@@ -1073,6 +1249,9 @@ export default {
     }
   },
 
+  /**
+   * 跳转到关于页面
+   */
   goToAbout() {
     router.push({
       uri: "/pages/about"
@@ -1168,7 +1347,6 @@ export default {
   async loadWeatherData(silent = false, options = {}) {
     const result = await DataService.getTodayData(silent)
 
-    // 检查加载状态
     if (!result || result.status !== "success") {
       return {
         success: false,
@@ -1258,6 +1436,10 @@ export default {
     this.updateSwiperIndicator(0)
   },
 
+  /**
+   * 处理轮播切换事件
+   * @param {Object} event - 切换事件对象
+   */
   handleSwiperChange(event) {
     const rawIndex =
       event && event.index !== undefined
@@ -1269,6 +1451,10 @@ export default {
     this.updateSwiperIndicator(Number.isNaN(index) ? 0 : index)
   },
 
+  /**
+   * 更新轮播指示器样式
+   * @param {number} index - 当前页码
+   */
   updateSwiperIndicator(index) {
     const pageCount = this.forecastHourlyPages.length
     const totalItems = this.forecastHourly.length
@@ -1374,7 +1560,6 @@ export default {
    */
   async onShow() {
     this.systemTime = this.formatTime(new Date())
-    // 初始化连接并注册消息处理
     ConnectionService.init((data) => {
       this.handleData(data)
     })
@@ -1386,10 +1571,8 @@ export default {
    */
   async handleData(data) {
     try {
-      // 解析数据
       const weatherData = JSON.parse(data.data)
 
-      // 验证数据格式
       if (!DataService.validateWeatherData(weatherData)) {
         showToast({
           message: MESSAGES.DATA_FORMAT_ERROR,
@@ -1416,7 +1599,6 @@ export default {
       const latestTodayData = this.findTodayData(latestWeatherData) || todayData
       this.applyWeatherSnapshot(latestWeatherData, latestTodayData, resolved.hourlyList || [])
 
-      // 保存数据到本地
       await DataService.saveWeatherData(JSON.stringify(latestWeatherData), 0, latestWeatherData)
 
       showToast({
@@ -1433,8 +1615,14 @@ export default {
       this.isLoading = false
     }
   },
+  /**
+   * 页面隐藏时的生命周期回调
+   */
   onHide() {},
 
+  /**
+   * 页面销毁时的生命周期回调
+   */
   onDestroy() {}
 }
 </script>

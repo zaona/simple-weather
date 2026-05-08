@@ -10,6 +10,11 @@ class DeviceService {
     this.fetchingPromise = null
   }
 
+  /**
+   * 规范化产品名称为小写
+   * @param {string} product - 原始产品名称
+   * @returns {string} 小写产品名称
+   */
   normalizeProduct(product) {
     return (product || "").toLowerCase()
   }
@@ -50,6 +55,11 @@ class DeviceService {
     return this.fetchingPromise
   }
 
+  /**
+   * 判断当前设备是否在指定产品列表中
+   * @param {string[]} productList - 产品名称列表
+   * @returns {Promise<boolean>}
+   */
   async isProductInList(productList = []) {
     if (!Array.isArray(productList) || productList.length === 0) {
       return false

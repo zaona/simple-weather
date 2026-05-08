@@ -7,6 +7,10 @@
 </template>
 
 <script>
+/**
+ * 首页路由
+ * 负责设备检测、数据预加载和布局路由分发
+ */
 import router from "@system.router"
 const {
   DeviceService,
@@ -22,6 +26,10 @@ export default {
     hasRouted: false
   },
 
+  /**
+   * 应用入口
+   * 预加载天气数据 → 检测设备 → 根据数据状态路由到对应页面
+   */
   async onInit() {
     const preloadTask = this.preloadTodaySnapshot()
 
@@ -44,6 +52,10 @@ export default {
     })
   },
 
+  /**
+   * 将预加载数据写入 globalThis 供布局页面读取
+   * @param {Object|null} payload - 天气数据快照
+   */
   setPreloadedWeatherData(payload) {
     if (typeof globalThis === "undefined") {
       return
@@ -51,6 +63,10 @@ export default {
     globalThis.__preloadedWeatherData = payload
   },
 
+  /**
+   * 预加载今日天气快照
+   * @returns {Promise<Object|null>} 天气快照数据，失败返回 null
+   */
   async preloadTodaySnapshot() {
     try {
       const result = await DataService.getTodayData(true)
@@ -73,6 +89,11 @@ export default {
     }
   },
 
+  /**
+   * 校验预加载数据是否包含有效的今日快照
+   * @param {Object|null} payload
+   * @returns {boolean}
+   */
   hasValidTodaySnapshot(payload) {
     if (!payload || !payload.weatherData || !payload.todayData) {
       return false
@@ -81,6 +102,10 @@ export default {
     return true
   },
 
+  /**
+   * 根据设备和设置路由到对应的布局页面
+   * 优先级：simple > narrow-rect > rect > circle > default
+   */
   async routeToHomeLayout() {
     if (this.hasRouted) {
       return

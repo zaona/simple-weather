@@ -32,6 +32,10 @@
 </template>
 
 <script>
+/**
+ * 天气预警页面
+ * 展示当前有效的天气预警信息
+ */
 import router from "@system.router"
 const {
   DataService,
@@ -47,11 +51,16 @@ export default {
   },
 
   private: {
+    // ---- 页面状态 ----
     isLoading: true,
     backgroundFolder: "default",
     alerts: []
   },
 
+  /**
+   * 页面初始化
+   * 加载天气数据并筛选未过期的预警
+   */
   async onInit() {
     try {
       const [weatherData] = await Promise.all([
@@ -79,6 +88,10 @@ export default {
     }
   },
 
+  /**
+   * 检测设备类型以确定背景图文件夹
+   * 矩形/圆形设备使用 rect 文件夹，其他用 default
+   */
   async detectBackgroundFolder() {
     try {
       const isRect = await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)
@@ -90,6 +103,11 @@ export default {
     }
   },
 
+  /**
+   * 格式化预警失效时间为 MM-DD HH:MM
+   * @param {string} timeStr - 原始时间字符串
+   * @returns {string} 格式化后的时间
+   */
   formatExpireTime(timeStr) {
     if (!timeStr) return "--"
     try {
@@ -105,6 +123,10 @@ export default {
     }
   },
 
+  /**
+   * 返回上一页，支持右滑手势
+   * @param {Object} eve - 手势事件
+   */
   goBack(eve) {
     if (eve.direction === "right") {
       router.back()

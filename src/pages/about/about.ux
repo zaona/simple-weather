@@ -166,6 +166,14 @@ export default {
     }
   },
 
+  /**
+   * 通用设置切换
+   * 乐观更新：先更新 UI 再保存，保存失败时回滚
+   * @param {Object} event - 开关事件
+   * @param {string} fieldKey - 数据字段名
+   * @param {Function} setterFn - 设置保存函数
+   * @returns {Promise<void>}
+   */
   async toggleSetting(event, fieldKey, setterFn) {
     const nextValue = typeof event.checked === "boolean" ? event.checked : !!event.detail?.checked
     const previousValue = this[fieldKey]
@@ -178,24 +186,36 @@ export default {
     showToast({message: MESSAGES.SETTINGS_SAVED, duration: TOAST_DURATION.SHORT})
   },
 
+  /**
+   * 切换自动更新开关
+   */
   toggleAutoUpdate(event) {
     return this.toggleSetting(event, "autoUpdateEnabled", (v) =>
       SettingsService.setAutoUpdateEnabled(v)
     )
   },
 
+  /**
+   * 切换逐小时预报开关
+   */
   toggleHourlyForecast(event) {
     return this.toggleSetting(event, "hourlyForecastEnabled", (v) =>
       SettingsService.setHourlyForecastEnabled(v)
     )
   },
 
+  /**
+   * 切换天气预警开关
+   */
   toggleAlert(event) {
     return this.toggleSetting(event, "alertEnabled", (v) =>
       SettingsService.setAlertEnabled(v)
     )
   },
 
+  /**
+   * 切换简化动画开关
+   */
   toggleReduceAnimation(event) {
     return this.toggleSetting(event, "reduceAnimationEnabled", (v) =>
       SettingsService.setReduceAnimationEnabled(v)

@@ -14,6 +14,13 @@ class DataService {
     this.cacheTime = null
   }
 
+  /**
+   * 读取本地天气数据
+   * 优先使用缓存，缓存过期后从文件读取并解析
+   * @param {boolean} silent - 静默模式，不显示错误提示
+   * @param {boolean} [options.skipCache] - 是否跳过缓存
+   * @returns {Promise<Object|null>} 天气数据对象，读取失败返回 null
+   */
   readWeatherData(silent = false, {skipCache = false} = {}) {
     return new Promise((resolve) => {
       if (!skipCache && this.cache && this.cacheTime) {
@@ -64,6 +71,14 @@ class DataService {
     })
   }
 
+  /**
+   * 保存天气数据到本地文件
+   * 写入失败时自动重试，超过最大重试次数后提示用户
+   * @param {string} dataText - 要保存的 JSON 字符串
+   * @param {number} retryCount - 当前重试次数
+   * @param {Object|null} parsedData - 已解析的数据对象，用于更新缓存
+   * @returns {Promise<boolean>} 保存成功返回 true
+   */
   saveWeatherData(dataText, retryCount = 0, parsedData = null) {
     return new Promise((resolve) => {
       file.writeText({
@@ -102,6 +117,13 @@ class DataService {
     })
   }
 
+  /**
+   * 提取天气数据中的指定模块
+   * 自动处理数组格式 {moduleName: data, updateTime} 和直接对象格式
+   * @param {Object|null} weatherData - 天气数据
+   * @param {string} name - 模块名称（如 "daily"、"hourly"）
+   * @returns {Object|null} 模块数据对象，不存在返回 null
+   */
   getModule(weatherData, name) {
     if (!weatherData || !weatherData[name]) {
       return null
@@ -121,16 +143,31 @@ class DataService {
     return null
   }
 
+  /**
+   * 获取逐日预报列表
+   * @param {Object} weatherData - 天气数据
+   * @returns {Array} 逐日预报数组
+   */
   getDailyList(weatherData) {
     const dailyModule = this.getModule(weatherData, "daily")
     return Array.isArray(dailyModule?.daily) ? dailyModule.daily : []
   }
 
+  /**
+   * 获取逐小时预报列表
+   * @param {Object} weatherData - 天气数据
+   * @returns {Array} 逐小时预报数组
+   */
   getHourlyList(weatherData) {
     const hourlyModule = this.getModule(weatherData, "hourly")
     return Array.isArray(hourlyModule?.hourly) ? hourlyModule.hourly : []
   }
 
+  /**
+   * 获取天气预警列表
+   * @param {Object} weatherData - 天气数据
+   * @returns {Array} 预警信息数组
+   */
   getAlertsList(weatherData) {
     if (!weatherData || !Array.isArray(weatherData.alerts)) {
       return []
@@ -138,6 +175,11 @@ class DataService {
     return weatherData.alerts
   }
 
+  /**
+   * 获取天气数据的主要更新时间
+   * @param {Object} weatherData - 天气数据
+   * @returns {string} 更新时间字符串，不存在返回空字符串
+   */
   getPrimaryUpdateTime(weatherData) {
     if (typeof weatherData?.updateTime === "string" && weatherData.updateTime) {
       return weatherData.updateTime
@@ -146,6 +188,12 @@ class DataService {
     return ""
   }
 
+  /**
+   * 获取地理位置名称
+   * 优先级：location 字段 > name 字段 > "未知地点" 兜底
+   * @param {Object} weatherData - 天气数据
+   * @returns {string} 地点名称
+   */
   getLocationName(weatherData) {
     if (!weatherData) {
       return "未知地点"
@@ -155,6 +203,12 @@ class DataService {
     return typeof rawName === "string" ? rawName.trim() || "未知地点" : "未知地点"
   }
 
+  /**
+   * 根据日期查找对应的天气数据
+   * @param {string} date - 日期字符串，格式 YYYY-MM-DD
+   * @param {boolean} silent - 静默模式，不显示错误提示
+   * @returns {Promise<Object|null>} 匹配的日数据，未找到返回 null
+   */
   async getDataByDate(date, silent = false) {
     const weatherData = await this.readWeatherData(silent)
     const dailyList = this.getDailyList(weatherData)
@@ -166,6 +220,12 @@ class DataService {
     return dayData || null
   }
 
+  /**
+   * 获取今天的数据
+   * 返回 status 标记数据状态：success / no_data / expired
+   * @param {boolean} silent - 静默模式
+   * @returns {Promise<Object>} { status, weatherData, todayData, todayStr }
+   */
   async getTodayData(silent = false) {
     const weatherData = await this.readWeatherData(silent)
     const dailyList = this.getDailyList(weatherData)
@@ -195,12 +255,20 @@ class DataService {
     }
   }
 
+  /**
+   * 清除内存缓存
+   */
   clearCache() {
     this.cache = null
     this.cacheTime = null
     console.log("缓存已清除")
   }
 
+  /**
+   * 校验天气数据的基本格式
+   * @param {*} data - 待校验数据
+   * @returns {boolean} 是否为有效对象
+   */
   validateWeatherData(data) {
     return !!data && typeof data === "object" && !Array.isArray(data)
   }
