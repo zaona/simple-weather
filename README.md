@@ -72,7 +72,8 @@ export const WEATHER_API_PRIVATE = {
 }
 
 export default WEATHER_API_PRIVATE
-```json
+
+```
 
 请求体结构示例：
 
