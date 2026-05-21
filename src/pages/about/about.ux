@@ -8,7 +8,7 @@
 
       <div class="about__card">
         <div class="about__app-info">
-          <image class="about__app-icon" src="/common/logo.png" />
+          <image class="about__app-icon" src="/common/logo-square.png" />
           <div class="about__app-text">
             <text class="about__app-name">简明天气</text>
             <text class="about__app-version">v{{ versionName }}</text>
