@@ -153,9 +153,7 @@ class WeatherApiService {
 
     return {
       daily: this.buildModuleRange(dailyLength, WEATHER_API.DAILY_RANGE, "d"),
-      hourly: enableHourly
-        ? this.buildModuleRange(hourlyLength, WEATHER_API.HOURLY_RANGE, "h")
-        : null,
+      hourly: enableHourly ? this.buildHourlyRange(hourlyLength) : null,
       alerts: enableAlerts || false
     }
   }
@@ -171,6 +169,23 @@ class WeatherApiService {
   buildModuleRange(length, fallbackRange, suffix) {
     const normalizedLength = Number.isFinite(length) ? Math.floor(length) : 0
     return normalizedLength > 0 ? `${normalizedLength}${suffix}` : fallbackRange
+  }
+
+  /**
+   * 构建逐小时预报 range 参数
+   * 后端仅支持 24h、72h、168h，按本地已有长度归一化到最近的下档。
+   * @param {number} length - 本地已有逐小时数据长度
+   * @returns {string} 逐小时 range 字符串
+   */
+  buildHourlyRange(length) {
+    const normalizedLength = Number.isFinite(length) ? Math.floor(length) : 0
+    if (normalizedLength >= 168) {
+      return "168h"
+    }
+    if (normalizedLength >= 72) {
+      return "72h"
+    }
+    return WEATHER_API.HOURLY_RANGE
   }
 
   /**
