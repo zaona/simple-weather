@@ -10,14 +10,6 @@ export const STORAGE = {
   SETTINGS_FILE: "internal://files/settings.txt"
 }
 
-// ---- 数据操作配置 ----
-/** @type {{ MAX_SAVE_RETRIES: number, SAVE_RETRY_DELAY: number, CACHE_EXPIRY: number }} */
-export const DATA = {
-  MAX_SAVE_RETRIES: 2,
-  SAVE_RETRY_DELAY: 500,
-  CACHE_EXPIRY: 5 * 60 * 1000
-}
-
 // ---- 自动更新配置 ----
 /** @type {{ EXPIRY_THRESHOLD: number }} */
 export const AUTO_UPDATE = {

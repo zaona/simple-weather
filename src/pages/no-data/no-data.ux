@@ -85,7 +85,8 @@ export default {
 
     // ---- 辅助 ----
     isUpdating: false,
-    hasNavigated: false
+    hasNavigated: false,
+    navigationTimer: null
   },
 
   /**
@@ -121,9 +122,13 @@ export default {
     })
   },
 
-  onHide() {},
+  onHide() {
+    this.clearNavigationTimer()
+  },
 
-  onDestroy() {},
+  onDestroy() {
+    this.clearNavigationTimer()
+  },
 
   /**
    * 同步数据状态
@@ -209,7 +214,7 @@ export default {
           message: MESSAGES.DATA_UPDATED,
           duration: TOAST_DURATION.SHORT
         })
-        this.goToHome()
+        this.goToHomeAfterToast()
         return
       }
 
@@ -219,7 +224,9 @@ export default {
       })
     } catch (error) {
       const message =
-        error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+        error?.code === "DATA_SAVE_FAILED"
+          ? MESSAGES.DATA_SAVE_ERROR
+          : error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
           ? MESSAGES.LOCATION_INFO_MISSING
           : MESSAGES.FETCH_WEATHER_ERROR
       showToast({
@@ -243,12 +250,16 @@ export default {
         return
       }
 
-      await DataService.saveWeatherData(JSON.stringify(weatherData))
+      const saved = await DataService.saveWeatherData(JSON.stringify(weatherData))
+      if (!saved) {
+        return
+      }
+
       showToast({
         message: MESSAGES.DATA_UPDATED,
         duration: TOAST_DURATION.SHORT
       })
-      this.goToHome()
+      this.goToHomeAfterToast()
     } catch (error) {
       console.error("接收数据解析失败:", error)
       showToast({
@@ -264,6 +275,30 @@ export default {
 
   async clearData() {
     await DebugService.clearLocalData()
+  },
+
+  /**
+   * 清理延迟跳转定时器
+   */
+  clearNavigationTimer() {
+    if (this.navigationTimer) {
+      clearTimeout(this.navigationTimer)
+      this.navigationTimer = null
+    }
+  },
+
+  /**
+   * 等待更新提示展示后跳转首页
+   */
+  goToHomeAfterToast() {
+    if (this.hasNavigated || this.navigationTimer) {
+      return
+    }
+
+    this.navigationTimer = setTimeout(() => {
+      this.navigationTimer = null
+      this.goToHome()
+    }, TOAST_DURATION.SHORT)
   },
 
   /**

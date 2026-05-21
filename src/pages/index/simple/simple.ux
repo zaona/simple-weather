@@ -856,9 +856,11 @@ export default {
       }
     } catch (error) {
       console.error("获取逐小时天气失败:", error)
-      if (!silent && error?.code !== "DATA_SAVE_FAILED") {
+      if (!silent) {
         const toastMessage =
-          error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
+          error?.code === "DATA_SAVE_FAILED"
+            ? MESSAGES.DATA_SAVE_ERROR
+            : error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING
             ? MESSAGES.LOCATION_INFO_MISSING
             : MESSAGES.FETCH_WEATHER_ERROR
 
@@ -904,7 +906,7 @@ export default {
 
     this.isPullRefreshing = true
     try {
-      await this.updateWeather({auto: false, silent: true, showLoading: false})
+      await this.updateWeather({auto: false, silent: false})
     } finally {
       this.isPullRefreshing = false
     }
@@ -943,22 +945,12 @@ export default {
    * @returns {Promise<boolean>}
    */
   async updateWeather(options = {}) {
-    let config = {auto: false, silent: false, showLoading: null}
+    let config = {auto: false, silent: false}
 
     if (typeof options === "boolean") {
       config.auto = options
     } else {
       config = {...config, ...options}
-    }
-
-    const shouldShowLoading = config.showLoading !== null ? config.showLoading : !config.auto
-
-    if (this.isLoading && shouldShowLoading) {
-      return false
-    }
-
-    if (shouldShowLoading) {
-      this.isLoading = true
     }
 
     try {
@@ -996,7 +988,9 @@ export default {
 
       if (error?.code === WEATHER_API_ERRORS.LOCATION_INFO_MISSING) {
         toastMessage = MESSAGES.LOCATION_INFO_MISSING
-      } else if (error?.code !== "DATA_SAVE_FAILED") {
+      } else if (error?.code === "DATA_SAVE_FAILED") {
+        toastMessage = MESSAGES.DATA_SAVE_ERROR
+      } else {
         toastMessage = MESSAGES.FETCH_WEATHER_ERROR
       }
 
@@ -1008,10 +1002,6 @@ export default {
       }
 
       return false
-    } finally {
-      if (shouldShowLoading) {
-        this.isLoading = false
-      }
     }
   },
 
@@ -1170,10 +1160,10 @@ export default {
       return
     }
 
-    const {silent = true, showLoading = false} = options
+    const {silent = true} = options
     const data = weatherData || (await DataService.readWeatherData(true))
 
-    if (!data || !RefreshController.isDailyExpired(data)) {
+    if (!(await RefreshController.shouldAutoUpdate(data))) {
       return
     }
 
@@ -1182,8 +1172,7 @@ export default {
     try {
       await this.updateWeather({
         auto: true,
-        silent,
-        showLoading
+        silent
       })
     } finally {
       this.autoUpdateInProgress = false
@@ -1205,13 +1194,6 @@ export default {
 
     if (preloadedWeatherData) {
       this.isLoading = false
-      const needsFallback =
-        (this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData) ||
-        (this.supportsAdvancedFeatures && this.alertEnabled && !this.hasAlertData)
-      if (needsFallback) {
-        await this.updateWeather({auto: true, silent: true, showLoading: false})
-        return
-      }
       await this.maybeAutoUpdate(preloadedWeatherData)
       return
     }
@@ -1226,19 +1208,11 @@ export default {
       return
     }
 
-    const needsFallback =
-      (this.supportsAdvancedFeatures && this.hourlyForecastEnabled && !this.hasHourlyData) ||
-      (this.supportsAdvancedFeatures && this.alertEnabled && !this.hasAlertData)
-    if (needsFallback) {
-      await this.updateWeather({auto: true, silent: true, showLoading: false})
-      return
-    }
-
     await this.maybeAutoUpdate(result.weatherData)
   },
 
   /**
-   * 页面显示时初始化连接并刷新缓存
+   * 页面显示时初始化连接
    */
   async onShow() {
     ConnectionService.init((data) => {
@@ -1278,9 +1252,13 @@ export default {
       })
       const latestWeatherData = resolved.weatherData || weatherData
       const latestTodayData = this.findTodayData(latestWeatherData) || todayData
-      this.applyWeatherSnapshot(latestWeatherData, latestTodayData, resolved.hourlyList || [])
 
-      await DataService.saveWeatherData(JSON.stringify(latestWeatherData), 0, latestWeatherData)
+      const saved = await DataService.saveWeatherData(JSON.stringify(latestWeatherData))
+      if (!saved) {
+        return
+      }
+
+      this.applyWeatherSnapshot(latestWeatherData, latestTodayData, resolved.hourlyList || [])
 
       showToast({
         message: MESSAGES.DATA_UPDATED,

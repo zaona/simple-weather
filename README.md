@@ -28,7 +28,7 @@ com.application.zaona.weather
 
 - 天气状况展示：显示今天及未来天气概览，支持进入详情页查看单日完整指标。
 - 逐小时天气：在支持的设备上可开启逐小时天气卡片。
-- 自动更新：在支持的设备上可开启，数据超过 1 小时自动尝试刷新。
+- 自动更新：在支持的设备上可开启，数据超过 1 小时，或已开启的逐小时/预警模块在本地缺失时自动尝试刷新。
 - 手动更新：在首页下拉可触发更新。
 - 多布局适配：根据设备类型自动路由到不同主页界面。
 - 本地持久化：聚合天气数据、设置。
@@ -39,10 +39,11 @@ com.application.zaona.weather
 
 1. 互联同步链路（手表 <- 同步器端）
    - 通过 `@system.interconnect` 建立连接。
-   - 监听并接收聚合天气 JSON，校验后写入 `weather.txt`。
+   - 监听并接收聚合天气 JSON，校验后先写入 `weather.txt`，保存成功后再显示。
 2. API 拉取链路（手表 -> 天气后端）
-   - 从本地缓存/本地天气文件中提取 `locationId` 与 `daily/hourly` 列表长度。
-   - POST请求后端接口，获得返回数据，校验后写入 `weather.txt`。
+   - 从本地天气文件中提取 `locationId` 与 `daily/hourly` 列表长度。
+   - POST 请求后端接口，获得返回数据并校验。
+   - 接口返回数据会先写入 `weather.txt`，保存成功后再显示。
 
 ## 调试模式
 
@@ -90,7 +91,7 @@ export default WEATHER_API_PRIVATE
 说明：
 - `daily` 优先根据本地 `daily` 列表长度动态拼接为 `${length}d`
 - `hourly` 仅在手表端“天气预测”开关开启且设备支持高级功能时请求，并优先根据本地 `hourly` 列表长度动态拼接为 `${length}h`
-- 当本地缓存和本地天气文件中没有可用列表时，分别回退到默认值 `7d` 与 `24h`
+- 当本地天气文件中没有可用列表时，分别回退到默认值 `7d` 与 `24h`
 
 ## 注释规范
 
@@ -106,9 +107,7 @@ export default WEATHER_API_PRIVATE
 ```js
 /**
  * 读取本地天气数据
- * 优先使用缓存，缓存过期后从文件读取并解析
  * @param {boolean} silent - 静默模式，不显示错误提示
- * @param {boolean} [options.skipCache] - 是否跳过缓存
  * @returns {Promise<Object|null>} 天气数据对象，读取失败返回 null
  */
 ```
@@ -120,7 +119,7 @@ export default WEATHER_API_PRIVATE
 ```js
 /**
  * 数据管理服务
- * 统一管理聚合天气数据的存储、读取和缓存
+ * 统一管理聚合天气数据的存储与读取
  */
 ```
 
@@ -129,9 +128,9 @@ export default WEATHER_API_PRIVATE
 仅用于解释 **为什么** 这样做，而非重复代码已表达的信息：
 
 ```js
-// ✓ 好 — 解释非显而易见的竞态处理
-// 检查在 API 请求期间，同步器是否已更新了本地数据
-if (updateTimeBeforeFetch !== updateTimeAfterFetch) { ... }
+// ✓ 好 — 解释非显而易见的状态保护
+// 避免重复跳转导致页面栈异常
+if (this.hasNavigated) return
 
 // ✗ 避免 — 重复代码语义
 // 解析数据

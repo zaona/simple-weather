@@ -1,37 +1,21 @@
 /**
  * 数据管理服务
- * 统一管理聚合天气数据的存储、读取和缓存
+ * 统一管理聚合天气数据的存储与读取
  */
 
 import file from "@system.file"
-import {STORAGE, DATA, MESSAGES, TOAST_DURATION} from "./config.js"
+import {STORAGE, MESSAGES, TOAST_DURATION} from "./config.js"
 import {showToast} from "@system.prompt"
 import {DateUtils} from "./weather-utils.js"
 
 class DataService {
-  constructor() {
-    this.cache = null
-    this.cacheTime = null
-  }
-
   /**
    * 读取本地天气数据
-   * 优先使用缓存，缓存过期后从文件读取并解析
    * @param {boolean} silent - 静默模式，不显示错误提示
-   * @param {boolean} [options.skipCache] - 是否跳过缓存
    * @returns {Promise<Object|null>} 天气数据对象，读取失败返回 null
    */
-  readWeatherData(silent = false, {skipCache = false} = {}) {
+  readWeatherData(silent = false) {
     return new Promise((resolve) => {
-      if (!skipCache && this.cache && this.cacheTime) {
-        const now = Date.now()
-        if (now - this.cacheTime < DATA.CACHE_EXPIRY) {
-          console.log("使用缓存数据")
-          resolve(this.cache)
-          return
-        }
-      }
-
       file.readText({
         uri: STORAGE.WEATHER_FILE,
         success: (data) => {
@@ -41,10 +25,6 @@ class DataService {
               throw new Error("INVALID_WEATHER_DATA")
             }
 
-            if (!skipCache) {
-              this.cache = weatherData
-              this.cacheTime = Date.now()
-            }
             resolve(weatherData)
           } catch (error) {
             console.error("数据解析失败:", error)
@@ -73,45 +53,26 @@ class DataService {
 
   /**
    * 保存天气数据到本地文件
-   * 写入失败时自动重试，超过最大重试次数后提示用户
+   * 写入失败时提示用户
    * @param {string} dataText - 要保存的 JSON 字符串
-   * @param {number} retryCount - 当前重试次数
-   * @param {Object|null} parsedData - 已解析的数据对象，用于更新缓存
    * @returns {Promise<boolean>} 保存成功返回 true
    */
-  saveWeatherData(dataText, retryCount = 0, parsedData = null) {
+  saveWeatherData(dataText) {
     return new Promise((resolve) => {
       file.writeText({
         uri: STORAGE.WEATHER_FILE,
         text: dataText,
         success: () => {
           console.log("数据已保存到本地")
-
-          try {
-            const weatherData = parsedData || JSON.parse(dataText)
-            this.cache = this.validateWeatherData(weatherData) ? weatherData : null
-            this.cacheTime = this.cache ? Date.now() : null
-          } catch (error) {
-            console.error("保存后更新缓存失败:", error)
-            this.cache = null
-            this.cacheTime = null
-          }
-
           resolve(true)
         },
         fail: () => {
-          if (retryCount < DATA.MAX_SAVE_RETRIES) {
-            setTimeout(() => {
-              this.saveWeatherData(dataText, retryCount + 1, parsedData).then(resolve)
-            }, DATA.SAVE_RETRY_DELAY)
-          } else {
-            console.error("数据保存失败，已达最大重试次数")
-            showToast({
-              message: MESSAGES.DATA_SAVE_ERROR,
-              duration: TOAST_DURATION.NORMAL
-            })
-            resolve(false)
-          }
+          console.error("数据保存失败")
+          showToast({
+            message: MESSAGES.DATA_SAVE_ERROR,
+            duration: TOAST_DURATION.NORMAL
+          })
+          resolve(false)
         }
       })
     })
@@ -253,15 +214,6 @@ class DataService {
       todayData: dayData,
       todayStr
     }
-  }
-
-  /**
-   * 清除内存缓存
-   */
-  clearCache() {
-    this.cache = null
-    this.cacheTime = null
-    console.log("缓存已清除")
   }
 
   /**

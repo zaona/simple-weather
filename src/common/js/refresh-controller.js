@@ -4,7 +4,9 @@
  */
 import DataService from "./data-service.js"
 import WeatherApiService from "./weather-api-service.js"
-import {AUTO_UPDATE, MANUAL_UPDATE} from "./config.js"
+import SettingsService from "./settings-service.js"
+import DeviceService from "./device-service.js"
+import {AUTO_UPDATE, MANUAL_UPDATE, ADVANCED_FEATURE_PRODUCT_BLACKLIST} from "./config.js"
 
 class RefreshController {
   constructor() {
@@ -25,7 +27,7 @@ class RefreshController {
 
   /**
    * 获取最近一次每日更新的时间戳
-   * 优先返回内存缓存的时间戳，其次从本地文件读取
+   * 优先返回本次运行内已记录的时间戳，其次从本地文件读取
    * @returns {Promise<number|null>} 毫秒时间戳，不存在返回 null
    */
   async getLastDailyUpdateTimestamp() {
@@ -92,42 +94,71 @@ class RefreshController {
       return false
     }
 
-    this.dailyTimestamp = timestamp
     return Date.now() - timestamp >= AUTO_UPDATE.EXPIRY_THRESHOLD
+  }
+
+  /**
+   * 判断自动更新是否需要执行
+   * daily 过期时刷新；已开启的高级模块在本地缺失时也通过自动更新补齐。
+   * @param {Object} weatherData - 天气数据
+   * @returns {Promise<boolean>} 是否需要自动更新
+   */
+  async shouldAutoUpdate(weatherData) {
+    if (!weatherData || this.isDailyExpired(weatherData)) {
+      return true
+    }
+
+    const isBlocked = await DeviceService.isProductInList(ADVANCED_FEATURE_PRODUCT_BLACKLIST)
+    if (isBlocked) {
+      return false
+    }
+
+    const [hourlyEnabled, alertEnabled] = await Promise.all([
+      SettingsService.isHourlyForecastEnabled(),
+      SettingsService.isAlertEnabled()
+    ])
+
+    if (hourlyEnabled && DataService.getHourlyList(weatherData).length === 0) {
+      return true
+    }
+
+    if (alertEnabled && !Array.isArray(weatherData.alerts)) {
+      return true
+    }
+
+    return false
   }
 
   /**
    * 刷新天气数据
    * 使用 refreshPromise 保证并发调用只发一次网络请求。
-   * 在 API 请求返回后检查同步器是否已写入更新数据，避免竞态覆盖。
+   * 如果请求期间同步器已写入本地文件，则优先使用同步器数据。
+   * 接口返回后先写入本地文件，保存成功后返回给页面渲染。
    * @returns {Promise<Object>} 最新的天气数据
    * @throws {Error} 数据保存失败，code = DATA_SAVE_FAILED
    */
   async refreshWeatherData() {
     if (!this.refreshPromise) {
       this.refreshPromise = (async () => {
-        const updateTimeBeforeFetch = DataService.getPrimaryUpdateTime(DataService.cache)
+        const localDataBeforeFetch = await DataService.readWeatherData(true)
+        const localSnapshotBeforeFetch = localDataBeforeFetch
+          ? JSON.stringify(localDataBeforeFetch)
+          : ""
 
         const weatherData = await WeatherApiService.fetchWeatherData()
 
-        // 检查在 API 请求期间，同步器是否已更新了本地数据
-        // 如果 updateTime 发生变化，说明同步器在此期间写入了新数据，应保留同步器的数据
-        const updateTimeAfterFetch = DataService.getPrimaryUpdateTime(DataService.cache)
+        const localDataAfterFetch = await DataService.readWeatherData(true)
+        const localSnapshotAfterFetch = localDataAfterFetch ? JSON.stringify(localDataAfterFetch) : ""
         if (
-          updateTimeBeforeFetch &&
-          updateTimeAfterFetch &&
-          updateTimeBeforeFetch !== updateTimeAfterFetch
+          localDataAfterFetch &&
+          localSnapshotAfterFetch &&
+          localSnapshotBeforeFetch !== localSnapshotAfterFetch
         ) {
-          console.log("数据在请求期间已被同步器更新，保留同步器数据")
-          const latestData = await DataService.readWeatherData(true)
-          if (latestData) {
-            this.recordDailyUpdate(latestData)
-            return latestData
-          }
+          this.recordDailyUpdate(localDataAfterFetch)
+          return localDataAfterFetch
         }
 
-        const saved = await DataService.saveWeatherData(JSON.stringify(weatherData), 0, weatherData)
-
+        const saved = await DataService.saveWeatherData(JSON.stringify(weatherData))
         if (!saved) {
           const error = new Error("DATA_SAVE_FAILED")
           error.code = "DATA_SAVE_FAILED"

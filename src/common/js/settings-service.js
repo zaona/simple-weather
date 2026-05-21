@@ -14,27 +14,18 @@ const DEFAULT_SETTINGS = {
 }
 
 class SettingsService {
-  constructor() {
-    this.cache = null
-  }
-
   /**
    * 读取设置文件
    * @returns {Promise<Object>}
    */
   readSettings() {
-    if (this.cache) {
-      return Promise.resolve(this.cache)
-    }
-
     return new Promise((resolve) => {
       file.readText({
         uri: STORAGE.SETTINGS_FILE,
         success: (data) => {
           try {
             const settings = JSON.parse(data.text)
-            this.cache = {...DEFAULT_SETTINGS, ...settings}
-            resolve(this.cache)
+            resolve({...DEFAULT_SETTINGS, ...settings})
           } catch (error) {
             console.error("设置解析失败:", error)
             resolve({...DEFAULT_SETTINGS})
@@ -59,7 +50,6 @@ class SettingsService {
         uri: STORAGE.SETTINGS_FILE,
         text: dataText,
         success: () => {
-          this.cache = {...settings}
           resolve(true)
         },
         fail: (error) => {
@@ -132,13 +122,6 @@ class SettingsService {
   /** @param {boolean} enabled @returns {Promise<boolean>} */
   setReduceAnimationEnabled(enabled) {
     return this.setSetting("reduceAnimationEnabled", enabled)
-  }
-
-  /**
-   * 清除设置缓存
-   */
-  clearCache() {
-    this.cache = null
   }
 }
 

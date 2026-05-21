@@ -211,7 +211,6 @@ class DebugService {
       file.delete({
         uri: STORAGE.WEATHER_FILE,
         success: () => {
-          DataService.clearCache()
           console.log("本地数据已清除")
           showToast({
             message: MESSAGES.DEBUG_DATA_CLEARED,
