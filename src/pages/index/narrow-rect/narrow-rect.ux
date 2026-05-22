@@ -1778,14 +1778,12 @@ export default {
 
 .title-bar__text {
   font-size: 32px;
-  font-weight: 600;
   line-height: 32px;
   color: white;
 }
 
 .title-bar__time {
   font-size: 32px;
-  font-weight: 600;
   line-height: 32px;
   color: white;
   text-align: right;
