@@ -1648,7 +1648,7 @@ export default {
 }
 
 .section--snap {
-  height: 480px;
+  height: 100%;
   scroll-snap-align: start;
 }
 

@@ -1560,7 +1560,7 @@ export default {
 }
 
 .section--snap {
-  height: 490px;
+  height: 100%;
   scroll-snap-align: start;
 }
 
@@ -1913,11 +1913,6 @@ export default {
 
 /* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
 @media (width: 106) {
-  .section--snap {
-    height: 520px;
-    scroll-snap-align: start;
-  }
-
   .forecast-hourly__item {
     flex-direction: column;
     align-items: center;
