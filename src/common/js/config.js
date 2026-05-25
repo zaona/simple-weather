@@ -39,10 +39,10 @@ export const ADVANCED_FEATURE_PRODUCT_BLACKLIST = ["xiaomi smart band 9", "xiaom
 export const RECT_SCREEN_PRODUCTS = ["redmi watch 5", "redmi watch 6", "o65m"]
 
 /** @type {string[]} 窄矩形屏设备 */
-export const NARROW_RECT_SCREEN_PRODUCTS = ["xiaomi smart band 9 pro", "xiaomi smart band 10 pro"]
+export const NARROW_RECT_SCREEN_PRODUCTS = ["emulator-vela", "xiaomi smart band 9 pro", "xiaomi smart band 10 pro"]
 
 /** @type {string[]} 圆形屏设备 */
-export const CIRCLE_SCREEN_PRODUCTS = ["emulator-vela", 
+export const CIRCLE_SCREEN_PRODUCTS = [
   "xiaomi watch s3",
   "xiaomi watch s3 esim",
   "xiaomi watch s4",
