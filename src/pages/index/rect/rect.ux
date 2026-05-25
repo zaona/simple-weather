@@ -395,6 +395,10 @@ export default {
 
     // ---- 辅助 ----
     systemTime: "__:__",
+    timeDigit1: "_",
+    timeDigit2: "_",
+    timeDigit3: "_",
+    timeDigit4: "_",
     hourlyIndicatorStyle: {
       width: "40px",
       transform: JSON.stringify({
@@ -1058,6 +1062,17 @@ export default {
     return `${hours}:${minutes}`
   },
 
+  updateTimeDigits() {
+    const now = new Date()
+    const hours = String(now.getHours()).padStart(2, "0")
+    const minutes = String(now.getMinutes()).padStart(2, "0")
+    this.timeDigit1 = hours[0]
+    this.timeDigit2 = hours[1]
+    this.timeDigit3 = minutes[0]
+    this.timeDigit4 = minutes[1]
+    this.systemTime = `${hours}:${minutes}`
+  },
+
   /**
    * 下拉到顶部刷新
    */
@@ -1390,7 +1405,7 @@ export default {
    * 页面显示时初始化连接
    */
   async onShow() {
-    this.systemTime = this.formatTime(new Date())
+    this.updateTimeDigits()
     ConnectionService.init((data) => {
       this.handleData(data)
     })
@@ -1620,19 +1635,21 @@ export default {
   width: 100%;
   padding: 20px 48px 20px 43px;
   flex-direction: row;
+  align-items: center;
   justify-content: space-between;
 }
 
 .title-bar__text {
-  line-height: 32px;
   font-size: 32px;
+  line-height: 32px;
   color: white;
 }
 
 .title-bar__time {
-  line-height: 33px;
-  font-size: 33px;
+  font-size: 32px;
+  line-height: 32px;
   color: white;
+  text-align: right;
 }
 
 .forecast-hourly {
