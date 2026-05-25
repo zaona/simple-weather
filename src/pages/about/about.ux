@@ -1,9 +1,9 @@
 <template>
   <div class="about" @swipe="goBack">
     <scroll class="about__content" scroll-y="true" bounces="true">
-      <div class="about__header">
-        <text class="about__title">关于</text>
-        <text class="about__subtitle"></text>
+      <div class="page-header">
+        <text class="page-header__title">关于</text>
+        <div class="page-header__spacer"></div>
       </div>
 
       <div class="about__card">
@@ -234,6 +234,7 @@ export default {
 
 <style>
 @import "../../common/css/btn-styles.css";
+@import "../../common/css/header-styles.css";
 
 .about {
   flex-direction: column;
@@ -249,24 +250,6 @@ export default {
   height: 100%;
   width: 100%;
   position: relative;
-}
-
-.about__header {
-  margin-top: 26px;
-  flex-direction: column;
-  width: 100%;
-  align-items: center;
-}
-
-.about__title {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.about__subtitle {
-  font-size: 24px;
-  margin-top: 3px;
-  color: rgba(255, 255, 255, 0.75);
 }
 
 .about__card {
@@ -351,16 +334,6 @@ export default {
     padding: 0px 8px 88px 8px;
   }
 
-  .about__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .about__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
-  }
-
   .about__setting-title {
     font-size: 32px;
   }
@@ -399,16 +372,6 @@ export default {
 @media (width: 216) {
   .about__content {
     padding: 0px 8px 32px 8px;
-  }
-
-  .about__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .about__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
   }
 
   .about__setting-title {
@@ -463,16 +426,6 @@ export default {
 @media (width: 160) {
   .about__content {
     padding: 0px 8px 16px 8px;
-  }
-
-  .about__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .about__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
   }
 
   .about__setting-title {

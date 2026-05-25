@@ -1,0 +1,66 @@
+/**
+ * 子页面顶栏公共样式
+ */
+
+/* 默认针对小米手环9/10 */
+.page-header {
+  margin-top: 26px;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+.page-header__title {
+  font-size: 24px;
+  line-height: 24px;
+  font-weight: bold;
+}
+
+.page-header__subtitle {
+  font-size: 24px;
+  line-height: 24px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.page-header__spacer {
+  height: 8px;
+  flex-shrink: 0;
+}
+
+/* 针对圆表 */
+@media (shape: circle) {
+  .page-header__title {
+    font-size: 32px;
+    line-height: 32px;
+  }
+
+  .page-header__spacer {
+    height: 32px;
+  }
+}
+
+/* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 160) {
+  .page-header__title {
+    font-size: 32px;
+    line-height: 32px;
+  }
+
+  .page-header__spacer {
+    height: 8px;
+  }
+}
+
+/* 针对小米手环9/10 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 216) {
+  .page-header__title {
+    font-size: 32px;
+    line-height: 32px;
+  }
+
+  .page-header__spacer {
+    height: 8px;
+  }
+}

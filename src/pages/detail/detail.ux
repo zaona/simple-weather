@@ -15,9 +15,9 @@
 
     <scroll class="detail__content" scroll-y="true" bounces="true" if="{{ !isLoading }}">
       <!-- 头部信息：地点和选中日期 -->
-      <div class="detail__header">
-        <text class="detail__title">详情</text>
-        <text class="detail__subtitle">{{ selectedDateDisplay }}</text>
+      <div class="page-header">
+        <text class="page-header__title">详情</text>
+        <text class="page-header__subtitle">{{ selectedDateDisplay }}</text>
       </div>
 
       <!-- 按类别组织的详细天气数据 -->
@@ -228,6 +228,7 @@ export default {
 <style>
 /* 引入公共样式 */
 @import "../../common/css/loading-styles.css";
+@import "../../common/css/header-styles.css";
 @import "../../common/css/page-bg-styles.css";
 
 .detail {
@@ -244,24 +245,6 @@ export default {
   height: 100%;
   width: 100%;
   position: relative;
-}
-
-.detail__header {
-  margin-top: 26px;
-  flex-direction: column;
-  width: 100%;
-  align-items: center;
-}
-
-.detail__title {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.detail__subtitle {
-  font-size: 24px;
-  margin-top: 3px;
-  color: rgba(255, 255, 255, 0.75);
 }
 
 .detail__item-value {
@@ -314,16 +297,6 @@ export default {
     padding: 0px 8px 88px 8px;
   }
 
-  .detail__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .detail__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
-  }
-
   .detail__item-value {
     font-size: 36px;
     font-weight: bold;
@@ -368,16 +341,6 @@ export default {
     padding: 0px 8px 32px 8px;
   }
 
-  .detail__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .detail__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
-  }
-
   .detail__item-value {
     font-size: 36px;
     font-weight: bold;
@@ -419,16 +382,6 @@ export default {
 @media (width: 160) {
   .detail__content {
     padding: 0px 8px 16px 8px;
-  }
-
-  .detail__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .detail__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
   }
 
   .detail__item-value {

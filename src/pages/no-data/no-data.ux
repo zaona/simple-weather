@@ -1,9 +1,9 @@
 <template>
   <div class="no-data">
     <scroll class="no-data__content" scroll-y="true" bounces="true">
-      <div class="no-data__header">
-        <text class="no-data__title">无数据</text>
-        <text class="no-data__subtitle"></text>
+      <div class="page-header">
+        <text class="page-header__title">无数据</text>
+        <div class="page-header__spacer"></div>
       </div>
 
       <div class="no-data__card">
@@ -320,6 +320,7 @@ export default {
 
 <style>
 @import "../../common/css/btn-styles.css";
+@import "../../common/css/header-styles.css";
 
 .no-data {
   position: relative;
@@ -336,27 +337,6 @@ export default {
   flex-direction: column;
   align-items: center;
   position: relative;
-}
-
-.no-data__header {
-  margin-top: 26px;
-  width: 100%;
-  flex-direction: column;
-  align-items: center;
-}
-
-.no-data__title {
-  width: 100%;
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-  color: #ffffff;
-}
-
-.no-data__subtitle {
-  font-size: 24px;
-  margin-top: 3px;
-  color: rgba(255, 255, 255, 0.75);
 }
 
 .no-data__card {
@@ -434,16 +414,6 @@ export default {
     padding: 0px 8px 88px 8px;
   }
 
-  .no-data__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .no-data__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
-  }
-
   .no-data__card {
     width: 90%;
     border-radius: 32px;
@@ -469,16 +439,6 @@ export default {
     padding: 0px 8px 32px 8px;
   }
 
-  .no-data__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .no-data__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
-  }
-
   .no-data__card {
     border-radius: 32px;
     padding: 24px;
@@ -501,16 +461,6 @@ export default {
 @media (width: 160) {
   .no-data__content {
     padding: 0px 8px 16px 8px;
-  }
-
-  .no-data__title {
-    font-size: 36px;
-    font-weight: normal;
-  }
-
-  .no-data__subtitle {
-    font-size: 24px;
-    margin-top: 4px;
   }
 
   .no-data__card {
