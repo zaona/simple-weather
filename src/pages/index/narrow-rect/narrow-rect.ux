@@ -280,7 +280,7 @@
               </div>
             </div>
 
-            <div class="hero mt-lg">
+            <div class="action">
               <div class="btn btn--primary" onclick="goToAbout()">
                 <text class="btn__text">关于</text>
               </div>
@@ -1628,6 +1628,7 @@ export default {
 /* 引入公共样式 */
 @import "../../../common/css/page-bg-styles.css";
 @import "../../../common/css/loading-styles.css";
+@import "../../../common/css/btn-styles.css";
 
 .page {
   width: 100%;
@@ -1958,29 +1959,9 @@ export default {
   height: 128px;
 }
 
-/* 复用原 style.css 中用到的按钮与间距样式 */
-.btn__text {
-  font-size: 29px;
-  color: #ffffff;
-}
-
-.btn {
+.action {
   flex-direction: column;
   align-items: center;
-}
-
-.btn--primary {
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 18px 30px;
-  border-radius: 50%;
-}
-
-.hero {
-  flex-direction: column;
-  align-items: center;
-}
-
-.mt-lg {
   margin-top: 12px;
 }
 </style>
