@@ -4,22 +4,17 @@
  */
 
 /* 页面背景图片基础样式 */
+/* 因小米手环9不支持媒体查询，因此默认为小米手环9宽高 */
 .page__bg {
   position: absolute;
   top: 0;
   left: 0;
   object-fit: cover;
+  width: 192px;
+  height: 490px;
 }
 
-/* 针对小米手环9 (分辨率: 192*490, 水平dp值: 96) */
-@media (width: 96) {
-  .page__bg {
-    width: 192px;
-    height: 490px;
-  }
-}
-
-/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
+/* 针对小米手环9/10 Pro (分辨率: 336*480, 水平dp值: 160) */
 @media (width: 160) {
   .page__bg {
     width: 336px;

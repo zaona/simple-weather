@@ -1312,7 +1312,7 @@ export default {
 }
 
 .section--hero {
-  height: 490px;
+  height: 100%;
 }
 
 .title {
@@ -1582,19 +1582,8 @@ export default {
   margin-top: 12px;
 }
 
-/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
-@media (width: 106) {
-  .section--hero {
-    height: 520px;
-  }
-}
-
-/* 针对小米手环9 Pro (分辨率: 336*480, 水平dp值: 160) */
+/* 针对小米手环9/10 Pro (分辨率: 336*480, 水平dp值: 160) */
 @media (width: 160) {
-  .section--hero {
-    height: 480px;
-  }
-
   .title__location {
     line-height: 32px;
     font-size: 32px;
@@ -1627,10 +1616,6 @@ export default {
 
 /* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
 @media (width: 216) {
-  .section--hero {
-    height: 514px;
-  }
-
   .title__location {
     line-height: 32px;
     font-size: 32px;
@@ -1671,12 +1656,8 @@ export default {
   }
 }
 
-/* 针对s4 41mm (分辨率: 466px*466px) */
+/* 针对圆表 */
 @media (shape: circle) {
-  .section--hero {
-    height: 466px;
-  }
-
   .title__location {
     line-height: 32px;
     font-size: 32px;
@@ -1734,129 +1715,4 @@ export default {
   }
 }
 
-/* 针对s5 (分辨率: 480px*480px, 水平dp值: 240) */
-@media (width: 240) {
-  .section--hero {
-    height: 480px;
-  }
-
-  .title__location {
-    line-height: 32px;
-    font-size: 32px;
-  }
-
-  .current__temperature {
-    line-height: 120px;
-    font-size: 120px;
-  }
-
-  .indices {
-    align-items: center;
-  }
-
-  .indices__item {
-    padding: 28px;
-    border-radius: 32px;
-    width: 90%;
-  }
-
-  .indices__type {
-    line-height: 28px;
-    font-size: 28px;
-  }
-
-  .indices__value {
-    margin-top: 14px;
-    line-height: 56px;
-    font-size: 56px;
-  }
-
-  .forecast-hourly__page-shell {
-    padding: 0 32px;
-  }
-
-  .forecast-hourly__page {
-    width: 90%;
-  }
-
-  .forecast-daily {
-    padding: 0 32px;
-  }
-
-  .forecast-daily__item {
-    width: 90%;
-  }
-
-  .forecast-daily__time--horizontal {
-    line-height: 32px;
-    font-size: 32px;
-  }
-
-  .page__scroll {
-    align-items: center;
-  }
-}
-
-/* 针对其余圆表 (分辨率: 466px*466px, 水平dp值: 233) */
-@media (width: 233) {
-  .section--hero {
-    height: 466px;
-  }
-
-  .title__location {
-    line-height: 32px;
-    font-size: 32px;
-  }
-
-  .current__temperature {
-    line-height: 120px;
-    font-size: 120px;
-  }
-
-  .indices {
-    align-items: center;
-  }
-
-  .indices__item {
-    padding: 28px;
-    border-radius: 32px;
-    width: 90%;
-  }
-
-  .indices__type {
-    line-height: 28px;
-    font-size: 28px;
-  }
-
-  .indices__value {
-    margin-top: 14px;
-    line-height: 56px;
-    font-size: 56px;
-  }
-
-  .forecast-hourly__page-shell {
-    padding: 0 32px;
-  }
-
-  .forecast-hourly__page {
-    width: 90%;
-  }
-
-  .forecast-daily {
-    padding: 0 32px;
-  }
-
-  .forecast-daily__item {
-    width: 90%;
-  }
-
-  .forecast-daily__time--horizontal {
-    line-height: 32px;
-    font-size: 32px;
-  }
-
-  .page__scroll {
-    align-items: center;
-  }
-}
 </style>

@@ -295,7 +295,7 @@
 <script>
 /**
  * 窄矩形屏布局主页面
- * 适用于窄矩形屏幕设备（小米手环9 Pro 等），展示当前天气和预报信息
+ * 适用于窄矩形屏幕设备（小米手环 Pro 等），展示当前天气和预报信息
  */
 import router from "@system.router"
 import {showToast} from "@system.prompt"
