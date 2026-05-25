@@ -14,6 +14,14 @@
   height: 490px;
 }
 
+/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
+@media (width: 106) {
+  .page__bg {
+    width: 212px;
+    height: 520px;
+  }
+}
+
 /* 针对小米手环9/10 Pro (分辨率: 336*480, 水平dp值: 160) */
 @media (width: 160) {
   .page__bg {
@@ -30,23 +38,8 @@
   }
 }
 
-/* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
-@media (width: 106) {
-  .page__bg {
-    width: 212px;
-    height: 520px;
-  }
-}
-
-/* 针对其余圆表 (分辨率: 466px*466px, 水平dp值: 233) */
-@media (width: 233) {
-  .page__bg {
-    width: 466px;
-    height: 466px;
-  }
-}
-
-/* 针对s4 41mm (分辨率: 466px*466px) */
+/* 针对其余圆表 (分辨率: 466px*466px，, 水平dp值: 233) */
+/* 这里原使用233匹配，但s4-41mm因神秘原因无法使用233匹配到 */
 @media (shape: circle) {
   .page__bg {
     width: 466px;
