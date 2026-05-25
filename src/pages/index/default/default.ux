@@ -1787,7 +1787,7 @@ export default {
 }
 
 .forecast-daily {
-  margin-top: 10px;
+  margin-top: 6px;
   height: 364px;
   width: 100%;
   padding: 0 16px;
@@ -1894,6 +1894,10 @@ export default {
 
 /* 针对小米手环10 (分辨率: 212*520, 水平dp值: 106) */
 @media (width: 106) {
+  .forecast-daily {
+    margin-top: 10px;
+  }
+
   .forecast-hourly__item {
     flex-direction: column;
     align-items: center;
