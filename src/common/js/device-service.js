@@ -37,6 +37,31 @@ class DeviceService {
   }
 
   /**
+   * 获取设备屏幕宽高
+   * @returns {Promise<{width: number, height: number}>}
+   */
+  async getScreenInfo() {
+    return new Promise((resolve) => {
+      if (!device || typeof device.getInfo !== "function") {
+        resolve({width: 0, height: 0})
+        return
+      }
+
+      device.getInfo({
+        success: (info = {}) => {
+          resolve({
+            width: Number(info.screenWidth) || 0,
+            height: Number(info.screenHeight) || 0
+          })
+        },
+        fail: () => {
+          resolve({width: 0, height: 0})
+        }
+      })
+    })
+  }
+
+  /**
    * 判断当前设备是否在指定产品列表中
    * @param {string[]} productList - 产品名称列表
    * @returns {Promise<boolean>}

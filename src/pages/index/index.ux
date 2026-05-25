@@ -104,7 +104,7 @@ export default {
 
   /**
    * 根据设备和设置路由到对应的布局页面
-   * 优先级：simple > narrow-rect > rect > circle > default
+   * 优先级：simple > emulator(尺寸检测) > narrow-rect > rect > circle > default
    */
   async routeToHomeLayout() {
     if (this.hasRouted) {
@@ -117,6 +117,8 @@ export default {
 
     if (reduceAnimationEnabled) {
       target = "/pages/index/simple"
+    } else if (await this.routeByEmulatorScreen()) {
+      return
     } else if (await DeviceService.isProductInList(NARROW_RECT_SCREEN_PRODUCTS)) {
       target = "/pages/index/narrow-rect"
     } else if (await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)) {
@@ -127,6 +129,34 @@ export default {
     router.replace({
       uri: target
     })
+  },
+
+  /**
+   * emulator-vela 通过屏幕尺寸判断布局
+   * @returns {Promise<boolean>} true 表示已处理路由
+   */
+  async routeByEmulatorScreen() {
+    const product = await DeviceService.getProduct()
+    if (DeviceService.normalizeProduct(product) !== "emulator-vela") {
+      return false
+    }
+
+    const {width, height} = await DeviceService.getScreenInfo()
+    let target = "/pages/index/default"
+
+    if (width === height) {
+      target = "/pages/index/circle"
+    } else if (width === 432) {
+      target = "/pages/index/rect"
+    } else if (width === 336) {
+      target = "/pages/index/narrow-rect"
+    } else if (width <= 212) {
+      target = "/pages/index/default"
+    }
+    router.replace({
+      uri: target
+    })
+    return true
   }
 }
 </script>
