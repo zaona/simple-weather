@@ -20,7 +20,7 @@
         <div class="about__setting-row">
           <div class="about__setting-text">
             <text class="about__setting-title">简化首页</text>
-            <text class="about__setting-subtitle">重启生效</text>
+            <text class="about__setting-subtitle">精简流畅</text>
           </div>
           <switch
             class="about__switch"

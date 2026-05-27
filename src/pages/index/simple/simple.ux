@@ -60,43 +60,51 @@
       </div>
 
       <div class="section section-gap" if="{{ hourlyForecastEnabled && hasHourlyData }}">
-        <swiper class="forecast-hourly" indicator="false" loop="false">
-          <div class="forecast-hourly__page-shell" for="{{ page in forecastHourlyPages }}">
-            <div class="forecast-hourly__page">
-              <div class="forecast-hourly__item" for="{{ item in page }}">
-                <text class="forecast-hourly__time">{{ item.time }}</text>
-                <text class="forecast-hourly__temperature">{{ item.temperature }}°</text>
-                <image class="forecast-hourly__icon" src="{{ item.icon }}" />
+        <div class="hourly-section">
+          <div class="hourly-section__card">
+            <swiper class="forecast-hourly" indicator="false" loop="false">
+              <div class="forecast-hourly__page-shell" for="{{ page in forecastHourlyPages }}">
+                <div class="forecast-hourly__page">
+                  <div class="forecast-hourly__item" for="{{ item in page }}">
+                    <text class="forecast-hourly__time">{{ item.time }}</text>
+                    <text class="forecast-hourly__temperature">{{ item.temperature }}°</text>
+                    <image class="forecast-hourly__icon" src="{{ item.icon }}" />
+                  </div>
+                </div>
               </div>
-            </div>
+            </swiper>
           </div>
-        </swiper>
+        </div>
       </div>
 
       <div class="section section-gap">
-        <div class="forecast-daily">
-          <div
-            class="forecast-daily__item {{ useHorizontalDailyLayout ? 'forecast-daily__item--horizontal' : '' }}"
-            for="{{ item in forecastDaily.slice(0, 7) }}"
-            @click="goToDetail(item)"
-          >
-            <div if="{{ useHorizontalDailyLayout }}" class="forecast-daily__left">
-              <image class="forecast-daily__icon" src="{{ item.icon }}" />
-              <text class="forecast-daily__time forecast-daily__time--horizontal">
-                {{ item.time }}
-              </text>
-            </div>
-            <text if="{{ useHorizontalDailyLayout }}" class="forecast-daily__temperature">
-              {{ item.temperature.from }}°/{{ item.temperature.to }}°
-            </text>
-            <text if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__time">
-              {{ item.time }}
-            </text>
-            <div if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__detail">
-              <text class="forecast-daily__temperature">
-                {{ item.temperature.from }}°/{{ item.temperature.to }}°
-              </text>
-              <image class="forecast-daily__icon" src="{{ item.icon }}" />
+        <div class="daily-section">
+          <div class="daily-section__card">
+            <div class="forecast-daily">
+              <div
+                class="forecast-daily__item {{ useHorizontalDailyLayout ? 'forecast-daily__item--horizontal' : '' }}"
+                for="{{ item in forecastDaily.slice(0, 7) }}"
+                @click="goToDetail(item)"
+              >
+                <div if="{{ useHorizontalDailyLayout }}" class="forecast-daily__left">
+                  <image class="forecast-daily__icon" src="{{ item.icon }}" />
+                  <text class="forecast-daily__time forecast-daily__time--horizontal">
+                    {{ item.time }}
+                  </text>
+                </div>
+                <text if="{{ useHorizontalDailyLayout }}" class="forecast-daily__temperature">
+                  {{ item.temperature.from }}°/{{ item.temperature.to }}°
+                </text>
+                <text if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__time">
+                  {{ item.time }}
+                </text>
+                <div if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__detail">
+                  <text class="forecast-daily__temperature">
+                    {{ item.temperature.from }}°/{{ item.temperature.to }}°
+                  </text>
+                  <image class="forecast-daily__icon" src="{{ item.icon }}" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1308,7 +1316,7 @@ export default {
 }
 
 .section-gap {
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .section--hero {
@@ -1444,6 +1452,28 @@ export default {
   color: white;
 }
 
+.hourly-section,
+.daily-section {
+  padding: 0 8px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hourly-section__card,
+.daily-section__card {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+}
+
+.hourly-section__card {
+  padding: 16px 0 8px;
+}
+
+.daily-section__card {
+  padding: 16px 0 4px;
+}
+
 .forecast-hourly {
   width: 100%;
   height: 184px;
@@ -1488,7 +1518,6 @@ export default {
 }
 
 .forecast-daily {
-  margin-bottom: -12px;
   width: 100%;
   padding: 0 16px;
   flex-direction: column;
@@ -1599,6 +1628,16 @@ export default {
     border-radius: 32px;
   }
 
+  .hourly-section__card {
+    padding: 21px 0 10px;
+    border-radius: 32px;
+  }
+
+  .daily-section__card {
+    padding: 21px 0 5px;
+    border-radius: 32px;
+  }
+
   .indices__type {
     line-height: 28px;
     font-size: 28px;
@@ -1646,8 +1685,18 @@ export default {
     padding: 0 32px;
   }
 
+  .hourly-section__card {
+    padding: 28px 0 20px;
+    border-radius: 32px;
+  }
+
+  .daily-section__card {
+    padding: 28px 0 16px;
+    border-radius: 32px;
+  }
+
   .forecast-daily {
-    padding: 0 32px;
+    padding: 0 28px;
   }
 
   .forecast-daily__time--horizontal {
@@ -1678,6 +1727,22 @@ export default {
     width: 90%;
   }
 
+  .hourly-section__card {
+    padding: 28px 0 20px;
+    border-radius: 32px;
+    width: 90%;
+  }
+
+  .daily-section__card {
+    padding: 28px 0 16px;
+    border-radius: 32px;
+    width: 90%;
+  }
+
+  .forecast-daily {
+    padding: 0 28px;
+  }
+
   .indices__type {
     line-height: 28px;
     font-size: 28px;
@@ -1691,18 +1756,6 @@ export default {
 
   .forecast-hourly__page-shell {
     padding: 0 32px;
-  }
-
-  .forecast-hourly__page {
-    width: 90%;
-  }
-
-  .forecast-daily {
-    padding: 0 32px;
-  }
-
-  .forecast-daily__item {
-    width: 90%;
   }
 
   .forecast-daily__time--horizontal {
