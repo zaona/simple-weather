@@ -147,9 +147,6 @@ const {
   MESSAGES,
   TOAST_DURATION,
   ADVANCED_FEATURE_PRODUCT_BLACKLIST,
-  RECT_SCREEN_PRODUCTS,
-  NARROW_RECT_SCREEN_PRODUCTS,
-  CIRCLE_SCREEN_PRODUCTS,
   DateUtils,
   WeatherDataUtils
 } = global
@@ -1100,7 +1097,7 @@ export default {
    */
   async detectHourlyItemsPerPage() {
     try {
-      const isNarrowRect = await DeviceService.isProductInList(NARROW_RECT_SCREEN_PRODUCTS)
+      const isNarrowRect = await DeviceService.isNarrowRectLike()
       if (isNarrowRect) {
         this.hourlyItemsPerPage = 3
         this.showAlertText = true
@@ -1109,7 +1106,7 @@ export default {
         return
       }
 
-      const isRect = await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)
+      const isRect = await DeviceService.isRectLike()
       if (isRect) {
         this.hourlyItemsPerPage = 4
         this.showAlertText = true
@@ -1118,7 +1115,7 @@ export default {
         return
       }
 
-      const isCircle = await DeviceService.isProductInList(CIRCLE_SCREEN_PRODUCTS)
+      const isCircle = await DeviceService.isCircleLike()
       if (isCircle) {
         this.hourlyItemsPerPage = 4
         this.showAlertText = false

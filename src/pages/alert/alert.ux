@@ -39,10 +39,7 @@
 import router from "@system.router"
 const {
   DataService,
-  DeviceService,
-  RECT_SCREEN_PRODUCTS,
-  NARROW_RECT_SCREEN_PRODUCTS,
-  CIRCLE_SCREEN_PRODUCTS
+  DeviceService
 } = global
 
 export default {
@@ -94,9 +91,11 @@ export default {
    */
   async detectBackgroundFolder() {
     try {
-      const isRect = await DeviceService.isProductInList(RECT_SCREEN_PRODUCTS)
-      const isNarrowRect = await DeviceService.isProductInList(NARROW_RECT_SCREEN_PRODUCTS)
-      const isCircle = await DeviceService.isProductInList(CIRCLE_SCREEN_PRODUCTS)
+      const [isRect, isNarrowRect, isCircle] = await Promise.all([
+        DeviceService.isRectLike(),
+        DeviceService.isNarrowRectLike(),
+        DeviceService.isCircleLike()
+      ])
       this.backgroundFolder = isRect || isNarrowRect || isCircle ? "rect" : "default"
     } catch (e) {
       console.error("检测设备类型失败:", e)

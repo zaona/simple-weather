@@ -48,10 +48,7 @@ const {
   MESSAGES,
   TOAST_DURATION,
   WeatherDataUtils,
-  DeviceService,
-  RECT_SCREEN_PRODUCTS,
-  CIRCLE_SCREEN_PRODUCTS,
-  NARROW_RECT_SCREEN_PRODUCTS
+  DeviceService
 } = global
 
 export default {
@@ -94,8 +91,8 @@ export default {
    * @param {Object} selectedData - 选中日期的天气数据
    * @param {string} product - 设备产品名称
    */
-  applyData(selectedData, product) {
-    this.syncCurrentWeather(selectedData, product)
+  async applyData(selectedData) {
+    await this.syncCurrentWeather(selectedData)
     this.updateCategories(selectedData)
     this.isLoading = false
   },
@@ -104,7 +101,6 @@ export default {
    * 页面初始化
    */
   async onInit() {
-    // 检查是否接收到日期参数
     if (!this.selectedDate) {
       this.isLoading = false
       showToast({
@@ -114,13 +110,7 @@ export default {
       return
     }
 
-    const [selectedData, product] = await Promise.all([
-      DataService.getDataByDate(this.selectedDate),
-      DeviceService.getProduct().catch((error) => {
-        console.error("获取设备信息失败:", error)
-        return ""
-      })
-    ])
+    const selectedData = await DataService.getDataByDate(this.selectedDate)
 
     if (!selectedData) {
       this.isLoading = false
@@ -131,16 +121,15 @@ export default {
       return
     }
 
-    this.applyData(selectedData, product)
+    this.applyData(selectedData)
   },
 
   /**
    * 同步当前天气显示信息
    * 根据设备类型和时段确定背景图
    * @param {Object} selectedData - 天气数据
-   * @param {string} product - 设备产品名称
    */
-  syncCurrentWeather(selectedData, product) {
+  async syncCurrentWeather(selectedData) {
     this.selectedDateDisplay = this.selectedDate || ""
 
     const dayPeriod = WeatherDataUtils.getCurrentDayPeriod(
@@ -152,10 +141,11 @@ export default {
       dayPeriod
     )
 
-    const productLower = (product || "").toLowerCase()
-    const isRect = RECT_SCREEN_PRODUCTS.includes(productLower)
-    const isNarrowRect = NARROW_RECT_SCREEN_PRODUCTS.includes(productLower)
-    const isCircle = CIRCLE_SCREEN_PRODUCTS.includes(productLower)
+    const [isRect, isNarrowRect, isCircle] = await Promise.all([
+      DeviceService.isRectLike(),
+      DeviceService.isNarrowRectLike(),
+      DeviceService.isCircleLike()
+    ])
 
     this.backgroundImage = backgroundImage
     this.backgroundFolder = isRect || isNarrowRect || isCircle ? "rect" : "default"
