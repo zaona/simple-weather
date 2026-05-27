@@ -1,0 +1,412 @@
+<template>
+  <div class="daily-page" @swipe="goBack">
+    <image
+      class="page__bg"
+      src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png"
+    />
+
+    <div class="loading" if="{{ isLoading }}">
+      <div class="loading__bg"></div>
+      <image class="loading__icon" src="/common/images/loading.png" />
+    </div>
+
+    <scroll class="daily-page__content" scroll-y="true" bounces="true" if="{{ !isLoading }}">
+      <div class="page-header">
+        <text class="page-header__title">未来天气</text>
+        <div class="page-header__spacer"></div>
+      </div>
+
+      <div class="daily-section__card">
+        <div class="forecast-daily">
+          <div
+            class="forecast-daily__item {{ useHorizontalDailyLayout ? 'forecast-daily__item--horizontal' : '' }}"
+            for="{{ item in forecastDaily }}"
+            tid="fxDate"
+            @click="goToDetail(item)"
+          >
+            <div if="{{ useHorizontalDailyLayout }}" class="forecast-daily__left">
+              <image class="forecast-daily__icon" src="{{ item.icon }}" />
+              <text class="forecast-daily__time forecast-daily__time--horizontal">
+                {{ item.time }}
+              </text>
+            </div>
+            <text if="{{ useHorizontalDailyLayout }}" class="forecast-daily__temperature">
+              {{ item.temperature.from }}°/{{ item.temperature.to }}°
+            </text>
+            <text if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__time">
+              {{ item.time }}
+            </text>
+            <div if="{{ !useHorizontalDailyLayout }}" class="forecast-daily__detail">
+              <text class="forecast-daily__temperature">
+                {{ item.temperature.from }}°/{{ item.temperature.to }}°
+              </text>
+              <image class="forecast-daily__icon" src="{{ item.icon }}" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="daily-section__card" if="{{ forecastDaily.length === 0 }}">
+        <text class="daily-page__empty">暂无逐日天气</text>
+      </div>
+    </scroll>
+  </div>
+</template>
+
+<script>
+/**
+ * 逐日天气页面
+ * 展示本地天气数据中的完整逐日预报列表
+ */
+import router from "@system.router"
+import {showToast} from "@system.prompt"
+const {
+  DataService,
+  DateUtils,
+  DeviceService,
+  MESSAGES,
+  TOAST_DURATION,
+  WeatherDataUtils
+} = global
+
+export default {
+  protected: {
+    backgroundImage: ""
+  },
+
+  private: {
+    isLoading: true,
+    backgroundFolder: "default",
+    forecastDaily: [],
+    useHorizontalDailyLayout: false
+  },
+
+  /**
+   * 页面初始化
+   * 读取本地逐日数据并按 simple 首页同样规则映射展示项
+   */
+  async onInit() {
+    try {
+      const [weatherData] = await Promise.all([
+        DataService.readWeatherData(true),
+        this.detectDeviceLayout()
+      ])
+
+      if (!weatherData) {
+        showToast({
+          message: MESSAGES.NO_LOCAL_DATA,
+          duration: TOAST_DURATION.NORMAL
+        })
+        return
+      }
+
+      const dailyList = DataService.getDailyList(weatherData)
+      this.forecastDaily = this.buildForecastDaily(dailyList)
+      this.syncBackground(weatherData)
+    } catch (error) {
+      console.error("加载逐日天气失败:", error)
+      this.forecastDaily = []
+      showToast({
+        message: MESSAGES.DATA_PARSE_ERROR,
+        duration: TOAST_DURATION.NORMAL
+      })
+    } finally {
+      this.isLoading = false
+    }
+  },
+
+  /**
+   * 检测设备布局
+   * 矩形和圆形设备沿用 simple 首页的横向逐日卡片
+   */
+  async detectDeviceLayout() {
+    try {
+      const [isRect, isNarrowRect, isCircle] = await Promise.all([
+        DeviceService.isRectLike(),
+        DeviceService.isNarrowRectLike(),
+        DeviceService.isCircleLike()
+      ])
+      this.useHorizontalDailyLayout = isRect || isNarrowRect || isCircle
+      this.backgroundFolder = this.useHorizontalDailyLayout ? "rect" : "default"
+    } catch (error) {
+      console.error("检测设备类型失败:", error)
+      this.useHorizontalDailyLayout = false
+      this.backgroundFolder = "default"
+    }
+  },
+
+  /**
+   * 同步页面背景图
+   * 优先使用入口传入背景，缺省时根据今日天气推导
+   * @param {Object} weatherData
+   */
+  syncBackground(weatherData) {
+    if (this.backgroundImage) {
+      return
+    }
+
+    const dailyList = DataService.getDailyList(weatherData)
+    const todayStr = DateUtils.getTodayString()
+    const todayData = dailyList.find((day) => day.fxDate === todayStr) || dailyList[0]
+    if (!todayData) {
+      this.backgroundImage = "11"
+      return
+    }
+
+    const dayPeriod = WeatherDataUtils.getCurrentDayPeriod(todayData.sunrise, todayData.sunset)
+    this.backgroundImage = WeatherDataUtils.getMappedBackgroundImage(todayData.iconDay, dayPeriod)
+  },
+
+  /**
+   * 构建逐日预报数据数组
+   * @param {Array} dailyList
+   * @returns {Array<Object>}
+   */
+  buildForecastDaily(dailyList = []) {
+    if (!Array.isArray(dailyList) || dailyList.length === 0) {
+      return []
+    }
+
+    const baseList = this.buildForecastBase({daily: dailyList})
+    return baseList.map((item) => {
+      const temp = item.tempRange
+      const icon = item.iconCode
+        ? `/common/images/weather-icons/${item.iconCode}.png`
+        : "/common/images/weather-icons/cloudy.png"
+
+      return {
+        fxDate: item.fxDate,
+        time: item.name,
+        temperature: temp,
+        icon
+      }
+    })
+  },
+
+  /**
+   * 构建基础逐日展示数据
+   * @param {Object} weatherData
+   * @returns {Array<Object>}
+   */
+  buildForecastBase(weatherData) {
+    const dailyList = DataService.getDailyList(weatherData)
+    const todayStr = DateUtils.getTodayString()
+    const todayData = dailyList.find((day) => day.fxDate === todayStr)
+    const todaySunrise = todayData ? todayData.sunrise : null
+    const todaySunset = todayData ? todayData.sunset : null
+
+    return dailyList
+      .filter((day) => {
+        const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
+        return dayDiff >= -1
+      })
+      .map((day) => {
+        const dayDiff = DateUtils.calculateDateDiff(day.fxDate)
+        const displayName = DateUtils.getDisplayName(day.fxDate, dayDiff)
+        const isNight = WeatherDataUtils.getCurrentDayPeriod(todaySunrise, todaySunset) === "night"
+
+        return {
+          fxDate: day.fxDate,
+          name: displayName,
+          tempRange: {from: day.tempMin || "__", to: day.tempMax || "__"},
+          iconCode: WeatherDataUtils.getMappedIconCode(day.iconDay, isNight)
+        }
+      })
+  },
+
+  /**
+   * 跳转到详情页
+   * @param {Object} selectedItem
+   */
+  goToDetail(selectedItem) {
+    if (selectedItem && selectedItem.fxDate) {
+      router.push({
+        uri: "/pages/detail",
+        params: {
+          selectedDate: selectedItem.fxDate
+        }
+      })
+    } else {
+      showToast({
+        message: MESSAGES.NAVIGATION_ERROR,
+        duration: TOAST_DURATION.NORMAL
+      })
+    }
+  },
+
+  /**
+   * 返回上一页，支持右滑手势
+   * @param {Object} eve
+   */
+  goBack(eve) {
+    if (eve.direction === "right") {
+      router.back()
+    }
+  }
+}
+</script>
+
+<style>
+@import "../../common/css/header-styles.css";
+@import "../../common/css/loading-styles.css";
+@import "../../common/css/page-bg-styles.css";
+
+.daily-page {
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.daily-page__content {
+  padding: 0 8px 48px 8px;
+  color: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.daily-section__card {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 16px 0 4px;
+  margin-top: 12px;
+}
+
+.forecast-daily {
+  width: 100%;
+  padding: 0 16px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.forecast-daily__item {
+  width: 100%;
+  flex-direction: column;
+  margin-bottom: 12px;
+  justify-content: center;
+}
+
+.forecast-daily__item--horizontal {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forecast-daily__left {
+  flex-direction: row;
+  align-items: center;
+}
+
+.forecast-daily__icon {
+  width: 48px;
+  height: 48px;
+}
+
+.forecast-daily__time {
+  line-height: 28px;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.forecast-daily__time--horizontal {
+  margin-left: 16px;
+  color: white;
+}
+
+.forecast-daily__detail {
+  width: 100%;
+  margin-top: 6px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forecast-daily__temperature {
+  line-height: 30px;
+  font-size: 30px;
+  color: white;
+}
+
+.daily-page__empty {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+  width: 100%;
+  padding: 24px 0;
+}
+
+/* 针对圆表 */
+@media (shape: circle) {
+  .daily-page__content {
+    padding: 0px 8px 88px 8px;
+  }
+
+  .daily-section__card {
+    width: 90%;
+    padding: 28px 0 16px;
+    border-radius: 32px;
+  }
+
+  .forecast-daily {
+    padding: 0 28px;
+  }
+
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
+  }
+
+  .daily-page__empty {
+    font-size: 30px;
+  }
+}
+
+/* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 216) {
+  .daily-page__content {
+    padding: 0px 8px 32px 8px;
+  }
+
+  .daily-section__card {
+    padding: 28px 0 16px;
+    border-radius: 32px;
+  }
+
+  .forecast-daily {
+    padding: 0 28px;
+  }
+
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
+  }
+
+  .daily-page__empty {
+    font-size: 30px;
+  }
+}
+
+/* 针对小米手环9/10 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 160) {
+  .daily-page__content {
+    padding: 0px 8px 16px 8px;
+  }
+
+  .daily-section__card {
+    padding: 21px 0 5px;
+    border-radius: 32px;
+  }
+
+  .forecast-daily__time--horizontal {
+    line-height: 32px;
+    font-size: 32px;
+  }
+
+  .daily-page__empty {
+    font-size: 30px;
+  }
+}
+</style>
