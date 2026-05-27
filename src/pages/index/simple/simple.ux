@@ -230,6 +230,7 @@ export default {
     showAlertText: true,
     hourlyItemsPerPage: 2,
     useHorizontalDailyLayout: false,
+    useShortHourFormat: false,
     forecastDaily: [],
     indices: createDefaultIndices()
   },
@@ -555,7 +556,9 @@ export default {
         const parsed = new Date(timestamp)
         const hours = parsed.getHours()
         const minutes = parsed.getMinutes()
-        displayHour = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+        displayHour = this.useShortHourFormat
+          ? `${String(hours).padStart(2, "0")}时`
+          : `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
         isNight = WeatherDataUtils.getDayPeriodAtTimestamp(parsed, sunrise, sunset) === "night"
       }
 
@@ -1127,12 +1130,14 @@ export default {
       this.hourlyItemsPerPage = 2
       this.showAlertText = false
       this.useHorizontalDailyLayout = false
+      this.useShortHourFormat = true
       this.backgroundFolder = "default"
     } catch (error) {
       console.error("检测设备类型失败:", error)
       this.hourlyItemsPerPage = 2
       this.showAlertText = false
       this.useHorizontalDailyLayout = false
+      this.useShortHourFormat = true
       this.backgroundFolder = "default"
     }
   },
