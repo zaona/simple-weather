@@ -3,7 +3,7 @@
     <!-- 背景图片 -->
     <image
       class="page__bg"
-      src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png"
+      src="{{ backgroundSrc }}"
     />
 
     <!-- 加载动画容器 -->
@@ -39,7 +39,8 @@
 import router from "@system.router"
 const {
   DataService,
-  DeviceService
+  DeviceService,
+  ImageService
 } = global
 
 export default {
@@ -51,6 +52,7 @@ export default {
     // ---- 页面状态 ----
     isLoading: true,
     backgroundFolder: "default",
+    backgroundSrc: "",
     alerts: []
   },
 
@@ -59,11 +61,15 @@ export default {
    * 加载天气数据并筛选未过期的预警
    */
   async onInit() {
+    await ImageService.init()
     try {
       const [weatherData] = await Promise.all([
         DataService.readWeatherData(true),
         this.detectBackgroundFolder()
       ])
+      this.backgroundSrc = ImageService.hasCustomImage(this.backgroundImage)
+        ? ImageService.getCustomPath(this.backgroundImage)
+        : `/common/images/weather-bgs/${this.backgroundFolder}/${this.backgroundImage}.png`
 
       const rawAlerts = DataService.getAlertsList(weatherData)
       const now = Date.now()

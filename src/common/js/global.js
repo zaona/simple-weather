@@ -9,6 +9,7 @@ import SettingsService from "./settings-service.js"
 import DeviceService from "./device-service.js"
 import RefreshController from "./refresh-controller.js"
 import DebugService from "./debug-service.js"
+import ImageService from "./image-service.js"
 import {DateUtils, WeatherDataUtils} from "./weather-utils.js"
 import {WEATHER_API_ERRORS} from "./weather-api-service.js"
 import {
@@ -26,6 +27,7 @@ global.SettingsService = SettingsService
 global.DeviceService = DeviceService
 global.RefreshController = RefreshController
 global.DebugService = DebugService
+global.ImageService = ImageService
 global.DateUtils = DateUtils
 global.WeatherDataUtils = WeatherDataUtils
 global.WEATHER_API_ERRORS = WEATHER_API_ERRORS

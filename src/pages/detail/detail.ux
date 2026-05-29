@@ -4,7 +4,7 @@
     <!-- 背景图片 -->
     <image
       class="page__bg"
-      src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png"
+      src="{{ backgroundSrc }}"
     />
 
     <!-- 加载动画容器 -->
@@ -53,7 +53,8 @@ const {
   MESSAGES,
   TOAST_DURATION,
   WeatherDataUtils,
-  DeviceService
+  DeviceService,
+  ImageService
 } = global
 
 export default {
@@ -66,6 +67,7 @@ export default {
     isLoading: true,
     backgroundImage: "",
     backgroundFolder: "default",
+    backgroundSrc: "",
 
     // ---- 展示数据 ----
     location: "__",
@@ -106,6 +108,7 @@ export default {
    * 页面初始化
    */
   async onInit() {
+    await ImageService.init()
     if (!this.selectedDate) {
       this.isLoading = false
       showToast({
@@ -154,6 +157,9 @@ export default {
     this.selectedDateDisplay = this.formatDisplayDate(this.selectedDate, !isDefaultScreen)
     this.backgroundImage = backgroundImage
     this.backgroundFolder = isDefaultScreen ? "default" : "rect"
+    this.backgroundSrc = ImageService.hasCustomImage(this.backgroundImage)
+      ? ImageService.getCustomPath(this.backgroundImage)
+      : `/common/images/weather-bgs/${this.backgroundFolder}/${this.backgroundImage}.png`
   },
 
   /**

@@ -1,9 +1,6 @@
 <template>
   <div class="page">
-    <image
-      class="page__bg"
-      src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png"
-    />
+    <image class="page__bg" src="{{ backgroundSrc }}" />
 
     <!-- 加载动画容器 -->
     <div class="loading" if="{{ isLoading }}">
@@ -148,7 +145,8 @@ const {
   TOAST_DURATION,
   ADVANCED_FEATURE_PRODUCT_BLACKLIST,
   DateUtils,
-  WeatherDataUtils
+  WeatherDataUtils,
+  ImageService
 } = global
 
 /** 创建默认天气指数占位数组 @returns {Array<Object>} */
@@ -201,6 +199,7 @@ export default {
     isLoading: true,
     backgroundImage: "",
     backgroundFolder: "default",
+    backgroundSrc: "",
 
     // ---- 功能开关 ----
     autoUpdateEnabled: false,
@@ -732,6 +731,9 @@ export default {
     RefreshController.recordDailyUpdate(weatherData)
     const baseWeather = this.buildBaseWeather(todayData, hourlyEntry)
     this.backgroundImage = baseWeather.backgroundImage
+    this.backgroundSrc = ImageService.hasCustomImage(this.backgroundImage)
+      ? ImageService.getCustomPath(this.backgroundImage)
+      : `/common/images/weather-bgs/${this.backgroundFolder}/${this.backgroundImage}.png`
     const locationName = DataService.getLocationName(weatherData)
     const currentIconCode = baseWeather.iconCode
 
@@ -1193,6 +1195,7 @@ export default {
    * 页面初始化
    */
   async onInit() {
+    await ImageService.init()
     await this.detectFeatureSupport()
     await this.syncFeatureSettings()
 

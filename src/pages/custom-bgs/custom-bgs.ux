@@ -1,0 +1,359 @@
+<template>
+  <div class="bg-page" @swipe="goBack">
+    <scroll class="bg-page__content" scroll-y="true" bounces="true">
+      <div class="page-header">
+        <text class="page-header__title">自定义背景图</text>
+        <text class="page-header__subtitle">已接收 {{ customCount }}/12 张</text>
+        <div class="page-header__spacer"></div>
+      </div>
+
+      <div class="bg-page__card">
+        <div class="btn btn--secondary-square" @click="clearAllImages">
+          <text class="btn__text">删除自定义背景</text>
+        </div>
+      </div>
+
+      <div class="bg-page__card" for="{{ item in bgList }}">
+        <div class="bg-page__row">
+          <div class="bg-page__preview">
+            <image
+              if="{{ item.hasCustom }}"
+              class="bg-page__img"
+              src="{{ item.path }}"
+            />
+          </div>
+          <div class="bg-page__info">
+            <text class="bg-page__label">{{ item.label }}</text>
+            <text class="bg-page__status">{{ item.hasCustom ? '已自定义' : '默认' }}</text>
+          </div>
+        </div>
+      </div>
+
+
+      <text class="bg-page__summary">文件列表 ({{ fileCount }} 个)</text>
+
+      <div class="bg-page__card">
+        <div class="bg-page__filelist" for="{{ f in fileList }}">
+          <text class="bg-page__filename">{{ f.name }}</text>
+        </div>
+        <text class="bg-page__empty" if="{{ fileList.length === 0 }}">无文件</text>
+      </div>
+    </scroll>
+  </div>
+</template>
+
+<script>
+/**
+ * 自定义背景图页面
+ * 展示从手机端接收到的所有自定义天气背景图
+ */
+import router from "@system.router"
+import file from "@system.file"
+const { ImageService } = global
+
+export default {
+  private: {
+    customCount: 0,
+    bgList: [],
+    fileList: [],
+    fileCount: 0
+  },
+
+  async onInit() {
+    await ImageService.init()
+    this.loadList()
+    this.scanAllFiles()
+  },
+
+  loadList() {
+    const codes = [
+      { code: "21", label: "晴-白天" },
+      { code: "22", label: "晴-夜晚" },
+      { code: "23", label: "晴-日落" },
+      { code: "11", label: "多云-白天" },
+      { code: "12", label: "多云-夜晚" },
+      { code: "31", label: "阴-全天" },
+      { code: "41", label: "雾霾-白天" },
+      { code: "42", label: "雾霾-夜晚" },
+      { code: "51", label: "雨-白天" },
+      { code: "52", label: "雨-夜晚" },
+      { code: "61", label: "雪-白天" },
+      { code: "62", label: "雪-夜晚" }
+    ]
+
+    let count = 0
+    this.bgList = codes.map(({ code, label }) => {
+      const has = ImageService.hasCustomImage(code)
+      if (has) count++
+      return {
+        code,
+        label,
+        hasCustom: has,
+        path: has ? ImageService.getCustomPath(code) : ""
+      }
+    })
+    this.customCount = count
+  },
+
+  scanAllFiles() {
+    const dirs = ["internal://files/", "internal://cache/"]
+    const allFiles = []
+
+    const promises = dirs.map((dir) => {
+      return new Promise((resolve) => {
+        file.list({
+          uri: dir,
+          success: (data) => {
+            if (data.fileList && data.fileList.length > 0) {
+              const label = dir === "internal://files/" ? "[files]" : "[cache]"
+              data.fileList.forEach((item) => {
+                allFiles.push({ name: `${label} ${item.uri}` })
+              })
+            }
+            resolve()
+          },
+          fail: () => resolve()
+        })
+      })
+    })
+
+    Promise.all(promises).then(() => {
+      this.fileList = allFiles
+      this.fileCount = allFiles.length
+    })
+  },
+
+  async clearAllImages() {
+    await ImageService.clearAll()
+    this.loadList()
+    this.scanAllFiles()
+  },
+
+  goBack(eve) {
+    if (eve.direction === "right") {
+      router.back()
+    }
+  }
+}
+</script>
+
+<style>
+@import "../../common/css/btn-styles.css";
+@import "../../common/css/header-styles.css";
+
+.bg-page {
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  background-color: #000000;
+}
+
+.bg-page__content {
+  padding: 0 8px 48px 8px;
+  color: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.bg-page__summary {
+  width: 100%;
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+
+.bg-page__card {
+  width: 100%;
+  flex-direction: column;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.bg-page__row {
+  flex-direction: row;
+  align-items: center;
+}
+
+.bg-page__preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-page__img {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.bg-page__info {
+  flex-direction: column;
+  margin-left: 12px;
+  flex: 1;
+}
+
+.bg-page__label {
+  font-size: 24px;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.bg-page__status {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.bg-page__empty {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  width: 100%;
+  padding: 24px 0;
+}
+
+.bg-page__filelist {
+  flex-direction: column;
+}
+
+.bg-page__filename {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 4px 0;
+}
+
+/* 针对圆表 */
+@media (shape: circle) {
+  .bg-page__content {
+    padding: 0px 8px 88px 8px;
+  }
+
+  .bg-page__card {
+    width: 90%;
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .bg-page__summary {
+    font-size: 28px;
+  }
+
+  .bg-page__preview {
+    width: 88px;
+    height: 88px;
+    border-radius: 16px;
+  }
+
+  .bg-page__img {
+    width: 88px;
+    height: 88px;
+    border-radius: 16px;
+  }
+
+  .bg-page__label {
+    font-size: 30px;
+  }
+
+  .bg-page__status {
+    font-size: 22px;
+  }
+
+
+  .bg-page__empty {
+    font-size: 30px;
+  }
+}
+
+/* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 216) {
+  .bg-page__content {
+    padding: 0px 8px 32px 8px;
+  }
+
+  .bg-page__card {
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .bg-page__summary {
+    font-size: 28px;
+  }
+
+  .bg-page__preview {
+    width: 88px;
+    height: 88px;
+    border-radius: 16px;
+  }
+
+  .bg-page__img {
+    width: 88px;
+    height: 88px;
+    border-radius: 16px;
+  }
+
+  .bg-page__label {
+    font-size: 30px;
+  }
+
+  .bg-page__status {
+    font-size: 22px;
+  }
+
+
+  .bg-page__empty {
+    font-size: 30px;
+  }
+}
+
+/* 针对小米手环9/10 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 160) {
+  .bg-page__content {
+    padding: 0px 8px 16px 8px;
+  }
+
+  .bg-page__card {
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .bg-page__summary {
+    font-size: 28px;
+  }
+
+  .bg-page__preview {
+    width: 88px;
+    height: 88px;
+    border-radius: 16px;
+  }
+
+  .bg-page__img {
+    width: 88px;
+    height: 88px;
+    border-radius: 16px;
+  }
+
+  .bg-page__label {
+    font-size: 30px;
+  }
+
+  .bg-page__status {
+    font-size: 22px;
+  }
+
+
+  .bg-page__empty {
+    font-size: 30px;
+  }
+}
+</style>

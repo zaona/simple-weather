@@ -6,6 +6,7 @@
 
 import interconnect from "@system.interconnect"
 import device from "@system.device"
+import ImageService from "./image-service.js"
 
 class ConnectionService {
   constructor() {
@@ -67,6 +68,15 @@ class ConnectionService {
    * @param {Object} data - 接收到的消息数据
    */
   handleMessage(data) {
+    // 图片传输协议：JSON 消息包含 type 字段（header/data/end）
+    try {
+      const msg = JSON.parse(data.data)
+      if (msg.type === "header" || msg.type === "data" || msg.type === "end") {
+        ImageService.handleImageMessage(msg)
+        return
+      }
+    } catch (e) { /* 非 JSON，继续原有逻辑 */ }
+
     // 握手预检
     if (data.data === "start") {
       this.handleHandshake()

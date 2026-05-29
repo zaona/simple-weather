@@ -2,7 +2,7 @@
   <div class="daily-page" @swipe="goBack">
     <image
       class="page__bg"
-      src="/common/images/weather-bgs/{{ backgroundFolder }}/{{ backgroundImage }}.png"
+      src="{{ backgroundSrc }}"
     />
 
     <div class="loading" if="{{ isLoading }}">
@@ -66,7 +66,8 @@ const {
   DeviceService,
   MESSAGES,
   TOAST_DURATION,
-  WeatherDataUtils
+  WeatherDataUtils,
+  ImageService
 } = global
 
 export default {
@@ -77,6 +78,7 @@ export default {
   private: {
     isLoading: true,
     backgroundFolder: "default",
+    backgroundSrc: "",
     forecastDaily: [],
     useHorizontalDailyLayout: false
   },
@@ -86,6 +88,7 @@ export default {
    * 读取本地逐日数据并按 simple 首页同样规则映射展示项
    */
   async onInit() {
+    await ImageService.init()
     try {
       const [weatherData] = await Promise.all([
         DataService.readWeatherData(true),
@@ -103,6 +106,9 @@ export default {
       const dailyList = DataService.getDailyList(weatherData)
       this.forecastDaily = this.buildForecastDaily(dailyList)
       this.syncBackground(weatherData)
+      this.backgroundSrc = ImageService.hasCustomImage(this.backgroundImage)
+        ? ImageService.getCustomPath(this.backgroundImage)
+        : `/common/images/weather-bgs/${this.backgroundFolder}/${this.backgroundImage}.png`
     } catch (error) {
       console.error("加载逐日天气失败:", error)
       this.forecastDaily = []
