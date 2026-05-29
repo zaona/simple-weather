@@ -6,6 +6,7 @@
 
 import file from "@system.file"
 import prompt from "@system.prompt"
+import interconnect from "@system.interconnect"
 
 const FILE_PREFIX = "internal://files/custom-bg-"
 const DIR_BASE = "internal://files"
@@ -49,10 +50,20 @@ class ImageService {
 
   handleImageMessage(msg) {
     switch (msg.type) {
-      case "header": this.handleHeader(msg); break
-      case "data":   this.handleChunk(msg);  break
-      case "end":    this.handleEnd();       break
+      case "header":    this.handleHeader(msg);    break
+      case "data":      this.handleChunk(msg);     break
+      case "end":       this.handleEnd();          break
+      case "clear_all": this.handleClearAll();     break
     }
+  }
+
+  async handleClearAll() {
+    await this.clearAll()
+    const conn = interconnect.instance()
+    conn.send({
+      data: { type: "clear_done" },
+      fail: (err) => console.error(`ImageService: 发送清除确认失败 code=${err.code}`)
+    })
   }
 
   handleHeader(msg) {
@@ -61,9 +72,15 @@ class ImageService {
       weatherCode: msg.weatherCode,
       chunks: new Array(msg.totalChunks),
       totalChunks: msg.totalChunks,
-      receivedCount: 0
+      receivedCount: 0,
+      current: msg.current || 0,
+      total: msg.total || 0,
+      label: msg.label || ""
     }
-    prompt.showToast({ message: "正在接收自定义背景图...", duration: 1000 })
+    const progress = (msg.current && msg.total) ? ` (${msg.current}/${msg.total})` : ""
+    const name = msg.label || ""
+    const message = name ? `接收: ${name}${progress}` : "接收中..."
+    prompt.showToast({ message, duration: 1000 })
   }
 
   handleChunk(msg) {
@@ -79,7 +96,7 @@ class ImageService {
   handleEnd() {
     if (!this.receiving) return
     const current = this.receiving
-    const { weatherCode, chunks, totalChunks, receivedCount } = current
+    const { weatherCode, chunks, totalChunks, receivedCount, label } = current
     if (receivedCount < totalChunks) { this.receiving = null; return }
 
     const buffer = this.base64ToArrayBuffer(chunks.join(""))
@@ -89,7 +106,14 @@ class ImageService {
       success: () => {
         this.customImages.add(weatherCode)
         if (this.receiving === current) this.receiving = null
-        prompt.showToast({ message: "自定义背景图已保存", duration: 1000 })
+        const name = label || ""
+        prompt.showToast({ message: name ? `已保存: ${name}` : "已保存", duration: 1000 })
+        // 通知手机端可以发送下一张
+        const conn = interconnect.instance()
+        conn.send({
+          data: { type: "image_saved", weatherCode },
+          fail: (err) => console.error(`ImageService: 发送确认失败 code=${err.code}`)
+        })
       },
       fail: (data, code) => {
         console.error(`ImageService: 保存失败 code=${code}`)

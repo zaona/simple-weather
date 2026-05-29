@@ -71,7 +71,7 @@ class ConnectionService {
     // 图片传输协议：JSON 消息包含 type 字段（header/data/end）
     try {
       const msg = JSON.parse(data.data)
-      if (msg.type === "header" || msg.type === "data" || msg.type === "end") {
+      if (msg.type === "header" || msg.type === "data" || msg.type === "end" || msg.type === "clear_all") {
         ImageService.handleImageMessage(msg)
         return
       }
