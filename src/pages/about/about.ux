@@ -68,6 +68,12 @@
         </div>
       </div>
 
+      <div class="about__card">
+        <div class="btn btn--secondary-square" @click="goToCustomBgs">
+          <text class="btn__text">自定义背景图</text>
+        </div>
+      </div>
+
       <!-- 调试面板（仅在调试模式下显示） -->
       <div class="about__card" if="{{ showDebugPanel }}">
         <div class="btn btn--secondary-square" @click="goToCustomBgs">

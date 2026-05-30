@@ -157,13 +157,11 @@ class ImageService {
   }
 
   /**
-   * 准备图片文件：清除目录中的旧图片，删除同名目标文件
+   * 准备图片文件：删除同名目标文件避免 append 时残留旧数据
+   * 注意：不能调用 clearImageDir()，否则会删掉之前已保存的其他自定义背景图
    */
   prepareImageFile(filePath) {
-    return this.clearImageDir().then(() => {
-      // 确保目标文件不存在，避免 append 时残留旧数据
-      return this.runFile(file.delete, { uri: filePath }).catch(() => {})
-    })
+    return this.runFile(file.delete, { uri: filePath }).catch(() => {})
   }
 
   /**
