@@ -110,7 +110,7 @@
         </div>
 
         <scroll class="indices" scroll-y="true">
-          <div class="indices__item">
+          <div class="indices__item" if="{{ indices[0].visible }}">
             <div class="indices__content">
               <text class="indices__type">{{ indices[0].type }}</text>
               <text class="indices__value">{{ indices[0].reading }}</text>
@@ -149,7 +149,7 @@
             </div>
           </div>
 
-          <div class="indices__item">
+          <div class="indices__item" if="{{ indices[1].visible }}">
             <div class="indices__content">
               <text class="indices__type">{{ indices[1].type }}</text>
               <text class="indices__value">{{ indices[1].reading }}%</text>
@@ -190,7 +190,7 @@
             </div>
           </div>
 
-          <div class="indices__item">
+          <div class="indices__item" if="{{ indices[2].visible }}">
             <div class="indices__content">
               <text class="indices__type">{{ indices[2].type }}</text>
               <text class="indices__value">{{ indices[2].reading }}</text>
@@ -209,7 +209,7 @@
             </div>
           </div>
 
-          <div class="indices__item">
+          <div class="indices__item" if="{{ indices[3].visible }}">
             <div class="indices__content">
               <text class="indices__type">{{ indices[3].type }}</text>
               <text class="indices__value">{{ indices[3].reading }}</text>
@@ -246,7 +246,7 @@
             </div>
           </div>
 
-          <div class="indices__item">
+          <div class="indices__item" if="{{ indices[4].visible }}">
             <div class="indices__content">
               <text class="indices__type">{{ indices[4].type }}</text>
               <text class="indices__value">{{ indices[4].reading }}</text>
@@ -321,6 +321,7 @@ function createDefaultIndices() {
       reading: "__",
       badge: "__",
       icon: "/common/images/uv/uv1.png",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
@@ -329,6 +330,7 @@ function createDefaultIndices() {
       badge: "__",
       percent: 0,
       icon: "",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
@@ -336,6 +338,7 @@ function createDefaultIndices() {
       reading: "__",
       badge: "__",
       icon: "",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
@@ -344,6 +347,7 @@ function createDefaultIndices() {
       badge: "__",
       icon: "/common/images/air/Air13.png",
       arrow: "/common/images/uv/uv15.png",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
@@ -352,6 +356,7 @@ function createDefaultIndices() {
       sunrise: "__",
       sunset: "__",
       icon: "/common/images/sunset/sunset20.png",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     }
   ]
@@ -849,6 +854,11 @@ export default {
       transform: JSON.stringify({rotate: `${windRotation}deg`})
     }
     const uvDesc = this.getUvDesc(uvValue)
+    const hasUvData = uvValue !== "__"
+    const hasHumidityData = humidityValue !== "__"
+    const hasWindData = windType !== "风向" && windValue !== "__"
+    const hasPressureData = pressureValue !== "__"
+    const hasSunData = sunriseValue !== "--" && sunsetValue !== "--"
 
     return [
       {
@@ -856,6 +866,7 @@ export default {
         reading: uvDesc,
         badge: uvValue,
         icon: uvIcon,
+        visible: hasUvData,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
         }
@@ -866,6 +877,7 @@ export default {
         badge: humidityDesc,
         percent: humidityPercent,
         icon: "",
+        visible: hasHumidityData,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
         }
@@ -875,6 +887,7 @@ export default {
         reading: windValue,
         badge: "",
         icon: "",
+        visible: hasWindData,
         rotationStyle: windRotationStyle
       },
       {
@@ -883,6 +896,7 @@ export default {
         badge: "",
         icon: airIcon,
         arrow: pressureArrow,
+        visible: hasPressureData,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
         }
@@ -893,6 +907,7 @@ export default {
         sunrise: sunriseValue,
         sunset: sunsetValue,
         icon: sunIcon,
+        visible: hasSunData,
         rotationStyle: {
           transform: JSON.stringify({rotate: "0deg"})
         }

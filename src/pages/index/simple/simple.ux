@@ -157,6 +157,7 @@ function createDefaultIndices() {
       reading: "__",
       badge: "__",
       icon: "/common/images/uv/uv1.png",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
@@ -165,6 +166,7 @@ function createDefaultIndices() {
       badge: "__",
       percent: 0,
       icon: "",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
@@ -172,6 +174,7 @@ function createDefaultIndices() {
       reading: "__",
       badge: "",
       icon: "",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
@@ -180,6 +183,7 @@ function createDefaultIndices() {
       badge: "",
       icon: "/common/images/air/Air13.png",
       arrow: "/common/images/uv/uv15.png",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     },
     {
@@ -188,6 +192,7 @@ function createDefaultIndices() {
       sunrise: "__",
       sunset: "__",
       icon: "/common/images/sunset/sunset20.png",
+      visible: false,
       rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
     }
   ]
@@ -231,7 +236,7 @@ export default {
     useHorizontalDailyLayout: false,
     useShortHourFormat: false,
     forecastDaily: [],
-    indices: createDefaultIndices()
+    indices: []
   },
 
   /** 应用预加载数据 @param {Object} preloaded @returns {Object|null} */
@@ -635,10 +640,10 @@ export default {
     return nextDay?.sunrise || "--"
   },
 
-  /** 构建五项天气指数卡片数据 @param {Object} weatherData @param {Object} todayData @returns {Array<Object>} */
+  /** 构建五项天气指数卡片数据，缺失数据的卡片不返回 @param {Object} weatherData @param {Object} todayData @returns {Array<Object>} */
   buildIndices(weatherData, todayData) {
     if (!todayData) {
-      return createDefaultIndices()
+      return createDefaultIndices().filter((item) => item.visible)
     }
 
     const uvValue = todayData.uvIndex || "__"
@@ -683,6 +688,11 @@ export default {
     const windRotation = this.getWindRotation(todayData.wind360Day || todayData.wind360)
     const windRotationStyle = {transform: JSON.stringify({rotate: `${windRotation}deg`})}
     const uvDesc = this.getUvDesc(uvValue)
+    const hasUvData = uvValue !== "__"
+    const hasHumidityData = humidityValue !== "__"
+    const hasWindData = windType !== "风向" && windValue !== "__"
+    const hasPressureData = pressureValue !== "__"
+    const hasSunData = sunriseValue !== "--" && sunsetValue !== "--"
 
     return [
       {
@@ -690,6 +700,7 @@ export default {
         reading: uvDesc,
         badge: uvValue,
         icon: uvIcon,
+        visible: hasUvData,
         rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
       },
       {
@@ -698,6 +709,7 @@ export default {
         badge: humidityDesc,
         percent: humidityPercent,
         icon: "",
+        visible: hasHumidityData,
         rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
       },
       {
@@ -705,6 +717,7 @@ export default {
         reading: windValue,
         badge: "",
         icon: "",
+        visible: hasWindData,
         rotationStyle: windRotationStyle
       },
       {
@@ -713,6 +726,7 @@ export default {
         badge: "",
         icon: airIcon,
         arrow: pressureArrow,
+        visible: hasPressureData,
         rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
       },
       {
@@ -721,9 +735,10 @@ export default {
         sunrise: sunriseValue,
         sunset: sunsetValue,
         icon: sunIcon,
+        visible: hasSunData,
         rotationStyle: {transform: JSON.stringify({rotate: "0deg"})}
       }
-    ]
+    ].filter((item) => item.visible)
   },
 
   /** 同步天气数据到页面状态 @param {Object} weatherData @param {Object} todayData @param {string} timeAgo @param {Object} hourlyEntry */

@@ -188,6 +188,7 @@ export default {
   /**
    * 构建五大类天气详细数据
    * 包含温度与天气、白天风力、夜间风力、空气与能见度、天文信息
+   * 数据缺失的条目不展示，条目全部缺失的分类整卡隐藏
    * @param {Object} selectedData - 天气数据
    * @returns {Array<Object>} 分类数组，每项包含 title 和 items
    */
@@ -195,7 +196,7 @@ export default {
     const readValue = (value) =>
       value === undefined || value === null || value === "" ? "__" : value
 
-    return [
+    const categories = [
       {
         title: "温度与天气",
         items: [
@@ -245,6 +246,13 @@ export default {
         ]
       }
     ]
+
+    return categories
+      .map((category) => ({
+        ...category,
+        items: category.items.filter((item) => item.value !== "__")
+      }))
+      .filter((category) => category.items.length > 0)
   },
 
   /** 跳转到逐日天气页面 */
