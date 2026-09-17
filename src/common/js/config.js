@@ -33,7 +33,7 @@ export const WEATHER_API = {
 
 // ---- 设备兼容性列表 ----
 /** @type {string[]} 禁用高级功能的设备黑名单 */
-export const ADVANCED_FEATURE_PRODUCT_BLACKLIST = ["xiaomi smart band 9", "xiaomi smart band 10", "xiaomi smart band 10 pro"]
+export const ADVANCED_FEATURE_PRODUCT_BLACKLIST = ["xiaomi smart band 9", "xiaomi smart band 10", "xiaomi smart band 10 pro", "xiaomi smart band 11"]
 
 /** @type {string[]} 矩形屏设备 */
 export const RECT_SCREEN_PRODUCTS = ["redmi watch 5", "redmi watch 6", "o65m"]
