@@ -25,14 +25,20 @@
         </div>
       </div>
 
-      <!-- 按类别组织的详细天气数据 -->
+      <!-- 按类别组织的详细天气数据；标题和数据过长时用跑马灯滚动 -->
       <div class="detail__card" for="{{ category in weatherCategories }}">
-        <text class="detail__card-title">{{ category.title }}</text>
+        <marquee class="detail__card-title" scrollamount="25" loop="-1" text-offset="32">
+          {{ category.title }}
+        </marquee>
         <div class="detail__card-content">
           <div class="detail__card-grid">
             <div class="detail__item" for="{{ item in category.items }}">
-              <text class="detail__item-value">{{ item.value }}{{ item.unit }}</text>
-              <text class="detail__item-label">{{ item.name }}</text>
+              <marquee class="detail__item-value" scrollamount="25" loop="-1" text-offset="32">
+                {{ item.value }}{{ item.unit }}
+              </marquee>
+              <marquee class="detail__item-label" scrollamount="25" loop="-1" text-offset="32">
+                {{ item.name }}
+              </marquee>
             </div>
           </div>
         </div>
@@ -186,7 +192,7 @@ export default {
   },
 
   /**
-   * 构建五大类天气详细数据
+   * 构建五大类天气详细数据（字段与单位对齐和风天气每日预报 WebAPI v7）
    * 包含温度与天气、白天风力、夜间风力、空气与能见度、天文信息
    * 数据缺失的条目不展示，条目全部缺失的分类整卡隐藏
    * @param {Object} selectedData - 天气数据
@@ -204,8 +210,8 @@ export default {
           {name: "最低温度", value: readValue(selectedData.tempMin), unit: "°"},
           {name: "白天天气", value: readValue(selectedData.textDay), unit: ""},
           {name: "夜间天气", value: readValue(selectedData.textNight), unit: ""},
-          {name: "紫外线指数", value: readValue(selectedData.uvIndex), unit: ""},
-          {name: "总降水量", value: readValue(selectedData.precip), unit: "mm"}
+          {name: "紫外线强度", value: readValue(selectedData.uvIndex), unit: ""},
+          {name: "降水量", value: readValue(selectedData.precip), unit: "mm"}
         ]
       },
       {
@@ -213,7 +219,7 @@ export default {
         items: [
           {name: "风向", value: readValue(selectedData.windDirDay), unit: ""},
           {name: "风力等级", value: readValue(selectedData.windScaleDay), unit: "级"},
-          {name: "风速", value: readValue(selectedData.windSpeedDay), unit: ""},
+          {name: "风速", value: readValue(selectedData.windSpeedDay), unit: "km/h"},
           {name: "风向角度", value: readValue(selectedData.wind360Day), unit: "°"}
         ]
       },
@@ -222,7 +228,7 @@ export default {
         items: [
           {name: "风向", value: readValue(selectedData.windDirNight), unit: ""},
           {name: "风力等级", value: readValue(selectedData.windScaleNight), unit: "级"},
-          {name: "风速", value: readValue(selectedData.windSpeedNight), unit: ""},
+          {name: "风速", value: readValue(selectedData.windSpeedNight), unit: "km/h"},
           {name: "风向角度", value: readValue(selectedData.wind360Night), unit: "°"}
         ]
       },
@@ -230,7 +236,7 @@ export default {
         title: "空气与能见度",
         items: [
           {name: "相对湿度", value: readValue(selectedData.humidity), unit: "%"},
-          {name: "大气压强", value: readValue(selectedData.pressure), unit: ""},
+          {name: "气压", value: readValue(selectedData.pressure), unit: "hPa"},
           {name: "能见度", value: readValue(selectedData.vis), unit: "km"},
           {name: "云量", value: readValue(selectedData.cloud), unit: "%"}
         ]
@@ -238,11 +244,11 @@ export default {
       {
         title: "天文",
         items: [
-          {name: "日出时间", value: readValue(selectedData.sunrise), unit: ""},
-          {name: "日落时间", value: readValue(selectedData.sunset), unit: ""},
-          {name: "月升时间", value: readValue(selectedData.moonrise), unit: ""},
-          {name: "月落时间", value: readValue(selectedData.moonset), unit: ""},
-          {name: "月相名称", value: readValue(selectedData.moonPhase), unit: ""}
+          {name: "日出", value: readValue(selectedData.sunrise), unit: ""},
+          {name: "日落", value: readValue(selectedData.sunset), unit: ""},
+          {name: "月升", value: readValue(selectedData.moonrise), unit: ""},
+          {name: "月落", value: readValue(selectedData.moonset), unit: ""},
+          {name: "月相", value: readValue(selectedData.moonPhase), unit: ""}
         ]
       }
     ]
@@ -290,12 +296,17 @@ export default {
 }
 
 .detail__item-value {
+  width: 100%;
+  min-width: 0;
   font-size: 36px;
   font-weight: bold;
   margin-left: -1px;
+  color: #ffffff;
 }
 
 .detail__item-label {
+  width: 100%;
+  min-width: 0;
   font-size: 24px;
   margin-top: 2px;
   color: rgba(255, 255, 255, 0.75);
@@ -323,6 +334,8 @@ export default {
 }
 
 .detail__card-title {
+  width: 100%;
+  min-width: 0;
   font-size: 26px;
   font-weight: bold;
   margin-bottom: 12px;
@@ -347,6 +360,8 @@ export default {
 
 .detail__item {
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
   margin-top: 14px;
 }
 
@@ -390,6 +405,7 @@ export default {
 
   .detail__item {
     width: 49%;
+    min-width: 0;
     margin-left: 2px;
   }
 
@@ -433,6 +449,7 @@ export default {
 
   .detail__item {
     width: 49%;
+    min-width: 0;
     margin-left: 2px;
   }
 
@@ -476,6 +493,7 @@ export default {
 
   .detail__item {
     width: 49%;
+    min-width: 0;
     margin-left: 2px;
   }
 
