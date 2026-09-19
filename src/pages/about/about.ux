@@ -22,11 +22,18 @@
             <text class="about__setting-title">简化首页</text>
             <text class="about__setting-subtitle">精简流畅</text>
           </div>
-          <switch
-            class="about__switch"
-            checked="{{ reduceAnimationEnabled }}"
-            @change="toggleReduceAnimation"
-          />
+          <div class="about__switch-wrap" @click="toggleReduceAnimation">
+            <image
+              class="about__switch"
+              if="{{ reduceAnimationEnabled }}"
+              src="/common/images/switch-on.png"
+            />
+            <image
+              class="about__switch"
+              if="{{ !reduceAnimationEnabled }}"
+              src="/common/images/switch-off.png"
+            />
+          </div>
         </div>
       </div>
 
@@ -36,11 +43,18 @@
             <text class="about__setting-title">天气预测</text>
             <text class="about__setting-subtitle">小时天气</text>
           </div>
-          <switch
-            class="about__switch"
-            checked="{{ hourlyForecastEnabled }}"
-            @change="toggleHourlyForecast"
-          />
+          <div class="about__switch-wrap" @click="toggleHourlyForecast">
+            <image
+              class="about__switch"
+              if="{{ hourlyForecastEnabled }}"
+              src="/common/images/switch-on.png"
+            />
+            <image
+              class="about__switch"
+              if="{{ !hourlyForecastEnabled }}"
+              src="/common/images/switch-off.png"
+            />
+          </div>
         </div>
       </div>
 
@@ -50,7 +64,18 @@
             <text class="about__setting-title">天气预警</text>
             <text class="about__setting-subtitle">灾害预警</text>
           </div>
-          <switch class="about__switch" checked="{{ alertEnabled }}" @change="toggleAlert" />
+          <div class="about__switch-wrap" @click="toggleAlert">
+            <image
+              class="about__switch"
+              if="{{ alertEnabled }}"
+              src="/common/images/switch-on.png"
+            />
+            <image
+              class="about__switch"
+              if="{{ !alertEnabled }}"
+              src="/common/images/switch-off.png"
+            />
+          </div>
         </div>
       </div>
 
@@ -60,11 +85,18 @@
             <text class="about__setting-title">自动更新</text>
             <text class="about__setting-subtitle">每小时更新</text>
           </div>
-          <switch
-            class="about__switch"
-            checked="{{ autoUpdateEnabled }}"
-            @change="toggleAutoUpdate"
-          />
+          <div class="about__switch-wrap" @click="toggleAutoUpdate">
+            <image
+              class="about__switch"
+              if="{{ autoUpdateEnabled }}"
+              src="/common/images/switch-on.png"
+            />
+            <image
+              class="about__switch"
+              if="{{ !autoUpdateEnabled }}"
+              src="/common/images/switch-off.png"
+            />
+          </div>
         </div>
       </div>
 
@@ -174,14 +206,13 @@ export default {
   /**
    * 通用设置切换
    * 乐观更新：先更新 UI 再保存，保存失败时回滚
-   * @param {Object} event - 开关事件
    * @param {string} fieldKey - 数据字段名
    * @param {Function} setterFn - 设置保存函数
    * @returns {Promise<void>}
    */
-  async toggleSetting(event, fieldKey, setterFn) {
-    const nextValue = typeof event.checked === "boolean" ? event.checked : !!event.detail?.checked
+  async toggleSetting(fieldKey, setterFn) {
     const previousValue = this[fieldKey]
+    const nextValue = !previousValue
     this[fieldKey] = nextValue
     const saved = await setterFn(nextValue)
     if (!saved) {
@@ -194,8 +225,8 @@ export default {
   /**
    * 切换自动更新开关
    */
-  toggleAutoUpdate(event) {
-    return this.toggleSetting(event, "autoUpdateEnabled", (v) =>
+  toggleAutoUpdate() {
+    return this.toggleSetting("autoUpdateEnabled", (v) =>
       SettingsService.setAutoUpdateEnabled(v)
     )
   },
@@ -203,8 +234,8 @@ export default {
   /**
    * 切换逐小时预报开关
    */
-  toggleHourlyForecast(event) {
-    return this.toggleSetting(event, "hourlyForecastEnabled", (v) =>
+  toggleHourlyForecast() {
+    return this.toggleSetting("hourlyForecastEnabled", (v) =>
       SettingsService.setHourlyForecastEnabled(v)
     )
   },
@@ -212,15 +243,15 @@ export default {
   /**
    * 切换天气预警开关
    */
-  toggleAlert(event) {
-    return this.toggleSetting(event, "alertEnabled", (v) => SettingsService.setAlertEnabled(v))
+  toggleAlert() {
+    return this.toggleSetting("alertEnabled", (v) => SettingsService.setAlertEnabled(v))
   },
 
   /**
    * 切换简化动画开关
    */
-  toggleReduceAnimation(event) {
-    return this.toggleSetting(event, "reduceAnimationEnabled", (v) =>
+  toggleReduceAnimation() {
+    return this.toggleSetting("reduceAnimationEnabled", (v) =>
       SettingsService.setReduceAnimationEnabled(v)
     )
   },
@@ -338,6 +369,7 @@ export default {
 .about__switch {
   width: 60px;
   height: 30px;
+  object-fit: contain;
 }
 
 .about__btn--spaced {
