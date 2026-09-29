@@ -29,8 +29,16 @@ export const WEATHER_API_ERRORS = {
  * @returns {Promise<Object>} 解析后的响应数据
  * @throws {Error} 请求失败或状态码异常
  */
+let lastRequestTimestamp = 0
+
 function fetchJson(url, options = {}) {
   const {method = "GET", data = null, header = {}} = options
+
+  const now = Date.now()
+  if (now - lastRequestTimestamp < WEATHER_API.MIN_REQUEST_INTERVAL) {
+    return Promise.reject(new Error("请求过于频繁，请稍后重试"))
+  }
+  lastRequestTimestamp = now
 
   return new Promise((resolve, reject) => {
     fetch.fetch({
