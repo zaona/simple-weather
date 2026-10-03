@@ -1,0 +1,284 @@
+<template>
+  <div class="transfer" @swipe="goBack">
+    <scroll class="transfer__content" scroll-y="true" bounces="true">
+      <!-- 页面顶栏 -->
+      <div class="page-header">
+        <text class="page-header__title">背景传输</text>
+        <text class="page-header__subtitle">{{ statusText }}</text>
+        <div class="page-header__spacer"></div>
+      </div>
+
+      <!-- 退出提示：传输中不可离开，结束后可右滑返回 -->
+      <div class="transfer__card">
+        <text class="transfer__value">{{ tipText }}</text>
+      </div>
+
+      <!-- 传图详情：清除背景时不展示 -->
+      <div class="transfer__card" if="{{ showImageCards }}">
+        <text class="transfer__label">当前图片</text>
+        <text class="transfer__value">{{ currentLabel }}</text>
+        <text class="transfer__meta">{{ imageProgressText }}</text>
+      </div>
+
+      <div class="transfer__card" if="{{ showImageCards }}">
+        <text class="transfer__label">传输进度</text>
+        <text class="transfer__value">{{ percentText }}</text>
+        <text class="transfer__meta">{{ chunkText }}</text>
+      </div>
+
+      <div class="transfer__card">
+        <text class="transfer__label">状态</text>
+        <text class="transfer__value">{{ detailMessage }}</text>
+        <!-- 传输中显示手动取消，复用公共按钮样式 -->
+        <div class="btn btn--secondary-square transfer__cancel" if="{{ !canExit }}" @click="cancelTransfer">
+          <text class="btn__text">取消传输</text>
+        </div>
+      </div>
+    </scroll>
+  </div>
+</template>
+
+<script>
+/**
+ * 背景图传输进度页
+ * 由 ImageService 在收到 header/clear_all/cancel 时自动打开
+ * 使用文本组件展示进度，传输结束后保留本页；仅完成/取消/失败后允许右滑返回
+ */
+import router from "@system.router"
+const { ImageService } = global
+
+export default {
+  private: {
+    // ---- 展示状态 ----
+    statusText: "等待传输",
+    tipText: "传输中请勿离开",
+    currentLabel: "-",
+    imageProgressText: "-",
+    percentText: "0%",
+    chunkText: "-",
+    detailMessage: "等待手机端发送背景图",
+    canExit: false,
+    showImageCards: true,
+    // 清除流程与传图共用 finished/error，用此标记区分文案与卡片显隐
+    isClearMode: false,
+    _off: null
+  },
+
+  /**
+   * 页面初始化：订阅进度并补齐当前快照
+   */
+  onInit() {
+    ImageService.setTransferUiActive(true)
+    this.applyEvent(ImageService.getSnapshot())
+    this._off = ImageService.onProgress((event) => {
+      this.applyEvent(event)
+    })
+  },
+
+  /**
+   * 页面销毁：取消订阅，允许下次重新 push 传输页
+   */
+  onDestroy() {
+    ImageService.setTransferUiActive(false)
+    if (this._off) {
+      this._off()
+      this._off = null
+    }
+  },
+
+  /**
+   * 将 ImageService 进度事件映射到页面展示字段
+   * @param {Object} event - 进度事件快照
+   */
+  applyEvent(event) {
+    if (!event) return
+    const phase = event.phase || "idle"
+    const label = event.label || ""
+    const current = event.current || 0
+    const total = event.total || 0
+    const receivedCount = event.receivedCount || 0
+    const totalChunks = event.totalChunks || 0
+    const percent = typeof event.percent === "number" ? event.percent : 0
+
+    if (phase === "clearing") {
+      this.isClearMode = true
+    } else if (phase === "receiving" || phase === "saved") {
+      this.isClearMode = false
+    }
+
+    this.showImageCards = !this.isClearMode
+    this.currentLabel = label || (event.weatherCode ? `编号 ${event.weatherCode}` : "-")
+    this.imageProgressText = total > 0 ? `${current}/${total}` : "-"
+    this.percentText = `${percent}%`
+    this.chunkText = totalChunks > 0 ? `分片 ${receivedCount}/${totalChunks}` : "-"
+    this.detailMessage = event.message || "-"
+
+    if (phase === "receiving") {
+      this.statusText = "正在接收"
+      this.canExit = false
+    } else if (phase === "saved") {
+      this.statusText = "已保存，继续下一张"
+      this.canExit = false
+    } else if (phase === "clearing") {
+      this.statusText = "正在清除"
+      this.canExit = false
+    } else if (phase === "finished") {
+      this.statusText = this.isClearMode ? "清除完成" : "传输完成"
+      this.canExit = true
+    } else if (phase === "cancelled") {
+      this.statusText = "已取消"
+      this.canExit = true
+    } else if (phase === "error") {
+      this.statusText = this.isClearMode ? "清除失败" : "传输失败"
+      this.canExit = true
+    } else {
+      this.statusText = "等待传输"
+      this.canExit = false
+    }
+
+    this.tipText = this.canExit ? "可右滑返回" : "传输中请勿离开"
+  },
+
+  /**
+   * 手动取消当前传输，并通知手机端停止发送
+   */
+  cancelTransfer() {
+    if (this.canExit) return
+    ImageService.cancelByUser()
+  },
+
+  /**
+   * 右滑返回：仅完成/取消/失败后允许退出
+   * @param {Object} eve - 滑动事件，含 direction
+   */
+  goBack(eve) {
+    if (eve.direction === "right" && this.canExit) {
+      router.back()
+    }
+  }
+}
+</script>
+
+<style>
+@import "../../common/css/header-styles.css";
+@import "../../common/css/btn-styles.css";
+
+.transfer {
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.transfer__content {
+  padding: 0 8px 48px 8px;
+  color: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.transfer__card {
+  width: 100%;
+  flex-direction: column;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.transfer__label {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.transfer__value {
+  font-size: 26px;
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.transfer__meta {
+  font-size: 24px;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.transfer__cancel {
+  margin-top: 12px;
+}
+
+@media (shape: circle) {
+  .transfer__content {
+    padding: 0px 8px 88px 8px;
+  }
+
+  .transfer__card {
+    width: 90%;
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .transfer__label {
+    font-size: 30px;
+  }
+
+  .transfer__value {
+    font-size: 32px;
+  }
+
+  .transfer__meta {
+    font-size: 30px;
+  }
+}
+
+/* 针对REDMI Watch 5/6 (分辨率: 432*514, 水平dp值: 216) */
+@media (width: 216) {
+  .transfer__content {
+    padding: 0px 8px 32px 8px;
+  }
+
+  .transfer__card {
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .transfer__label {
+    font-size: 30px;
+  }
+
+  .transfer__value {
+    font-size: 32px;
+  }
+
+  .transfer__meta {
+    font-size: 30px;
+  }
+}
+
+/* 针对小米手环9/10 Pro (分辨率: 336*480, 水平dp值: 160) */
+@media (width: 160) {
+  .transfer__content {
+    padding: 0px 8px 16px 8px;
+  }
+
+  .transfer__card {
+    border-radius: 32px;
+    padding: 24px;
+  }
+
+  .transfer__label {
+    font-size: 30px;
+  }
+
+  .transfer__value {
+    font-size: 32px;
+  }
+
+  .transfer__meta {
+    font-size: 30px;
+  }
+}
+</style>
