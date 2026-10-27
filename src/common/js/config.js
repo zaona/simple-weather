@@ -23,12 +23,13 @@ export const MANUAL_UPDATE = {
 }
 
 // ---- 天气 API 公共参数 ----
-/** @type {{ DAILY_RANGE: string, HOURLY_RANGE: string, REQUEST_TIMEOUT: number, SYNC_PATH: string }} */
+/** @type {{ DAILY_RANGE: string, HOURLY_RANGE: string, REQUEST_TIMEOUT: number, SYNC_PATH: string, MIN_REQUEST_INTERVAL: number }} */
 export const WEATHER_API = {
   DAILY_RANGE: "7d",
   HOURLY_RANGE: "24h",
   REQUEST_TIMEOUT: 10000,
-  SYNC_PATH: "/api/weather/sync"
+  SYNC_PATH: "/api/weather/sync",
+  MIN_REQUEST_INTERVAL: 1000
 }
 
 // ---- 设备兼容性列表 ----
